@@ -1,0 +1,1 @@
+export default async function EntriesPage() { return <div className="space-y-4"><h2 className="text-2xl font-bold tracking-tight">Faktury i wpisy</h2><p className="text-muted-foreground">Wprowadzanie danych emisyjnych — Faza 2.</p></div>; }

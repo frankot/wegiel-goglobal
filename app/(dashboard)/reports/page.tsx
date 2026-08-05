@@ -1,0 +1,1 @@
+export default async function ReportsPage() { return <div className="space-y-4"><h2 className="text-2xl font-bold tracking-tight">Raporty</h2><p className="text-muted-foreground">Generowanie raportów — Faza 3.</p></div>; }

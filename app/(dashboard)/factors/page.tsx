@@ -1,0 +1,1 @@
+export default async function FactorsPage() { return <div className="space-y-4"><h2 className="text-2xl font-bold tracking-tight">Współczynniki emisji</h2><p className="text-muted-foreground">Zarządzanie wskaźnikami — Faza 2.</p></div>; }

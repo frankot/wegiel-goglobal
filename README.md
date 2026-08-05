@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ślad węglowy — System IT GO GLOBAL GROUP
 
-## Getting Started
+Aplikacja do obliczania, monitorowania i raportowania śladu węglowego przedsiębiorstwa GO GLOBAL GROUP, zgodnie z metodyką **GHG Protocol (Greenhouse Gas Protocol)**.
 
-First, run the development server:
+## Zakres systemu
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Scope 1** — emisje bezpośrednie ze spalania paliw (instalacje stacjonarne, pojazdy firmowe)
+- **Scope 2** — emisje pośrednie z zakupu energii (elektrycznej, cieplnej, chłodniczej)
+- **Scope 3** — gotowość architektoniczna do rozbudowy o 15 kategorii łańcucha wartości
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Funkcjonalności
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Moduł | Opis |
+|-------|------|
+| **Dashboard** | KPI emisyjności: całkowite CO₂e, Scope 1, Scope 2, zmiana YoY, wykresy miesięczne |
+| **Źródła emisji** | Katalog instalacji, pojazdów i punktów poboru energii z przypisanymi wskaźnikami |
+| **Współczynniki emisji** | Centralny katalog wskaźników KOBIZE i GHG Protocol z wersjonowaniem datami |
+| **Faktury i wpisy** | Ręczne wprowadzanie, import CSV/XLSX/XML (KSeF, WF-MAG), auto-przeliczanie CO₂e |
+| **Raporty** | Generowanie PDF/XLSX/CSV zgodnych z ESRS E1, archiwum raportów |
+| **Administracja** | Zarządzanie użytkownikami (Manager/Pracownik), dziennik audytu |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Role użytkowników
 
-## Learn More
+| Rola | Uprawnienia |
+|------|-------------|
+| **Manager** | Pełny dostęp: zarządzanie źródłami, wskaźnikami, fakturami, raportami, użytkownikami |
+| **Pracownik** | Wprowadzanie odczytów i faktur, edycja własnych wpisów w statusie "Szkic", podgląd dashboardu i raportów |
 
-To learn more about Next.js, take a look at the following resources:
+## Dokumentacja
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [Opis systemu (wymagania funkcjonalne)](plan/opis-systemu-slad-weglowy.md)
+- [Specyfikacja implementacyjna](plan/spec-implementacyjna.md)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Stack technologiczny
 
-## Deploy on Vercel
+| Warstwa | Technologia |
+|---------|-------------|
+| Frontend | Next.js 16 + React 19 + TypeScript |
+| UI | Tailwind CSS 4 + shadcn/ui |
+| Backend | Next.js Server Actions |
+| Baza danych | PostgreSQL (Neon DB) + Prisma ORM |
+| Autoryzacja | JWT (jose) + bcryptjs |
+| Walidacja | Zod |
+| Wykresy | Recharts |
+| Import plików | SheetJS (XLSX) + PapaParse (CSV) + fast-xml-parser (XML) |
+| Raporty PDF | jsPDF + jspdf-autotable |
+| E-mail | Resend |
+| Deployment | Vercel + GitHub CI/CD |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Metodologia
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Obliczanie śladu węglowego opiera się na wzorze:
+
+> **Emisja CO₂e [kg] = Zużycie [jednostka] × Wskaźnik emisyjny [kg CO₂e / jednostka]**
+
+Wskaźniki emisyjne publikowane przez:
+- **KOBIZE** (Krajowy Ośrodek Bilansowania i Zarządzania Emisjami) — energia elektryczna
+- **GHG Protocol** — standardowe paliwa (ON, benzyna, gaz ziemny, LPG, węgiel)
+
+System przygotowuje firmę do zgodności z:
+- **CSRD** (Corporate Sustainability Reporting Directive)
+- **ESRS E1** (European Sustainability Reporting Standards — Climate Change)
+
+---
+
+GO GLOBAL GROUP — 2026

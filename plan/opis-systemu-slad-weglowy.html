@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>System IT – Ślad węglowy GO GLOBAL GROUP</title>
+<style>
+  :root {
+    --bg: #fff;
+    --text: #1a1a2e;
+    --muted: #555;
+    --border: #e0e0e0;
+    --accent: #0f766e;
+    --accent-light: #f0fdfa;
+    --scope1: #e85d3a;
+    --scope1-light: #fef2ef;
+    --scope2: #2563eb;
+    --scope2-light: #eff6ff;
+    --highlight: #fef9c3;
+    --radius: 6px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    line-height: 1.7;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 40px 80px;
+    font-size: 15px;
+    background: var(--bg);
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+    color: #0a0a1a;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 24px;
+    margin-bottom: 36px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .meta-grid strong { color: var(--text); }
+
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 44px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent);
+    color: #0a0a1a;
+    letter-spacing: -0.3px;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 28px 0 10px;
+    color: #1a1a2e;
+    page-break-after: avoid;
+  }
+  h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 20px 0 8px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  p { margin: 8px 0 12px; }
+  ul, ol { margin: 8px 0 12px 24px; }
+  li { margin: 4px 0; }
+
+  strong { color: #0a0a1a; }
+
+  a { color: var(--accent); }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 20px;
+    font-size: 14px;
+    page-break-inside: avoid;
+  }
+  thead { background: #f5f5f5; }
+  th {
+    text-align: left;
+    padding: 10px 12px;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+  }
+  td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+
+  /* Callout box */
+  .callout {
+    background: #f8fafc;
+    border-left: 4px solid var(--accent);
+    padding: 14px 18px;
+    margin: 16px 0;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    font-size: 14px;
+  }
+  .callout-title {
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  /* Inline code */
+  code {
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    white-space: nowrap;
+  }
+
+  /* Scope badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+  .badge-scope1 { background: var(--scope1-light); color: var(--scope1); }
+  .badge-scope2 { background: var(--scope2-light); color: var(--scope2); }
+
+  /* === BOX DIAGRAMS === */
+  .diagram-box {
+    margin: 20px 0;
+    page-break-inside: avoid;
+  }
+  .entity-box {
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    margin: 6px 0;
+    overflow: hidden;
+    background: #fff;
+  }
+  .entity-box.scope1 { border-color: var(--scope1); }
+  .entity-box.scope2 { border-color: var(--scope2); }
+  .entity-box.neutral { border-color: var(--accent); border-left-width: 4px; }
+
+  .entity-header {
+    padding: 10px 16px;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+  }
+  .entity-box.scope1 .entity-header { background: var(--scope1-light); color: var(--scope1); }
+  .entity-box.scope2 .entity-header { background: var(--scope2-light); color: var(--scope2); }
+  .entity-box.neutral .entity-header { background: var(--accent-light); color: var(--accent); }
+
+  .entity-body {
+    padding: 10px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+  .entity-body strong { color: var(--text); }
+
+  .arrow-down {
+    text-align: center;
+    font-size: 14px;
+    color: var(--muted);
+    margin: 2px 0;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .arrow-label {
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+    text-align: right;
+    margin-top: -2px;
+    margin-bottom: 4px;
+  }
+
+  /* Flow diagram */
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 12px 0;
+    flex-wrap: wrap;
+  }
+  .flow-node {
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .flow-node.src { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+  .flow-node.mid { background: #e0e7ff; color: #3730a3; border: 1px solid #a5b4fc; }
+  .flow-node.dest { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+  .flow-node.fact { background: #fce7f3; color: #9d174d; border: 1px solid #f9a8d4; }
+  .flow-arrow {
+    font-size: 20px;
+    color: var(--muted);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .flow-brace { font-size: 24px; color: var(--muted); }
+
+  /* Phase card */
+  .phase-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 12px 0;
+    page-break-inside: avoid;
+    background: #fafafa;
+  }
+  .phase-card h4 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: var(--accent);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .phase-card .phase-meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  /* Page break utility */
+  .page-break { page-break-before: always; }
+
+  /* Numbered list style */
+  .steps-list { list-style: none; margin-left: 0; }
+  .steps-list li {
+    padding: 4px 0 4px 28px;
+    position: relative;
+    margin: 2px 0;
+  }
+  .steps-list li::before {
+    content: attr(data-step);
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 20px;
+    height: 20px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Sub-list (dashed) */
+  .sub-list {
+    list-style: none;
+    margin: 4px 0 8px 20px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .sub-list li { padding: 1px 0; }
+  .sub-list li::before { content: "├── "; color: #ccc; }
+
+  .key-formula {
+    background: #fef9c3;
+    border: 1px solid #fde68a;
+    padding: 14px 18px;
+    border-radius: var(--radius);
+    margin: 12px 0;
+    font-weight: 700;
+    font-size: 15px;
+    text-align: center;
+    letter-spacing: -0.2px;
+  }
+
+  /* Print styles */
+  @media print {
+    body { padding: 30px 35px; font-size: 13px; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 19px; margin-top: 32px; }
+    h3 { font-size: 15px; }
+    .page-break { page-break-before: always; }
+    .entity-box, .phase-card { break-inside: avoid; }
+    table { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>System IT do obliczania i monitorowania śladu węglowego</h1>
+<div class="subtitle">GO GLOBAL GROUP — Szczegółowy opis przepływu danych i struktury aplikacji (Zakres 1 i 2)</div>
+
+<div class="meta-grid">
+  <div><strong>Data:</strong> 15.06.2026</div>
+  <div><strong>Zamawiający:</strong> GO GLOBAL GROUP</div>
+  <div><strong>Deadline:</strong> 03.11.2026</div>
+  <div><strong>Budżet:</strong> 16 000 – 20 000 PLN netto</div>
+</div>
+
+<!-- ========== 1. STRESZCZENIE ========== -->
+<h2>1. Streszczenie projektu</h2>
+
+<p>System informatyczny służący do <strong>obliczania, monitorowania i raportowania śladu węglowego</strong> przedsiębiorstwa GO GLOBAL GROUP, zgodnie z metodyką <strong>GHG Protocol (Greenhouse Gas Protocol)</strong>.</p>
+
+<table>
+  <thead><tr><th>Zakres</th><th>Opis</th><th>Przykłady</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="badge badge-scope1">Zakres 1</span></td>
+      <td>Emisje bezpośrednie ze spalania paliw</td>
+      <td>Kotły, piece, agregaty, pojazdy firmowe</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-scope2">Zakres 2</span></td>
+      <td>Emisje pośrednie z zakupu energii</td>
+      <td>Energia elektryczna, cieplna, chłodnicza</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Architektura przygotowana na przyszłą rozbudowę o <strong>Zakres 3</strong> (15 kategorii wg GHG Protocol — łańcuch dostaw, transport, odpady, podróże służbowe).</p>
+
+<!-- ========== 2. METODOLOGIA ========== -->
+<h2>2. Podstawa metodologiczna</h2>
+
+<h3>2.1. GHG Protocol — zasada obliczania emisji</h3>
+
+<div class="key-formula">
+  Emisja CO₂e [kg] = Zużycie [jednostka] × Wskaźnik emisyjny [kg CO₂e / jednostka]
+</div>
+
+<div class="callout">
+  <div class="callout-title">Przykład — Zakres 1</div>
+  Zużycie: 500 litrów ON &nbsp;×&nbsp; Wskaźnik ON: 2,62 kg CO₂e/litr &nbsp;=&nbsp; <strong>1&nbsp;310 kg CO₂e = 1,31 t CO₂e</strong>
+</div>
+
+<div class="callout">
+  <div class="callout-title">Przykład — Zakres 2</div>
+  Zużycie: 10&nbsp;000 kWh &nbsp;×&nbsp; Wskaźnik KOBIZE (2024): 0,685 kg CO₂e/kWh &nbsp;=&nbsp; <strong>6&nbsp;850 kg CO₂e = 6,85 t CO₂e</strong>
+</div>
+
+<h3>2.2. KOBIZE — źródło wskaźników emisyjnych</h3>
+
+<p>KOBIZE (Krajowy Ośrodek Bilansowania i Zarządzania Emisjami, IOŚ-PIB) corocznie publikuje wskaźniki emisyjności dla energii elektrycznej.</p>
+
+<ul>
+  <li>System jest <strong>fabrycznie zasilony</strong> aktualnymi wskaźnikami KOBIZE + GHG Protocol</li>
+  <li><strong>Aktualizacja przez import XML</strong> pobranego ze strony kobize.pl</li>
+  <li><strong>Ręczne dodawanie własnych wskaźników</strong> przez Managera</li>
+  <li>Każdy wskaźnik jest <strong>wersjonowany</strong> (z polami <code>validFrom</code>–<code>validTo</code>) — zmiana nie modyfikuje historycznych obliczeń</li>
+</ul>
+
+<h3>2.3. Otoczenie regulacyjne UE</h3>
+
+<p>System przygotowuje firmę do zgodności z:</p>
+<ul>
+  <li><strong>CSRD</strong> (Corporate Sustainability Reporting Directive) — obowiązek raportowania ESG</li>
+  <li><strong>ESRS E1</strong> (Climate Change) — 9 wymogów ujawnieniowych, w tym emisje Scope 1 i 2</li>
+  <li><strong>NFRD</strong> — poprzedniczka CSRD (dyrektywa o sprawozdawczości niefinansowej)</li>
+</ul>
+
+<p>Raporty generowane przez system są strukturyzowane zgodnie z ESRS E1: dane zagregowane w tonach CO₂e, podział Scope 1 / Scope 2, porównania okres-do-okresu, metodologia location-based dla Scope 2.</p>
+
+<!-- ========== 3. STRUKTURA ORGANIZACYJNA ========== -->
+<h2>3. Struktura organizacyjna i role</h2>
+
+<table>
+  <thead><tr><th>Rola</th><th>Uprawnienia</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Manager</strong></td>
+      <td>Pełny dostęp: źródła emisji, współczynniki, faktury i wpisy (edycja, zatwierdzanie, usuwanie), raporty, zapraszanie pracowników (wysyłka e-mail z linkiem aktywacyjnym), podgląd dziennika audytu</td>
+    </tr>
+    <tr>
+      <td><strong>Pracownik</strong></td>
+      <td>Ograniczony dostęp: wprowadzanie odczytów i faktur (ręcznie + import plików), edycja <strong>tylko własnych</strong> wpisów w statusie "Szkic", podgląd dashboardu i raportów. Nie może zatwierdzać ani usuwać wpisów</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <div class="callout-title">Przyszła rozbudowa — działy</div>
+  W v1 nie są potrzebne. Architektura jest przygotowana na dodanie encji <code>Department</code> (z <code>parentId</code> do hierarchii) — Manager otrzyma dostęp tylko do swojego działu.
+</div>
+
+<!-- ========== 4. MODEL DANYCH ========== -->
+<div class="page-break"></div>
+<h2>4. Model danych i przepływ informacji</h2>
+
+<h3>4.1. Główne encje systemu</h3>
+
+<div class="diagram-box">
+  <!-- EmissionFactor -->
+  <div class="entity-box neutral">
+    <div class="entity-header">WSPÓŁCZYNNIK EMISJI (EmissionFactor)</div>
+    <div class="entity-body">
+      <strong>Nazwa:</strong> np. "Energia elektr. PL – KOBIZE 2024"<br>
+      <strong>Wartość:</strong> np. 0,685 kg CO₂e/kWh &nbsp;|&nbsp; <strong>Jednostka:</strong> kg CO₂e/kWh, kg CO₂e/litr<br>
+      <strong>Źródło:</strong> KOBIZE / GHG Protocol / Własny &nbsp;|&nbsp; <strong>Zakres:</strong> Scope 1 / Scope 2<br>
+      <strong>Kategoria:</strong> Energia elektr. / ON / Benzyna / Gaz ziemny / Węgiel / Ciepło<br>
+      <strong>Ważny od – Ważny do</strong> (wersjonowanie)
+    </div>
+  </div>
+  <div class="arrow-down">▼ przypisany do</div>
+
+  <!-- EmissionSource -->
+  <div class="entity-box neutral">
+    <div class="entity-header">ŹRÓDŁO EMISJI (EmissionSource)</div>
+    <div class="entity-body">
+      <strong>Nazwa:</strong> np. "Kocioł gazowy – hala A", "VW Transporter WZ 12345"<br>
+      <strong>Typ:</strong> Stacjonarne / Pojazd / Energia elektr. / Ciepło / Chłodnictwo<br>
+      <strong>Zakres:</strong> Scope 1 / Scope 2<br>
+      <strong>Domyślny wskaźnik emisji</strong> (▲ powiązanie z EmissionFactor)<br>
+      <strong>Jednostka miary:</strong> litr, m³, kWh, GJ &nbsp;|&nbsp; <strong>Nr rej. / lokalizacja</strong> (opcjonalnie)
+    </div>
+  </div>
+  <div class="arrow-down">▼ generuje wpisy przez</div>
+
+  <!-- Invoice -->
+  <div class="entity-box neutral">
+    <div class="entity-header">FAKTURA (Invoice) — opcjonalna</div>
+    <div class="entity-body">
+      <strong>Numer faktury / nazwa pliku</strong> &nbsp;|&nbsp; <strong>Data wystawienia / wpływu</strong><br>
+      <strong>Źródło:</strong> Ręczna / KSeF XML / WF-MAG / CSV / XLSX<br>
+      <strong>Status importu:</strong> Oczekuje / Przetworzona / Błędy &nbsp;|&nbsp; <strong>Plik źródłowy</strong> (opcjonalnie)
+    </div>
+  </div>
+  <div class="arrow-down">▼ zawiera wiele</div>
+
+  <!-- EmissionEntry -->
+  <div class="entity-box neutral" style="border-color: #0f766e; border-width: 3px;">
+    <div class="entity-header" style="background: #f0fdfa; color: #0f766e;">⭐ WPIS EMISYJNY (EmissionEntry) — PODSTAWOWA JEDNOSTKA DANYCH</div>
+    <div class="entity-body">
+      <strong>Źródło emisji</strong> (▲ EmissionSource) &nbsp;|&nbsp; <strong>Faktura</strong> (▲ Invoice, opcjonalnie)<br>
+      <strong>Data wpisu / Okres (od–do)</strong> &nbsp;|&nbsp; <strong>Ilość + jednostka:</strong> np. 500 litrów<br>
+      <strong>Wskaźnik użyty do obliczeń</strong> (snapshot z momentu wpisu)<br>
+      <strong>Wyliczone CO₂e [kg]</strong> ← automatycznie &nbsp;|&nbsp; <strong>Wyliczone CO₂e [tony]</strong> ← automatycznie<br>
+      <strong>Status:</strong> Szkic → Zweryfikowany → Skorygowany<br>
+      <strong>Autor wpisu / Osoba zatwierdzająca</strong>
+    </div>
+  </div>
+</div>
+
+<h3>4.2. Kluczowa zasada: wersjonowanie wskaźników</h3>
+
+<p>Wpis emisyjny <strong>zawsze przechowuje snapshot</strong> wskaźnika użytego w momencie kalkulacji. Dzięki temu:</p>
+<ul>
+  <li>Aktualizacja wskaźnika przez KOBIZE (co rok) <strong>nie zmienia</strong> historycznych obliczeń</li>
+  <li>Każdy wpis jest odtwarzalny i audytowalny</li>
+  <li>Można zidentyfikować, którą wersją wskaźnika posłużono się dla danego okresu</li>
+</ul>
+
+<h3>4.3. Diagram przepływu danych</h3>
+
+<div class="diagram-box" style="text-align: center; padding: 20px 0;">
+  <div class="flow-row" style="justify-content: center; margin-bottom: 6px;">
+    <span class="flow-node src">KSeF XML</span>
+    <span class="flow-node src">WF-MAG CSV</span>
+    <span class="flow-node src">Ręczne wpisy</span>
+    <span class="flow-node src">KOBIZE XML</span>
+  </div>
+  <div style="font-size: 24px; color: #999; margin: 8px 0; text-align: center;">▼ ▼ ▼</div>
+  <div class="flow-row" style="justify-content: center; margin-bottom: 6px;">
+    <span class="flow-node fact" style="font-size: 15px; padding: 10px 20px;">FAKTURA</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-node mid" style="font-size: 15px; padding: 10px 20px;">WPISY EMISYJNE</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-node dest" style="font-size: 15px; padding: 10px 20px;">RAPORT<br>PDF / XLSX / CSV</span>
+  </div>
+  <div style="margin-top: 6px;">
+    <span class="flow-node mid" style="display: inline-block; margin: 4px;">WSPÓŁCZYNNIKI EMISJI<br><small>(KOBIZE / GHG / własne)</small></span>
+  </div>
+  <div style="margin-top: 8px; font-weight: 700; font-size: 14px; color: var(--accent);">
+    CO₂e [kg] = ilość × wskaźnik
+  </div>
+</div>
+
+<!-- ========== 5. ZAKŁADKI ========== -->
+<div class="page-break"></div>
+<h2>5. Zakładki aplikacji — szczegółowy opis</h2>
+
+<p>Aplikacja składa się z <strong>6 zakładek</strong> dostępnych z bocznego menu.</p>
+
+<!-- 5.1 Dashboard -->
+<h3>5.1. Dashboard</h3>
+<p><strong>Funkcja:</strong> Strona główna po zalogowaniu. Szybki podgląd kluczowych wskaźników emisyjności.</p>
+
+<table>
+  <thead><tr><th>Widżet</th><th>Treść</th></tr></thead>
+  <tbody>
+    <tr><td><strong>KPI: Całkowite CO₂e</strong></td><td>Suma emisji w tonach CO₂e za bieżący rok (Scope 1 + 2)</td></tr>
+    <tr><td><strong>KPI: Scope 1</strong></td><td>Emisje bezpośrednie [t CO₂e] — paliwa stacjonarne + pojazdy</td></tr>
+    <tr><td><strong>KPI: Scope 2</strong></td><td>Emisje pośrednie [t CO₂e] — energia elektryczna + cieplna + chłodnicza</td></tr>
+    <tr><td><strong>KPI: Zmiana %</strong></td><td>Porównanie bieżącego roku do poprzedniego (YoY) — ▲/▼ strzałka</td></tr>
+    <tr><td><strong>Wykres słupkowy</strong></td><td>Emisje miesięczne (stacked: Scope 1 vs 2) za ostatnie 12 miesięcy</td></tr>
+    <tr><td><strong>Top 5 źródeł</strong></td><td>Tabela: nazwa źródła → CO₂e [t] → % udziału w całkowitej emisji</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Filtry:</strong> zakres dat (domyślnie: bieżący rok), Scope 1 / 2 / Oba.</p>
+
+<!-- 5.2 Źródła emisji -->
+<h3>5.2. Źródła emisji</h3>
+<p><strong>Funkcja:</strong> Zarządzanie katalogiem instalacji, pojazdów i punktów poboru energii. Każde źródło ma przypisany domyślny wskaźnik emisji.</p>
+
+<h4>Typy źródeł</h4>
+<table>
+  <thead><tr><th>Typ</th><th>Zakres</th><th>Przykłady</th><th>Jednostki</th></tr></thead>
+  <tbody>
+    <tr><td>Instalacja stacjonarna</td><td><span class="badge badge-scope1">Scope 1</span></td><td>Kocioł gazowy, piec olejowy, agregat</td><td>litr, m³, kg, tona</td></tr>
+    <tr><td>Pojazd firmowy</td><td><span class="badge badge-scope1">Scope 1</span></td><td>Samochód dostawczy, wózek widłowy</td><td>litr, kg</td></tr>
+    <tr><td>Energia elektryczna</td><td><span class="badge badge-scope2">Scope 2</span></td><td>Licznik główny, licznik hali A</td><td>kWh, MWh</td></tr>
+    <tr><td>Energia cieplna</td><td><span class="badge badge-scope2">Scope 2</span></td><td>Ciepło sieciowe, kocioł wspólnotowy</td><td>GJ, kWh</td></tr>
+    <tr><td>Energia chłodnicza</td><td><span class="badge badge-scope2">Scope 2</span></td><td>Klimatyzacja centralna</td><td>kWh</td></tr>
+  </tbody>
+</table>
+
+<h4>Akcje</h4>
+<table>
+  <thead><tr><th>Akcja</th><th>Dostęp</th><th>Opis</th></tr></thead>
+  <tbody>
+    <tr><td>Dodaj źródło</td><td>Manager</td><td>Formularz: nazwa, typ, wskaźnik (select), jednostka, dodatkowe info</td></tr>
+    <tr><td>Edytuj źródło</td><td>Manager</td><td>Zmiana nazwy, typu, wskaźnika, dezaktywacja</td></tr>
+    <tr><td>Dezaktywuj</td><td>Manager</td><td>Znika z list wyboru, historyczne wpisy pozostają</td></tr>
+  </tbody>
+</table>
+
+<!-- 5.3 Współczynniki -->
+<h3>5.3. Współczynniki emisji</h3>
+<p><strong>Funkcja:</strong> Centralny katalog wskaźników emisyjnych. Wskaźniki są wersjonowane datami obowiązywania.</p>
+
+<h4>Akcje</h4>
+<table>
+  <thead><tr><th>Akcja</th><th>Dostęp</th><th>Opis</th></tr></thead>
+  <tbody>
+    <tr><td>Dodaj ręcznie</td><td>Manager</td><td>Nazwa, kategoria, wartość, jednostka, źródło (KOBIZE/GHG/Własny), zakres, data obowiązywania</td></tr>
+    <tr><td>Import z KOBIZE XML</td><td>Manager</td><td>Upload XML → system parsuje, tworzy nowe wersje z datą publikacji</td></tr>
+    <tr><td>Edytuj</td><td>Manager</td><td>Zmiana wartości, dat, nazwy</td></tr>
+    <tr><td>Historia wersji</td><td>Manager</td><td>Modal: wszystkie wersje danego wskaźnika z datami i wartościami</td></tr>
+  </tbody>
+</table>
+
+<h4>Mechanizm wersjonowania — przykład</h4>
+<ol>
+  <li>Manager dodaje wskaźnik "Energia elektr. PL" — <strong>0,685</strong> kg CO₂e/kWh, ważny 01.01.2025–31.12.2025</li>
+  <li>KOBIZE publikuje nowe wskaźniki (grudzień 2025) — Manager importuje XML</li>
+  <li>System tworzy <strong>nową wersję</strong>: <strong>0,642</strong> kg CO₂e/kWh, ważny od 01.01.2026</li>
+  <li>Wpisy z 2025 roku <strong>zachowują</strong> wartość 0,685</li>
+  <li>Nowe wpisy z 2026 roku automatycznie otrzymują 0,642</li>
+</ol>
+
+<h4>Seed danych (fabryczne zasilenie)</h4>
+<table>
+  <thead><tr><th>Kategoria</th><th>Wskaźnik</th><th>Wartość</th><th>Jednostka</th><th>Źródło</th></tr></thead>
+  <tbody>
+    <tr><td>Energia elektr.</td><td>Energia elektr. PL (KOBIZE 2024)</td><td>0,685</td><td>kg CO₂e/kWh</td><td>KOBIZE</td></tr>
+    <tr><td>Paliwa ciekłe</td><td>Olej napędowy</td><td>2,62</td><td>kg CO₂e/litr</td><td>GHG Protocol</td></tr>
+    <tr><td>Paliwa ciekłe</td><td>Benzyna silnikowa</td><td>2,30</td><td>kg CO₂e/litr</td><td>GHG Protocol</td></tr>
+    <tr><td>Paliwa ciekłe</td><td>LPG</td><td>1,66</td><td>kg CO₂e/litr</td><td>GHG Protocol</td></tr>
+    <tr><td>Paliwa gazowe</td><td>Gaz ziemny</td><td>1,99</td><td>kg CO₂e/m³</td><td>GHG Protocol</td></tr>
+    <tr><td>Paliwa stałe</td><td>Węgiel kamienny energetyczny</td><td>2,45</td><td>kg CO₂e/kg</td><td>GHG Protocol</td></tr>
+    <tr><td>Ciepło</td><td>Ciepło sieciowe (PL)</td><td>0,38</td><td>kg CO₂e/kWh</td><td>GHG Protocol</td></tr>
+  </tbody>
+</table>
+
+<!-- 5.4 Faktury -->
+<div class="page-break"></div>
+<h3>5.4. Faktury i wpisy</h3>
+<p><strong>Funkcja:</strong> Główne narzędzie wprowadzania danych emisyjnych. Trzy ścieżki: ręczne dodawanie, import plików (XML/CSV/XLSX), import faktur KSeF. <strong>Jedna faktura może generować wiele wpisów emisyjnych.</strong></p>
+
+<h4>Flow importu plików</h4>
+<table>
+  <thead><tr><th style="width: 30px;">Krok</th><th>Opis</th></tr></thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center; font-weight: 700;">1</td>
+      <td>
+        <strong>Upload pliku</strong><br>
+        <span style="color: var(--muted);">CSV/XLSX → kreator mapowania kolumn | XML (KSeF/KOBIZE) → automatyczne parsowanie wg schematu FA(3)</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center; font-weight: 700;">2</td>
+      <td>
+        <strong>Walidacja (dry run)</strong><br>
+        <span style="color: var(--muted);">Sprawdzenie typów, kompletności, zgodności jednostek, istnienia źródeł w systemie. Raport błędów z listą wierszy.</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center; font-weight: 700;">3</td>
+      <td>
+        <strong>Podgląd przed importem</strong><br>
+        <span style="color: var(--muted);">Tabela z przeliczonym CO₂e. Możliwość ręcznej korekty pojedynczych wierszy lub odrzucenia pliku.</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center; font-weight: 700;">4</td>
+      <td>
+        <strong>Zapis do bazy</strong><br>
+        <span style="color: var(--muted);">Poprawne wiersze → status "Szkic" (lub "Zweryfikowany" dla Managera). Błędne wiersze → pominięte, raport do pobrania.</span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Import XML z KSeF (FA(3))</h4>
+<ul>
+  <li>System parsuje strukturę FA(3) obowiązującą od 01.02.2026</li>
+  <li>Wyodrębnia pozycje faktury (nazwa towaru/usługi, ilość, jednostka, cena)</li>
+  <li>Automatycznie próbuje przypisać pozycje do źródeł emisji na podstawie słownika</li>
+  <li>Manager może ręcznie skorygować przypisania przed zatwierdzeniem</li>
+</ul>
+
+<h4>Zarządzanie wpisami</h4>
+<table>
+  <thead><tr><th>Akcja</th><th>Manager</th><th>Pracownik</th></tr></thead>
+  <tbody>
+    <tr><td>Edycja wpisu</td><td>Wszystkie wpisy</td><td>Tylko własne w statusie "Szkic"</td></tr>
+    <tr><td>Szkic → Zweryfikowany</td><td>✔</td><td>✘</td></tr>
+    <tr><td>Zweryfikowany → Skorygowany</td><td>✔</td><td>✘</td></tr>
+    <tr><td>Usunięcie wpisu</td><td>✔</td><td>✘</td></tr>
+  </tbody>
+</table>
+
+<h4>Dziennik zmian (Audit Trail)</h4>
+<p>Każda zmiana wpisu jest logowana: kto, kiedy, co zmienił (stara → nowa wartość), adres IP.</p>
+
+<!-- 5.5 Raporty -->
+<h3>5.5. Raporty</h3>
+<p><strong>Funkcja:</strong> Generowanie raportów okresowych w formatach PDF, XLSX i CSV.</p>
+
+<h4>Parametry raportu</h4>
+<table>
+  <thead><tr><th>Parametr</th><th>Opcje</th></tr></thead>
+  <tbody>
+    <tr><td>Typ raportu</td><td>Miesięczny / Kwartalny / Roczny / Niestandardowy</td></tr>
+    <tr><td>Okres</td><td>Od–do (dla miesięcznego: wybór miesiąca i roku)</td></tr>
+    <tr><td>Zakres</td><td>Scope 1 / Scope 2 / Oba</td></tr>
+    <tr><td>Format</td><td>PDF / XLSX / CSV</td></tr>
+    <tr><td>Grupowanie</td><td>Wg źródła / wg miesiąca / wg zakresu</td></tr>
+  </tbody>
+</table>
+
+<h4>Zawartość raportu PDF</h4>
+<ol>
+  <li><strong>Strona tytułowa:</strong> nazwa firmy, tytuł, okres, data wygenerowania, osoba generująca</li>
+  <li><strong>Podsumowanie:</strong> Scope 1 [t CO₂e], Scope 2 [t CO₂e], Razem, zmiana % vs poprzedni okres</li>
+  <li><strong>Tabela szczegółowa:</strong> źródło → ilość → jednostka → wskaźnik → CO₂e [kg] → CO₂e [t], podział Scope 1/2, sumy częściowe</li>
+  <li><strong>Wykres kołowy:</strong> udział % Scope 1 vs Scope 2</li>
+  <li><strong>Metodologia:</strong> zastosowane wskaźniki (KOBIZE, GHG), metoda location-based dla Scope 2</li>
+  <li><strong>Stopka:</strong> numer strony, data, "Wygenerowano automatycznie"</li>
+</ol>
+
+<!-- 5.6 Admin -->
+<h3>5.6. Administracja</h3>
+<p><strong>Funkcja:</strong> Zarządzanie użytkownikami i dziennik audytu. <strong>Dostępne tylko dla Managera.</strong></p>
+
+<h4>Proces zapraszania pracownika</h4>
+<ol>
+  <li>Manager klika <strong>"Zaproś pracownika"</strong> → wpisuje e-mail</li>
+  <li>System generuje unikalny token (JWT, ważny 48h) i wysyła e-mail</li>
+  <li>Pracownik klika link → formularz: imię, nazwisko, hasło (min. 8 znaków, 1 wielka litera, 1 cyfra)</li>
+  <li>Konto aktywowane → pracownik może się zalogować</li>
+</ol>
+
+<h4>Dziennik audytu</h4>
+<p>Tabela tylko do odczytu: data, użytkownik, akcja (CREATE/UPDATE/DELETE/LOGIN), encja, ID, szczegóły zmiany. Filtry: data, użytkownik, typ akcji. Eksport do CSV.</p>
+
+<!-- ========== 6. SCENARIUSZE ========== -->
+<div class="page-break"></div>
+<h2>6. Przepływy danych — scenariusze</h2>
+
+<div class="phase-card">
+  <h4>Scenariusz A: Ręczne dodanie zużycia paliwa (Scope 1)</h4>
+  <table>
+    <thead><tr><th style="width: 30px;">#</th><th>Akcja</th></tr></thead>
+    <tbody>
+      <tr><td style="text-align: center;">1</td><td>Pracownik loguje się, wchodzi w "Faktury i wpisy" → "Dodaj ręcznie"</td></tr>
+      <tr><td style="text-align: center;">2</td><td>Wypełnia dane nagłówkowe (data, notatka "Tankowanie – listopad 2026")</td></tr>
+      <tr><td style="text-align: center;">3</td><td>Dodaje pozycję: źródło "VW Transporter WZ 12345" → auto-wybór wskaźnika ON 2,62 → ilość 120L → <strong>314,4 kg CO₂e</strong></td></tr>
+      <tr><td style="text-align: center;">4</td><td>Zapisuje jako "Szkic"</td></tr>
+      <tr><td style="text-align: center;">5</td><td>Manager weryfikuje → zmienia status na "Zweryfikowany"</td></tr>
+      <tr><td style="text-align: center;">6</td><td>Wpis widoczny na Dashboardzie i w Raportach</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="phase-card">
+  <h4>Scenariusz B: Import faktury z KSeF XML (Scope 1 + 2)</h4>
+  <table>
+    <thead><tr><th style="width: 30px;">#</th><th>Akcja</th></tr></thead>
+    <tbody>
+      <tr><td style="text-align: center;">1</td><td>Manager pobiera XML z KSeF → "Importuj plik" w aplikacji</td></tr>
+      <tr><td style="text-align: center;">2</td><td>System rozpoznaje format FA(3), parsuje numer faktury, datę, pozycje</td></tr>
+      <tr><td style="text-align: center;">3</td><td>Auto-mapowanie: "Olej napędowy 500L" → źródło "Zbiornik ON – hala A", "Energia elektr. 2000 kWh" → "Licznik główny"</td></tr>
+      <tr><td style="text-align: center;">4</td><td>Manager koryguje przypisanie energii na "Licznik hala B" (ręczna poprawka)</td></tr>
+      <tr><td style="text-align: center;">5</td><td>Zatwierdza → 1 faktura, 2 wpisy emisyjne (Zweryfikowane)</td></tr>
+      <tr><td style="text-align: center;">6</td><td>Dane na Dashboardzie</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="phase-card">
+  <h4>Scenariusz C: Aktualizacja wskaźników z KOBIZE XML</h4>
+  <table>
+    <thead><tr><th style="width: 30px;">#</th><th>Akcja</th></tr></thead>
+    <tbody>
+      <tr><td style="text-align: center;">1</td><td>KOBIZE publikuje nowe wskaźniki (grudzień 2026) → Manager pobiera XML</td></tr>
+      <tr><td style="text-align: center;">2</td><td>"Współczynniki emisji" → "Import z KOBIZE" → upload XML</td></tr>
+      <tr><td style="text-align: center;">3</td><td>System parsuje: "Energia elektr. PL" → nowa wartość 0,642, validFrom 01.01.2027</td></tr>
+      <tr><td style="text-align: center;">4</td><td>Podgląd: stara 0,685 → nowa 0,642. Manager zatwierdza</td></tr>
+      <tr><td style="text-align: center;">5</td><td>Wpisy od 01.01.2027 używają 0,642. Historyczne z 2026 zachowują 0,685</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="phase-card">
+  <h4>Scenariusz D: Import danych z WF-MAG (Scope 1)</h4>
+  <table>
+    <thead><tr><th style="width: 30px;">#</th><th>Akcja</th></tr></thead>
+    <tbody>
+      <tr><td style="text-align: center;">1</td><td>Pracownik eksportuje dane z WF-MAG do CSV → "Importuj plik"</td></tr>
+      <tr><td style="text-align: center;">2</td><td>Kreator mapowania: kolumna A→Data, B→Pojazd, C→Paliwo, D→Ilość L</td></tr>
+      <tr><td style="text-align: center;">3</td><td>Zapisuje szablon jako "WF-MAG standard" (do ponownego użycia)</td></tr>
+      <tr><td style="text-align: center;">4</td><td>Dry run → 0 błędów → Import → wpisy "Szkic"</td></tr>
+      <tr><td style="text-align: center;">5</td><td>Manager weryfikuje i zatwierdza</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ========== 7. HARMONOGRAM ========== -->
+<div class="page-break"></div>
+<h2>7. Harmonogram MVP</h2>
+<p><strong>Deadline:</strong> 03.11.2026 &nbsp;|&nbsp; <strong>Dostępny czas:</strong> ~20 tygodni &nbsp;|&nbsp; <strong>Zespół:</strong> 1 deweloper full-stack</p>
+
+<div class="phase-card">
+  <h4>Faza 1 — Fundament</h4>
+  <div class="phase-meta">do 18.07.2026 · 2 tygodnie</div>
+  <ul>
+    <li>Inicjalizacja projektu (Next.js 15 + TypeScript + Tailwind CSS 4 + shadcn/ui)</li>
+    <li>Konfiguracja PostgreSQL (Neon DB) + Prisma ORM + migracje</li>
+    <li>Schemat bazy: User, EmissionSource, EmissionFactor, EmissionEntry, Invoice, AuditLog</li>
+    <li>System autoryzacji (NextAuth.js v5): logowanie, rejestracja, JWT, middleware</li>
+    <li>Layout aplikacji: sidebar, design system shadcn/ui</li>
+    <li>Seed danych: 7 predefiniowanych wskaźników KOBIZE + GHG Protocol</li>
+  </ul>
+</div>
+
+<div class="phase-card">
+  <h4>Faza 2 — Scope 1 i 2 (Core)</h4>
+  <div class="phase-meta">do 23.08.2026 · 5 tygodni</div>
+  <ul>
+    <li>Źródła emisji — CRUD, lista z filtrami, przypisywanie wskaźników</li>
+    <li>Współczynniki emisji — lista, dodawanie ręczne, edycja, wersjonowanie</li>
+    <li>Import XML z KOBIZE — parser + logika wersji</li>
+    <li>Faktury i wpisy — formularz ręcznego dodawania, auto-przeliczanie CO₂e</li>
+    <li>Import CSV/XLSX — kreator mapowania kolumn</li>
+    <li>Import XML KSeF — parser FA(3), auto-mapowanie na źródła</li>
+    <li>Statusy wpisów (Szkic/Zweryfikowany/Skorygowany), edycja, walidacje Zod</li>
+    <li>Mechanizm wersjonowania wskaźników + snapshot w EmissionEntry</li>
+    <li>Dziennik audytu — automatyczne logowanie CRUD</li>
+  </ul>
+</div>
+
+<div class="phase-card">
+  <h4>Faza 3 — Dashboard i Raporty</h4>
+  <div class="phase-meta">do 20.09.2026 · 4 tygodnie</div>
+  <ul>
+    <li>Dashboard — KPI cards, wykres słupkowy (Recharts), Top 5 źródeł</li>
+    <li>Silnik generowania PDF — wykresy, tabele, stopka metodologiczna</li>
+    <li>Szablon PDF zgodny z ESRS E1</li>
+    <li>Generowanie XLSX i CSV, archiwum raportów</li>
+    <li>Administracja — lista użytkowników, zapraszanie e-mailem, dezaktywacja</li>
+    <li>Dziennik audytu — widok, filtrowanie, eksport CSV</li>
+  </ul>
+</div>
+
+<div class="phase-card">
+  <h4>Faza 4 — Integracje i finalizacja</h4>
+  <div class="phase-meta">do 18.10.2026 · 4 tygodnie</div>
+  <ul>
+    <li>Import WF-MAG — dedykowany szablon (po otrzymaniu przykładowego pliku)</li>
+    <li>Obsługa XML dla faktur własnych (poza KSeF)</li>
+    <li>Powiadomienia e-mail: zaproszenie pracownika, reset hasła</li>
+    <li>Testy integracyjne (end-to-end scenariusze A–D)</li>
+    <li>Dokumentacja techniczna (README, schemat bazy, instrukcja wdrożenia)</li>
+    <li>Dokumentacja użytkowa w j. polskim (podręcznik Managera + Pracownika)</li>
+  </ul>
+</div>
+
+<div class="phase-card">
+  <h4>Faza 5 — Wdrożenie i UAT</h4>
+  <div class="phase-meta">do 03.11.2026 · 2 tygodnie</div>
+  <ul>
+    <li>Wdrożenie produkcyjne na Vercel + Neon DB</li>
+    <li>Konfiguracja domeny, SSL, zmienne środowiskowe</li>
+    <li>Testy akceptacyjne (UAT) z GO GLOBAL GROUP</li>
+    <li>Poprawki po UAT</li>
+    <li>Szkolenie (sesja online ~2h)</li>
+    <li>Przekazanie kodu źródłowego (repozytorium Git)</li>
+  </ul>
+</div>
+
+<h3>Kamienie milowe</h3>
+<table>
+  <thead><tr><th>Data</th><th>Kamień milowy</th><th>Co jest gotowe</th></tr></thead>
+  <tbody>
+    <tr><td>18.07</td><td>Fundament</td><td>Logowanie, layout, seed wskaźników</td></tr>
+    <tr><td>23.08</td><td>Core v1</td><td>Wszystkie zakładki Scope 1 i 2 (bez raportów PDF)</td></tr>
+    <tr><td>20.09</td><td>Raporty i Admin</td><td>Dashboard, raporty PDF/XLSX/CSV, administracja</td></tr>
+    <tr><td>18.10</td><td>Feature complete</td><td>Wszystkie funkcje, dokumentacja, testy</td></tr>
+    <tr><td style="font-weight: 700; color: var(--accent);">03.11</td><td style="font-weight: 700; color: var(--accent);">PRODUKCJA</td><td>Wdrożone, przeszkolone, odebrane</td></tr>
+  </tbody>
+</table>
+
+<!-- ========== 8. TECH ========== -->
+<div class="page-break"></div>
+<h2>8. Podsumowanie techniczne</h2>
+
+<h3>Stack technologiczny</h3>
+<table>
+  <thead><tr><th>Warstwa</th><th>Technologia</th></tr></thead>
+  <tbody>
+    <tr><td>Frontend</td><td>Next.js 15 (App Router) + React 19 + TypeScript</td></tr>
+    <tr><td>Stylizacja</td><td>Tailwind CSS 4 + shadcn/ui (Radix UI)</td></tr>
+    <tr><td>Backend API</td><td>Next.js Server Actions + API Routes</td></tr>
+    <tr><td>Baza danych</td><td>PostgreSQL (Neon DB) + Prisma ORM</td></tr>
+    <tr><td>Walidacja</td><td>Zod (serwer + klient)</td></tr>
+    <tr><td>Autoryzacja</td><td>NextAuth.js v5 (Auth.js) — credentials + JWT</td></tr>
+    <tr><td>Import plików</td><td>SheetJS (XLSX) + PapaParse (CSV) + fast-xml-parser (XML)</td></tr>
+    <tr><td>Generowanie PDF</td><td>jsPDF + jspdf-autotable</td></tr>
+    <tr><td>Wykresy</td><td>Recharts</td></tr>
+    <tr><td>E-mail</td><td>Resend / Nodemailer</td></tr>
+    <tr><td>Deployment</td><td>Vercel + GitHub CI/CD</td></tr>
+    <tr><td>Monitoring</td><td>Vercel Analytics + Neon DB monitoring</td></tr>
+  </tbody>
+</table>
+
+<h3>Architektura — modularny monolit</h3>
+<table>
+  <thead><tr><th>Katalog</th><th>Zawartość</th></tr></thead>
+  <tbody>
+    <tr><td><code>app/(auth)/</code></td><td>Strony logowania i rejestracji</td></tr>
+    <tr><td><code>app/(dashboard)/</code></td><td>Chronione strony: dashboard, sources, factors, invoices, reports, admin</td></tr>
+    <tr><td><code>components/</code></td><td>ui, forms, charts</td></tr>
+    <tr><td><code>lib/</code></td><td>Logika biznesowa, Prisma client, utils</td></tr>
+    <tr><td><code>server/</code></td><td>Server Actions, API routes</td></tr>
+    <tr><td><code>schemas/</code></td><td>Schematy Zod</td></tr>
+    <tr><td><code>prisma/</code></td><td>Schema bazy danych, migracje, seed</td></tr>
+  </tbody>
+</table>
+
+<h3>Bezpieczeństwo</h3>
+<ul>
+  <li>Hasła hashowane bcrypt (NextAuth.js credentials provider)</li>
+  <li>Sesje JWT z rotacją tokenów</li>
+  <li>Middleware Next.js blokujące dostęp do routów na podstawie roli</li>
+  <li>Walidacja Zod na wszystkich danych wejściowych (formularze + API)</li>
+  <li>HTTPS wymuszany na Vercel</li>
+  <li>Automatyczne backupy Neon DB (point-in-time recovery)</li>
+  <li>Dziennik audytu wszystkich operacji CRUD</li>
+</ul>
+
+<h3>Dokumenty źródłowe</h3>
+<ul>
+  <li>Brief techniczny GO GLOBAL GROUP z 07.05.2026</li>
+  <li>Załącznik nr 1 do OPZ — Opis Przedmiotu Zamówienia</li>
+  <li>GHG Protocol — Corporate Accounting and Reporting Standard</li>
+  <li>KOBIZE — Wskaźniki emisyjności dla energii elektrycznej (publikacja grudzień 2025)</li>
+  <li>CSRD / ESRS E1 — Delegated Regulation (EU) 2023/2772</li>
+</ul>
+
+<p style="margin-top: 40px; padding-top: 20px; border-top: 2px solid var(--border); color: var(--muted); font-size: 13px;">
+  <em>Dokument przygotowany na podstawie analizy wymagań, odpowiedzi Zamawiającego na pytania uzupełniające oraz konsultacji technicznej.</em>
+</p>
+
+</body>
+</html>
