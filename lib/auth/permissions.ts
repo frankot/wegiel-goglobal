@@ -1,4 +1,4 @@
-import { UserRole } from "@/lib/generated/prisma";
+import { UserRole } from "@/lib/generated/prisma/client";
 
 export function canManage(user: { role: UserRole }): boolean {
   return user.role === "MANAGER";
