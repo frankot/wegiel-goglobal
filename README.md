@@ -30,6 +30,8 @@ Aplikacja do obliczania, monitorowania i raportowania śladu węglowego przedsi�
 
 - [Opis systemu (wymagania funkcjonalne)](plan/opis-systemu-slad-weglowy.md)
 - [Specyfikacja implementacyjna](plan/spec-implementacyjna.md)
+- [Brief techniczny GO GLOBAL GROUP](plan/Brief_techniczny_GO_GLOBAL_GROUP%20(1).docx)
+- [Załącznik nr 1 — Opis Przedmiotu Zamówienia](plan/Zalacznik_nr_1_OPZ_GO_GLOBAL_GROUP_system-IT.docx)
 
 ## Stack technologiczny
 
