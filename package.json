@@ -11,8 +11,10 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:seed": "npx tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "test": "node --import tsx --test \"lib/**/*.test.ts\"",
+    "test:watch": "node --import tsx --test --watch \"lib/**/*.test.ts\""
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -51,6 +53,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

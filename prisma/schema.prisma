@@ -49,20 +49,26 @@ model User {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-  authoredEntries EmissionEntry[] @relation("Author")
-  verifiedEntries EmissionEntry[] @relation("Verifier")
+  authoredEntries  EmissionEntry[] @relation("Author")
+  verifiedEntries  EmissionEntry[] @relation("Verifier")
+  uploadedInvoices Invoice[]       @relation("Uploader")
 }
 
 model EmissionSource {
-  id                 String       @id @default(cuid())
-  name               String       @unique
+  id                 String        @id @default(cuid())
+  name               String        @unique
   type               SourceType
   scope              EmissionScope
   defaultFactorId    String?
   unit               String
-  active             Boolean      @default(true)
+  active             Boolean       @default(true)
   registrationNumber String?
   location           String?
+
+  // Klucze automatycznego dopasowania pozycji faktury do źródła (kaskada §5.4)
+  ppeNumber   String? @unique // punkt poboru energii — klucz #1
+  meterNumber String? // numer licznika — klucz #2
+  supplierNip String? // NIP dostawcy — klucz #3
 
   defaultFactor EmissionFactor? @relation(fields: [defaultFactorId], references: [id])
   entries       EmissionEntry[]
@@ -72,10 +78,10 @@ model EmissionSource {
 }
 
 model EmissionFactor {
-  id        String       @id @default(cuid())
+  id        String        @id @default(cuid())
   name      String
   category  String
-  value     Decimal      @db.Decimal(12, 6)
+  value     Decimal       @db.Decimal(12, 6)
   unit      String
   source    FactorSource
   scope     EmissionScope
@@ -98,18 +104,48 @@ model Invoice {
   invoiceNumber String?
   issueDate     DateTime?
   receiptDate   DateTime?
-  source        String    @default("MANUAL")
+  periodStart   DateTime?
+  periodEnd     DateTime?
+  sourceFormat  String    @default("MANUAL") // KSEF_XML | MANUAL
   importStatus  String    @default("PENDING")
-  sourceFileUrl String?
 
-  entries EmissionEntry[]
+  // Tożsamość faktury — podstawa deduplikacji (§4.3)
+  ksefNumber   String? @unique
+  supplierNip  String?
+  supplierName String?
+  buyerNip     String?
+
+  rawPayload Json? // surowy wynik parsera — audyt i ponowna interpretacja
+
+  uploadedById String?
+  uploadedBy   User?   @relation("Uploader", fields: [uploadedById], references: [id])
+
+  entries     EmissionEntry[]
+  attachments InvoiceAttachment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([supplierNip, invoiceNumber])
+}
+
+model InvoiceAttachment {
+  id        String  @id @default(cuid())
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  kind     String // SOURCE_XML | EVIDENCE_PDF
+  fileName String
+  mimeType String
+  blobUrl  String
+
+  createdAt DateTime @default(now())
+
+  @@index([invoiceId])
 }
 
 model EmissionEntry {
-  id        String @id @default(cuid())
+  id String @id @default(cuid())
 
   sourceId String
   source   EmissionSource @relation(fields: [sourceId], references: [id])
@@ -123,14 +159,20 @@ model EmissionEntry {
   entryDate   DateTime
   periodStart DateTime?
   periodEnd   DateTime?
-  quantity    Decimal    @db.Decimal(12, 4)
+  quantity    Decimal   @db.Decimal(12, 4) // ilość w jednostce mianownika wskaźnika
   unit        String
+
+  // Ilość tak, jak widnieje na dokumencie (np. 2,852 MWh) — przed konwersją jednostek
+  originalQuantity Decimal? @db.Decimal(14, 4)
+  originalUnit     String?
 
   factorSnapshotValue Decimal @db.Decimal(12, 6)
   factorSnapshotUnit  String
 
   co2eKg  Decimal @db.Decimal(12, 4)
-  co2eTon Decimal @db.Decimal(12, 4)
+  // Decimal(16,6), nie (12,4): 1577,156 kg to 1,577156 t — przy (12,4) zapisałoby się
+  // jako 1,5772 i suma roczna przestałaby się zgadzać z sumą kilogramów.
+  co2eTon Decimal @db.Decimal(16, 6)
 
   status EntryStatus @default(DRAFT)
   note   String?
@@ -139,14 +181,14 @@ model EmissionEntry {
   author   User   @relation("Author", fields: [authorId], references: [id])
 
   verifierId String?
-  verifier   User? @relation("Verifier", fields: [verifierId], references: [id])
+  verifier   User?   @relation("Verifier", fields: [verifierId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model AuditLog {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   userId    String?
   userName  String?
   action    String
