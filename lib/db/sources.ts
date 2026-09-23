@@ -17,6 +17,50 @@ export interface SourceDTO {
   registrationNumber: string | null;
 }
 
+/** Wiersz listy /sources — z nazwą wskaźnika i licznikami użycia. */
+export interface SourceRow extends SourceDTO {
+  defaultFactorName: string | null;
+  defaultFactorUnit: string | null;
+  entryCount: number;
+  draftCount: number;
+}
+
+export async function listSourceRows(): Promise<SourceRow[]> {
+  const rows = await prisma.emissionSource.findMany({
+    include: {
+      defaultFactor: { select: { name: true, unit: true } },
+      _count: { select: { entries: true } },
+    },
+    orderBy: [{ active: "desc" }, { name: "asc" }],
+  });
+
+  const drafts = await prisma.emissionEntry.groupBy({
+    by: ["sourceId"],
+    where: { status: "DRAFT" },
+    _count: { _all: true },
+  });
+  const draftBySource = new Map(drafts.map((d) => [d.sourceId, d._count._all]));
+
+  return rows.map((s) => ({
+    id: s.id,
+    name: s.name,
+    type: s.type as SourceDTO["type"],
+    scope: s.scope as SourceDTO["scope"],
+    unit: s.unit,
+    active: s.active,
+    ppeNumber: s.ppeNumber,
+    meterNumber: s.meterNumber,
+    supplierNip: s.supplierNip,
+    defaultFactorId: s.defaultFactorId,
+    location: s.location,
+    registrationNumber: s.registrationNumber,
+    defaultFactorName: s.defaultFactor?.name ?? null,
+    defaultFactorUnit: s.defaultFactor?.unit ?? null,
+    entryCount: s._count.entries,
+    draftCount: draftBySource.get(s.id) ?? 0,
+  }));
+}
+
 export async function listSources(includeInactive = false): Promise<SourceDTO[]> {
   const rows = await prisma.emissionSource.findMany({
     where: includeInactive ? undefined : { active: true },
