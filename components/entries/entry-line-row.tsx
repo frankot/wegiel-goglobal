@@ -4,13 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select } from "@/components/ui/select";
 import { RotateCcw } from "lucide-react";
 import { MatchHint } from "./status-badge";
 import { formatKg, formatTon, formatFactor } from "@/lib/emissions/format";
@@ -62,8 +56,6 @@ export function EntryLineRow({ line, sources, factors, onChange }: Props) {
   const preview = linePreview(line, factors);
   const issue = lineIssue(line);
 
-  // Base UI: bez `items` <SelectValue> pokazuje surową wartość (czyli cuid),
-  // a nie etykietę wybranej pozycji.
   const sourceItems = sources.map((s) => ({ value: s.id, label: s.name }));
   const factorItems = available.map((f) => ({
     value: f.id,
@@ -132,18 +124,10 @@ export function EntryLineRow({ line, sources, factors, onChange }: Props) {
                 factorId: next?.defaultFactorId ?? line.factorId,
               });
             }}
-          >
-            <SelectTrigger className="w-full" aria-label="Źródło emisji">
-              <SelectValue placeholder="Wybierz źródło…" />
-            </SelectTrigger>
-            <SelectContent>
-              {sourceItems.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            className="w-full"
+            aria-label="Źródło emisji"
+            placeholder="Wybierz źródło…"
+          />
           <MatchHint confidence={line.matchConfidence} reason={line.matchReason} />
 
           {/* Oferta zapamiętania PPE — mechanizm samouczenia (§5.4) */}
@@ -152,7 +136,7 @@ export function EntryLineRow({ line, sources, factors, onChange }: Props) {
               <Checkbox
                 checked={line.rememberPpe}
                 onCheckedChange={(checked) =>
-                  onChange({ rememberPpe: checked === true })
+                  onChange({ rememberPpe: checked })
                 }
               />
               <span>
@@ -170,18 +154,10 @@ export function EntryLineRow({ line, sources, factors, onChange }: Props) {
             items={factorItems}
             value={line.factorId ?? ""}
             onValueChange={(value) => onChange({ factorId: value as string })}
-          >
-            <SelectTrigger className="w-full" aria-label="Wskaźnik emisji">
-              <SelectValue placeholder="Wybierz wskaźnik…" />
-            </SelectTrigger>
-            <SelectContent>
-              {factorItems.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            className="w-full"
+            aria-label="Wskaźnik emisji"
+            placeholder="Wybierz wskaźnik…"
+          />
           {line.factorMessage && (
             <p className="text-xs text-destructive">{line.factorMessage}</p>
           )}

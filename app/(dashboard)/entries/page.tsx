@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/db/users";
 import { listInvoices } from "@/lib/db/invoices";
 import { getEntriesForInvoice } from "@/lib/entries/actions";
 import { InvoiceList } from "@/components/entries/invoice-list";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { formatTon } from "@/lib/emissions/format";
@@ -27,12 +27,10 @@ export default async function EntriesPage() {
               : `${invoices.length} faktur · łącznie ${formatTon(totalTon)} t CO₂e`}
           </p>
         </div>
-        {/* nativeButton={false}: to nawigacja, więc renderujemy <a>, nie <button>.
-            Base UI domyślnie zakłada natywny <button> i bez tego ostrzega. */}
-        <Button render={<Link href="/entries/new" />} nativeButton={false}>
+        <Link href="/entries/new" className={buttonVariants()}>
           <Plus className="h-4 w-4" aria-hidden="true" />
           Dodaj faktury
-        </Button>
+        </Link>
       </div>
 
       <Card className="overflow-x-auto p-0">

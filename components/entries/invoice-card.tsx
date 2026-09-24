@@ -112,14 +112,7 @@ export function InvoiceCard({
       } ${card.removed ? "opacity-50" : ""}`}
     >
       <div className="flex flex-wrap items-center gap-2 px-3 py-2">
-        <CollapsibleTrigger
-          render={
-            <button
-              type="button"
-              className="flex min-w-0 flex-1 items-center gap-2 text-left"
-            />
-          }
-        >
+        <CollapsibleTrigger className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left">
           <ChevronRight
             className={`h-4 w-4 shrink-0 transition-transform ${open ? "rotate-90" : ""}`}
             aria-hidden="true"

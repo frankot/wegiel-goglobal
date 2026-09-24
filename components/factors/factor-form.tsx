@@ -13,13 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select } from "@/components/ui/select";
 import { createFactor, updateFactor, recalculateDrafts } from "@/lib/factors/actions";
 import type { FactorDTO } from "@/lib/db/factors";
 
@@ -31,7 +25,6 @@ interface Props {
 
 const dateOnly = (iso: string) => iso.slice(0, 10);
 
-/** Base UI: bez `items` <SelectValue> pokazałby surowe „GHG_PROTOCOL"/„SCOPE_1". */
 const SOURCE_ITEMS = [
   { value: "KOBIZE", label: "KOBIZE" },
   { value: "GHG_PROTOCOL", label: "GHG Protocol" },
@@ -173,41 +166,11 @@ export function FactorFormDialog({ factor, open, onOpenChange }: Props) {
             </div>
             <div className="space-y-1">
               <Label>Źródło</Label>
-              <Select
-                name="source"
-                items={SOURCE_ITEMS}
-                defaultValue={factor?.source ?? "KOBIZE"}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SOURCE_ITEMS.map((i) => (
-                    <SelectItem key={i.value} value={i.value}>
-                      {i.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Select name="source" items={SOURCE_ITEMS} defaultValue={factor?.source ?? "KOBIZE"} className="w-full" />
             </div>
             <div className="space-y-1">
               <Label>Zakres</Label>
-              <Select
-                name="scope"
-                items={SCOPE_ITEMS}
-                defaultValue={factor?.scope ?? "SCOPE_2"}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SCOPE_ITEMS.map((i) => (
-                    <SelectItem key={i.value} value={i.value}>
-                      {i.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Select name="scope" items={SCOPE_ITEMS} defaultValue={factor?.scope ?? "SCOPE_2"} className="w-full" />
             </div>
           </div>
 

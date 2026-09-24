@@ -13,13 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select } from "@/components/ui/select";
 import { createSource, updateSource } from "@/lib/sources/actions";
 import {
   SOURCE_TYPE_HINTS,
@@ -125,18 +119,8 @@ export function SourceFormDialog({ source, factors, open, onOpenChange }: Props)
                   setUnit(UNITS_BY_TYPE[next][0]!);
                   setFactorId("");
                 }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TYPE_ITEMS.map((i) => (
-                    <SelectItem key={i.value} value={i.value}>
-                      {i.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                className="w-full"
+              />
               <p className="text-xs text-muted-foreground">
                 {SOURCE_TYPE_HINTS[type]}
               </p>
@@ -164,18 +148,8 @@ export function SourceFormDialog({ source, factors, open, onOpenChange }: Props)
                   setUnit(v as string);
                   setFactorId("");
                 }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {unitItems.map((i) => (
-                    <SelectItem key={i.value} value={i.value}>
-                      {i.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                className="w-full"
+              />
             </div>
 
             <div className="space-y-1">
@@ -185,18 +159,9 @@ export function SourceFormDialog({ source, factors, open, onOpenChange }: Props)
                 items={factorItems}
                 value={factorId}
                 onValueChange={(v) => setFactorId(v as string)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Wybierz wskaźnik…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {factorItems.map((i) => (
-                    <SelectItem key={i.value} value={i.value}>
-                      {i.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                className="w-full"
+                placeholder="Wybierz wskaźnik…"
+              />
               {usableFactors.length === 0 && (
                 <p className="text-xs text-destructive">
                   Brak aktywnego wskaźnika dla {scope === "SCOPE_1" ? "Zakresu 1" : "Zakresu 2"}{" "}

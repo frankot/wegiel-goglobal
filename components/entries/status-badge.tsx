@@ -1,67 +1,35 @@
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
+import { StatusDot, type Tone } from "@/components/ui/badge";
 import type { ParsedInvoiceStatus } from "@/lib/import/types";
 
-const CARD_STATUS = {
-  OK: {
-    label: "Gotowa",
-    icon: CheckCircle2,
-    className: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  },
-  NEEDS_ATTENTION: {
-    label: "Wymaga uwagi",
-    icon: AlertTriangle,
-    className: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
-  },
-  ERROR: {
-    label: "Błąd",
-    icon: XCircle,
-    className: "bg-destructive/10 text-destructive",
-  },
-} as const;
+const CARD_STATUS: Record<ParsedInvoiceStatus, { label: string; tone: Tone }> = {
+  OK: { label: "Gotowa", tone: "green" },
+  NEEDS_ATTENTION: { label: "Wymaga uwagi", tone: "yellow" },
+  ERROR: { label: "Błąd", tone: "pink" },
+};
 
 export function CardStatusBadge({ status }: { status: ParsedInvoiceStatus }) {
   const cfg = CARD_STATUS[status];
-  const Icon = cfg.icon;
-  return (
-    <Badge variant="ghost" className={cfg.className}>
-      <Icon aria-hidden="true" />
-      {cfg.label}
-    </Badge>
-  );
+  return <StatusDot tone={cfg.tone}>{cfg.label}</StatusDot>;
 }
 
-const ENTRY_STATUS: Record<string, { label: string; className: string }> = {
-  DRAFT: { label: "Szkic", className: "bg-muted text-muted-foreground" },
-  VERIFIED: {
-    label: "Zweryfikowany",
-    className: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  },
-  CORRECTED: {
-    label: "Skorygowany",
-    className: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
-  },
+const ENTRY_STATUS: Record<string, { label: string; tone: Tone }> = {
+  DRAFT: { label: "Szkic", tone: "grey" },
+  VERIFIED: { label: "Zweryfikowany", tone: "green" },
+  CORRECTED: { label: "Skorygowany", tone: "orange" },
 };
 
 export function EntryStatusBadge({ status }: { status: string }) {
-  const cfg = ENTRY_STATUS[status] ?? {
-    label: status,
-    className: "bg-muted text-muted-foreground",
-  };
-  return (
-    <Badge variant="ghost" className={cfg.className}>
-      {cfg.label}
-    </Badge>
-  );
+  const cfg = ENTRY_STATUS[status] ?? { label: status, tone: "grey" as const };
+  return <StatusDot tone={cfg.tone}>{cfg.label}</StatusDot>;
 }
 
 const CONFIDENCE = {
   EXACT: {
     label: "dopasowano automatycznie",
-    className: "text-emerald-700 dark:text-emerald-400",
+    className: "text-green-ink",
   },
-  LIKELY: { label: "prawdopodobne", className: "text-amber-700 dark:text-amber-400" },
-  GUESS: { label: "zgadywane", className: "text-amber-700 dark:text-amber-400" },
+  LIKELY: { label: "prawdopodobne", className: "text-orange-ink" },
+  GUESS: { label: "zgadywane", className: "text-orange-ink" },
   NONE: { label: "brak dopasowania", className: "text-destructive" },
 } as const;
 

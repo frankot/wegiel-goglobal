@@ -1,14 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import { SIDEBAR_COOKIE } from "./nav";
 
 interface AppLayoutProps {
   children: React.ReactNode;
   userName: string;
   userEmail: string;
   userRole: string;
+  defaultCollapsed: boolean;
 }
 
 export function AppLayout({
@@ -16,25 +21,67 @@ export function AppLayout({
   userName,
   userEmail,
   userRole,
+  defaultCollapsed,
 }: AppLayoutProps) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      // Ciasteczko, a nie localStorage — serwer renderuje od razu właściwą szerokość.
+      document.cookie = `${SIDEBAR_COOKIE}=${next ? "collapsed" : "expanded"}; path=/; max-age=31536000; samesite=lax`;
+      return next;
+    });
+  }, []);
+
+  // „[" zwija panel, jak w edytorach — ale nie wtedy, gdy ktoś pisze w polu.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== "[" || e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t?.closest("input, textarea, select, [contenteditable=true]")) return;
+      e.preventDefault();
+      toggleCollapsed();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [toggleCollapsed]);
+
+  const user = { userName, userEmail, userRole };
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-        userName={userName}
-        userEmail={userEmail}
-        userRole={userRole}
-      />
-      <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="flex h-dvh overflow-hidden bg-canvas">
+      <aside
+        className={cn(
+          "relative z-20 hidden shrink-0 transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:block",
+          collapsed ? "w-[68px]" : "w-64 overflow-hidden",
+        )}
+      >
+        <Sidebar collapsed={collapsed} {...user} />
+      </aside>
+
+      <Drawer open={mobileOpen} onOpenChange={setMobileOpen}>
+        <DrawerContent label="Nawigacja">
+          <Sidebar collapsed={false} onNavigate={() => setMobileOpen(false)} {...user} />
+        </DrawerContent>
+      </Drawer>
+
+      <div className="flex min-w-0 flex-1 flex-col">
         <Topbar
-          userName={userName}
-          userEmail={userEmail}
-          userRole={userRole}
+          collapsed={collapsed}
+          onToggleSidebar={toggleCollapsed}
+          onOpenMobile={() => setMobileOpen(true)}
         />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto">
+          <div
+            key={pathname}
+            className="mx-auto w-full max-w-7xl animate-page-in px-4 pt-2 pb-10 sm:px-6 lg:px-8"
+          >
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );

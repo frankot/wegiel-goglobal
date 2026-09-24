@@ -1,21 +1,47 @@
-"use client"
+"use client";
 
-import { Collapsible as CollapsiblePrimitive } from "@base-ui/react/collapsible"
+import { createContext, useContext, useId } from "react";
 
-function Collapsible({ ...props }: CollapsiblePrimitive.Root.Props) {
-  return <CollapsiblePrimitive.Root data-slot="collapsible" {...props} />
+interface Ctx {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  id: string;
+}
+const CollapsibleContext = createContext<Ctx | null>(null);
+
+function useCollapsible() {
+  const ctx = useContext(CollapsibleContext);
+  if (!ctx) throw new Error("Collapsible* musi być wewnątrz <Collapsible>");
+  return ctx;
 }
 
-function CollapsibleTrigger({ ...props }: CollapsiblePrimitive.Trigger.Props) {
+export function Collapsible({
+  open,
+  onOpenChange,
+  ...props
+}: React.ComponentProps<"div"> & { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const id = useId();
   return (
-    <CollapsiblePrimitive.Trigger data-slot="collapsible-trigger" {...props} />
-  )
+    <CollapsibleContext.Provider value={{ open, onOpenChange, id }}>
+      <div data-open={open || undefined} {...props} />
+    </CollapsibleContext.Provider>
+  );
 }
 
-function CollapsibleContent({ ...props }: CollapsiblePrimitive.Panel.Props) {
+export function CollapsibleTrigger(props: React.ComponentProps<"button">) {
+  const { open, onOpenChange, id } = useCollapsible();
   return (
-    <CollapsiblePrimitive.Panel data-slot="collapsible-content" {...props} />
-  )
+    <button
+      type="button"
+      aria-expanded={open}
+      aria-controls={id}
+      onClick={() => onOpenChange(!open)}
+      {...props}
+    />
+  );
 }
 
-export { Collapsible, CollapsibleTrigger, CollapsibleContent }
+export function CollapsibleContent(props: React.ComponentProps<"div">) {
+  const { open, id } = useCollapsible();
+  return <div id={id} hidden={!open} {...props} />;
+}

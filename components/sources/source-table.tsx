@@ -14,13 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select } from "@/components/ui/select";
 import { Pencil, Plus, Power, KeyRound } from "lucide-react";
 import { SourceFormDialog } from "./source-form";
 import { setSourceActive } from "@/lib/sources/actions";
@@ -77,36 +71,14 @@ export function SourceTable({ sources, factors, canManage }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
-        <Select items={TYPE_FILTER_ITEMS} value={typeFilter} onValueChange={(v) => setTypeFilter(v as string)}>
-          <SelectTrigger aria-label="Filtr typu">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {TYPE_FILTER_ITEMS.map((i) => (
-              <SelectItem key={i.value} value={i.value}>
-                {i.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Select items={TYPE_FILTER_ITEMS} value={typeFilter} onValueChange={setTypeFilter} aria-label="Filtr typu" />
 
-        <Select items={SCOPE_FILTER_ITEMS} value={scopeFilter} onValueChange={(v) => setScopeFilter(v as string)}>
-          <SelectTrigger aria-label="Filtr zakresu">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {SCOPE_FILTER_ITEMS.map((i) => (
-              <SelectItem key={i.value} value={i.value}>
-                {i.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Select items={SCOPE_FILTER_ITEMS} value={scopeFilter} onValueChange={setScopeFilter} aria-label="Filtr zakresu" />
 
         <label className="flex items-center gap-2 text-sm">
           <Checkbox
             checked={showInactive}
-            onCheckedChange={(c) => setShowInactive(c === true)}
+            onCheckedChange={setShowInactive}
           />
           <span>Pokaż nieaktywne</span>
         </label>

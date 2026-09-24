@@ -59,7 +59,7 @@ export function FactorTable({ factors, canManage }: Props) {
       <label className="flex w-fit items-center gap-2 text-sm">
         <Checkbox
           checked={showArchived}
-          onCheckedChange={(c) => setShowArchived(c === true)}
+          onCheckedChange={setShowArchived}
         />
         <span>Pokaż wersje archiwalne</span>
       </label>

@@ -1,23 +1,23 @@
+import { cookies } from "next/headers";
 import { getCurrentUser } from "@/lib/db/users";
 import { AppLayout } from "@/components/layout/app-layout";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { SIDEBAR_COOKIE } from "@/components/layout/nav";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getCurrentUser();
+  const [user, cookieStore] = await Promise.all([getCurrentUser(), cookies()]);
 
   return (
-    <TooltipProvider delay={200}>
-      <AppLayout
-        userName={user.name || user.email}
-        userEmail={user.email}
-        userRole={user.role}
-      >
-        {children}
-      </AppLayout>
-    </TooltipProvider>
+    <AppLayout
+      userName={user.name || user.email}
+      userEmail={user.email}
+      userRole={user.role}
+      defaultCollapsed={cookieStore.get(SIDEBAR_COOKIE)?.value === "collapsed"}
+    >
+      {children}
+    </AppLayout>
   );
 }
