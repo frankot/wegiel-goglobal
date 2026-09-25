@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTransition } from "react";
+import { useTransition, ViewTransition } from "react";
 import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/lib/auth/actions";
 import { Tooltip } from "@/components/ui/tooltip";
 import { NAV_GROUPS, initials, isActive, roleLabel } from "./nav";
+import { BrandMark, BrandWordmark } from "./brand";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -15,6 +16,8 @@ interface SidebarProps {
   userEmail: string;
   userRole: string;
   onNavigate?: () => void;
+  /** Tylko wersja desktopowa — nazwa przejścia musi być na stronie unikalna. */
+  brandTransition?: boolean;
 }
 
 /** Tooltip tylko w wersji zwiniętej — rozwinięta ma etykiety na wierzchu. */
@@ -36,6 +39,7 @@ export function Sidebar({
   userEmail,
   userRole,
   onNavigate,
+  brandTransition = false,
 }: SidebarProps) {
   const pathname = usePathname();
   const [loggingOut, startLogout] = useTransition();
@@ -48,23 +52,19 @@ export function Sidebar({
         className={cn("flex h-16 shrink-0 items-center gap-3", collapsed ? "justify-center" : "px-6")}
         aria-label="Ślad węglowy — strona główna"
       >
-        {/* Liść z dwóch łuków — znak marki zamiast gotowej ikony. */}
-        <svg viewBox="0 0 24 24" className="size-5 shrink-0" fill="none" aria-hidden="true">
-          <path
-            d="M4.5 19.5C4.5 11 9.5 4.5 19.5 4.5c0 10-6.5 15-15 15Z"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-          <path d="M4.5 19.5 14 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-        {!collapsed && (
-          <span className="min-w-0 leading-tight">
-            <span className="block truncate text-[1.0625rem] font-light">carbon <span className="text-green-400">print</span></span>
-            <span className="block truncate text-[0.625rem] font-semibold tracking-[0.12em] text-white/45">
-              GO GLOBAL GROUP
+        {brandTransition ? (
+          // Wspólna nazwa z logo ekranu logowania — logo „przejeżdża" po zalogowaniu.
+          <ViewTransition name="brand-logo" share="brand-logo" default="none">
+            <span className="flex items-center gap-3">
+              <BrandMark />
+              {!collapsed && <BrandWordmark />}
             </span>
-          </span>
+          </ViewTransition>
+        ) : (
+          <>
+            <BrandMark />
+            {!collapsed && <BrandWordmark />}
+          </>
         )}
       </Link>
 

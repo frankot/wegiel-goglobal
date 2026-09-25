@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, ViewTransition } from "react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -55,14 +55,17 @@ export function AppLayout({
   return (
     <TopbarActionsProvider>
       <div className="flex h-dvh overflow-hidden bg-canvas">
-        <aside
-          className={cn(
-            "relative z-20 hidden shrink-0 transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:block",
-            collapsed ? "w-[68px]" : "w-64 overflow-hidden",
-          )}
-        >
-          <Sidebar collapsed={collapsed} {...user} />
-        </aside>
+        {/* Granatowy pas ekranu logowania zwęża się w ten panel (ta sama nazwa). */}
+        <ViewTransition name="brand-panel" share="brand-panel" default="none">
+          <aside
+            className={cn(
+              "relative z-20 hidden shrink-0 transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:block",
+              collapsed ? "w-[68px]" : "w-64 overflow-hidden",
+            )}
+          >
+            <Sidebar collapsed={collapsed} brandTransition {...user} />
+          </aside>
+        </ViewTransition>
 
         <Drawer open={mobileOpen} onOpenChange={setMobileOpen}>
           <DrawerContent label="Nawigacja">
@@ -74,21 +77,25 @@ export function AppLayout({
           </DrawerContent>
         </Drawer>
 
-        <div className="flex min-w-0 flex-1 flex-col">
-          <Topbar
-            collapsed={collapsed}
-            onToggleSidebar={toggleCollapsed}
-            onOpenMobile={() => setMobileOpen(true)}
-          />
-          <main className="flex-1 overflow-y-auto">
-            <div
-              key={pathname}
-              className="mx-auto w-full max-w-7xl animate-page-in px-4 pt-6 pb-10 sm:px-6 lg:px-8"
-            >
-              {children}
-            </div>
-          </main>
-        </div>
+        {/* Wejście treści po zalogowaniu; nawigacja w panelu tego nie odpala,
+            bo layout się wtedy nie montuje ponownie. */}
+        <ViewTransition enter="auth-enter" exit="auth-exit" default="none">
+          <div className="flex min-w-0 flex-1 flex-col">
+            <Topbar
+              collapsed={collapsed}
+              onToggleSidebar={toggleCollapsed}
+              onOpenMobile={() => setMobileOpen(true)}
+            />
+            <main className="flex-1 overflow-y-auto">
+              <div
+                key={pathname}
+                className="mx-auto w-full max-w-7xl animate-page-in px-4 pt-6 pb-10 sm:px-6 lg:px-8"
+              >
+                {children}
+              </div>
+            </main>
+          </div>
+        </ViewTransition>
       </div>
     </TopbarActionsProvider>
   );

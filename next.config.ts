@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "10mb",
     },
+    // Natywne View Transitions przy nawigacji (logowanie ⇄ panel).
+    viewTransition: true,
   },
   serverExternalPackages: ["@neondatabase/serverless"],
 };

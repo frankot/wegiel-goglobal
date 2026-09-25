@@ -36,8 +36,8 @@
   --color-orange: var(--orange);
   --color-purple: var(--purple);
   --color-grey: var(--grey);
-  --color-green-ink: #2b8a55;
-  --color-orange-ink: #b8650f;
+  --color-green-ink: var(--green-ink);
+  --color-orange-ink: var(--orange-ink);
 
   --radius-sm: 2px;
   --radius-md: 3px;
@@ -67,6 +67,9 @@
   --orange: #f29a3a;
   --purple: #9d5ce6;
   --grey: #a3abb8;
+  /* Ciemniejsze odcienie do tekstu na białym — czytelny kontrast. */
+  --green-ink: #2b8a55;
+  --orange-ink: #b8650f;
 
   --primary: var(--blue);
   --destructive: #e04868;
@@ -136,5 +139,60 @@
   *, *::before, *::after, *::backdrop {
     animation-duration: 1ms !important;
     transition-duration: 1ms !important;
+  }
+}
+
+/*
+ * Logowanie ⇄ panel — natywne View Transitions (React <ViewTransition>).
+ * Granatowy pas logowania zwęża się w panel boczny, logo przesuwa się
+ * na miejsce, karta logowania gaśnie, a treść panelu wjeżdża od dołu.
+ */
+::view-transition-group(.brand-panel),
+::view-transition-group(.brand-logo) {
+  animation-duration: 560ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Pas zmienia szerokość, ale zawartość się nie rozciąga —
+   migawki w naturalnym rozmiarze, przycięte do krawędzi grupy. */
+::view-transition-group(.brand-panel) {
+  overflow: clip;
+}
+::view-transition-old(.brand-panel),
+::view-transition-new(.brand-panel) {
+  width: auto;
+  height: auto;
+}
+::view-transition-old(.brand-panel) {
+  animation: 320ms ease-out both vt-fade-out;
+}
+::view-transition-new(.brand-panel) {
+  animation: 360ms ease-out 200ms both vt-fade-in;
+}
+
+::view-transition-old(.auth-exit) {
+  animation: 200ms ease-in both vt-auth-out;
+}
+::view-transition-new(.auth-enter) {
+  animation: 420ms cubic-bezier(0.22, 1, 0.36, 1) 160ms both vt-auth-in;
+}
+
+@keyframes vt-fade-out {
+  to { opacity: 0; }
+}
+@keyframes vt-fade-in {
+  from { opacity: 0; }
+}
+@keyframes vt-auth-out {
+  to { opacity: 0; transform: scale(0.98); filter: blur(2px); }
+}
+@keyframes vt-auth-in {
+  from { opacity: 0; transform: translateY(10px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }
