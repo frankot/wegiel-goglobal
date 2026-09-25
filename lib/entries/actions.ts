@@ -7,7 +7,7 @@ import { getCurrentUser } from "@/lib/db/users";
 import { canVerifyEntry, canDeleteEntry, canEditEntry } from "@/lib/auth/permissions";
 import { clientIp, writeAuditTx, writeAudit } from "@/lib/db/audit";
 import { rememberPpeForSource } from "@/lib/db/sources";
-import { getInvoiceEntries } from "@/lib/db/invoices";
+import { getInvoiceDetail, getInvoiceEntries } from "@/lib/db/invoices";
 import { calculateEmission } from "@/lib/emissions/calculate";
 import { parseFile, isAttachmentFile, MAX_FILES_PER_BATCH, MAX_BATCH_BYTES } from "@/lib/import/registry";
 import { enrichInvoices } from "@/lib/import/enrich";
@@ -222,6 +222,7 @@ async function saveSingleInvoice(
   });
 
   const entryDate = input.periodEnd ?? input.issueDate ?? new Date().toISOString();
+  const rawPayload = await readSourceXml(input.clientId, ctx.formData);
 
   const invoiceId = await prisma.$transaction(async (tx) => {
     const invoice = await tx.invoice.create({
@@ -237,6 +238,7 @@ async function saveSingleInvoice(
         supplierName: input.supplierName,
         buyerNip: input.buyerNip,
         uploadedById: ctx.userId,
+        rawPayload,
       },
     });
 
@@ -299,6 +301,22 @@ async function saveSingleInvoice(
   };
 }
 
+/**
+ * Oryginalny XML faktury trzymany w bazie (`Invoice.rawPayload`) — kilka KB.
+ * Bez zależności od Vercel Blob: podgląd szczegółów i pobranie pliku działają
+ * zawsze, a ponowna interpretacja dokumentu (nowa wersja parsera) jest możliwa.
+ */
+async function readSourceXml(
+  clientId: string,
+  formData: FormData,
+): Promise<{ format: "KSEF_XML"; fileName: string; xml: string } | undefined> {
+  const file = formData
+    .getAll(`file_${clientId}`)
+    .find((f): f is File => f instanceof File && !isAttachmentFile(f.name));
+  if (!file) return undefined;
+  return { format: "KSEF_XML", fileName: file.name, xml: await file.text() };
+}
+
 async function attachSourceFiles(
   invoiceId: string,
   clientId: string,
@@ -340,6 +358,12 @@ async function rememberPpeAssignments(
       console.error("Nie udało się zapamiętać PPE:", e);
     }
   }
+}
+
+/** Szczegóły faktury — modal na liście faktur. */
+export async function getInvoiceDetailAction(invoiceId: string) {
+  await getCurrentUser();
+  return getInvoiceDetail(invoiceId);
 }
 
 /** Pozycje faktury — doczytywane przy rozwijaniu wiersza na liście. */

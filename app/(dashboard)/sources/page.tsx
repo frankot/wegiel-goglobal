@@ -3,6 +3,7 @@ import { canManage } from "@/lib/auth/permissions";
 import { listSourceRows } from "@/lib/db/sources";
 import { listFactors } from "@/lib/db/factors";
 import { SourceTable } from "@/components/sources/source-table";
+import { PageHeader } from "@/components/layout/page-header";
 
 export default async function SourcesPage() {
   const user = await getCurrentUser();
@@ -14,13 +15,10 @@ export default async function SourcesPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Źródła emisji</h2>
-        <p className="text-muted-foreground">
-          Liczniki, instalacje i pojazdy, których zużycie rejestrujesz. Każde
-          źródło ma domyślny wskaźnik emisji używany przy imporcie faktur.
-        </p>
-      </div>
+      <PageHeader
+        description="Liczniki, instalacje i pojazdy, których zużycie rejestrujesz. Każde
+          źródło ma domyślny wskaźnik emisji używany przy imporcie faktur."
+      />
 
       {withoutIdentifiers > 0 && (
         <p className="rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-sm">

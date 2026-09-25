@@ -28,6 +28,7 @@ interface Props {
   card: CardState;
   sources: SourceOption[];
   factors: FactorOption[];
+  canManage: boolean;
   onChange: (patch: Partial<CardState>) => void;
   onLineChange: (lineNo: number, patch: Partial<LineState>) => void;
   onRemove: () => void;
@@ -79,6 +80,7 @@ export function InvoiceCard({
   card,
   sources,
   factors,
+  canManage,
   onChange,
   onLineChange,
   onRemove,
@@ -217,6 +219,8 @@ export function InvoiceCard({
                 line={line}
                 sources={sources}
                 factors={factors}
+                canManage={canManage}
+                invoice={card}
                 onChange={(patch) => onLineChange(line.lineNo, patch)}
               />
             ))}

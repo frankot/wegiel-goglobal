@@ -69,6 +69,7 @@ export async function getFactorCandidates(
     scope: f.scope as FactorCandidate["scope"],
     validFrom: f.validFrom,
     validTo: f.validTo,
+    lineageId: f.parentId ?? f.id,
   }));
 }
 

@@ -115,7 +115,7 @@ model Invoice {
   supplierName String?
   buyerNip     String?
 
-  rawPayload Json? // surowy wynik parsera — audyt i ponowna interpretacja
+  rawPayload Json? // { format, fileName, xml } — oryginał dokumentu: audyt, podgląd, ponowna interpretacja
 
   uploadedById String?
   uploadedBy   User?   @relation("Uploader", fields: [uploadedById], references: [id])

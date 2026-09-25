@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
+import { cleanText, ksefXmlParser } from "@/lib/import/ksef-xml";
 
 /** Wszystkie Decimal zmapowane na string — granica RSC (§8). */
 export interface InvoiceListItem {
@@ -140,15 +141,106 @@ export async function getInvoiceEntries(
   }));
 }
 
-export async function getInvoiceDetail(id: string) {
-  const inv = await prisma.invoice.findUnique({
-    where: { id },
-    include: {
-      attachments: true,
-      uploadedBy: { select: { name: true, email: true } },
-    },
-  });
+export interface InvoiceDocumentLine {
+  lineNo: number;
+  description: string;
+  quantity: string;
+  unit: string;
+  netValue: string | null;
+  emissionRelevant: boolean;
+  skipReason: string | null;
+}
+
+export interface InvoiceDetail {
+  id: string;
+  invoiceNumber: string | null;
+  ksefNumber: string | null;
+  issueDate: string | null;
+  periodStart: string | null;
+  periodEnd: string | null;
+  supplierName: string | null;
+  supplierNip: string | null;
+  buyerNip: string | null;
+  sourceFormat: string;
+  uploadedBy: string | null;
+  createdAt: string;
+  entries: InvoiceEntryItem[];
+  totalCo2eKg: string;
+  totalCo2eTon: string;
+  attachments: Array<{ id: string; kind: string; fileName: string; blobUrl: string }>;
+  /** Dokument odczytany ponownie z zapisanego XML — null dla starszych faktur. */
+  document: {
+    fileName: string;
+    currency: string | null;
+    netTotal: string | null;
+    grossTotal: string | null;
+    ppeNumber: string | null;
+    meterNumber: string | null;
+    tariffGroup: string | null;
+    lines: InvoiceDocumentLine[];
+    warnings: string[];
+  } | null;
+}
+
+/** Kształt `Invoice.rawPayload` zapisywany przy imporcie. */
+export function storedXml(raw: unknown): { fileName: string; xml: string } | null {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as { xml?: unknown; fileName?: unknown };
+  return typeof r.xml === "string"
+    ? { fileName: typeof r.fileName === "string" ? r.fileName : "faktura.xml", xml: r.xml }
+    : null;
+}
+
+function readDocument(raw: unknown): InvoiceDetail["document"] {
+  const stored = storedXml(raw);
+  if (!stored) return null;
+  try {
+    // Ten sam parser co przy imporcie — podgląd pokazuje dokładnie to, co system odczytał.
+    const parsed = ksefXmlParser.parse({
+      name: stored.fileName,
+      content: Buffer.from(stored.xml, "utf8"),
+    });
+    const fa = ((parsed.raw as { Faktura?: { Fa?: Record<string, unknown> } }).Faktura?.Fa ??
+      {}) as Record<string, unknown>;
+    const energy = parsed.lines.find((l) => l.emissionRelevant);
+    return {
+      fileName: stored.fileName,
+      currency: cleanText(fa.KodWaluty) || null,
+      netTotal: cleanText(fa.P_13_1) || null,
+      grossTotal: cleanText(fa.P_15) || null,
+      ppeNumber: energy?.ppeNumber ?? null,
+      meterNumber: energy?.meterNumber ?? null,
+      tariffGroup: energy?.tariffGroup ?? null,
+      lines: parsed.lines.map((l) => ({
+        lineNo: l.lineNo,
+        description: l.description,
+        quantity: l.quantity,
+        unit: l.unit,
+        netValue: l.netValue ?? null,
+        emissionRelevant: l.emissionRelevant,
+        skipReason: l.skipReason ?? null,
+      })),
+      warnings: parsed.warnings,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function getInvoiceDetail(id: string): Promise<InvoiceDetail | null> {
+  const [inv, entries] = await Promise.all([
+    prisma.invoice.findUnique({
+      where: { id },
+      include: {
+        attachments: true,
+        uploadedBy: { select: { name: true, email: true } },
+      },
+    }),
+    getInvoiceEntries(id),
+  ]);
   if (!inv) return null;
+
+  const totalKg = entries.reduce((a, e) => a.add(e.co2eKg), new Prisma.Decimal(0));
 
   return {
     id: inv.id,
@@ -161,18 +253,28 @@ export async function getInvoiceDetail(id: string) {
     supplierNip: inv.supplierNip,
     buyerNip: inv.buyerNip,
     sourceFormat: inv.sourceFormat,
-    uploadedBy: inv.uploadedBy
-      ? inv.uploadedBy.name || inv.uploadedBy.email
-      : null,
+    uploadedBy: inv.uploadedBy ? inv.uploadedBy.name || inv.uploadedBy.email : null,
     createdAt: inv.createdAt.toISOString(),
+    entries,
+    totalCo2eKg: totalKg.toString(),
+    totalCo2eTon: totalKg.div(1000).toString(),
     attachments: inv.attachments.map((a) => ({
       id: a.id,
       kind: a.kind,
       fileName: a.fileName,
-      mimeType: a.mimeType,
       blobUrl: a.blobUrl,
     })),
+    document: readDocument(inv.rawPayload),
   };
+}
+
+/** Oryginalny XML do pobrania — trasa `/api/invoices/[id]/xml`. */
+export async function getInvoiceXml(id: string) {
+  const inv = await prisma.invoice.findUnique({
+    where: { id },
+    select: { rawPayload: true },
+  });
+  return inv ? storedXml(inv.rawPayload) : null;
 }
 
 export async function listSupplierOptions(): Promise<

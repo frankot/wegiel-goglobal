@@ -1,34 +1,26 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/db/users";
-import { canVerifyEntry } from "@/lib/auth/permissions";
+import { canManage, canVerifyEntry } from "@/lib/auth/permissions";
 import { listSources } from "@/lib/db/sources";
 import { listFactors } from "@/lib/db/factors";
 import { BatchPreview } from "@/components/entries/batch-preview";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { PageHeader } from "@/components/layout/page-header";
 
 export default async function NewEntriesPage() {
   const user = await getCurrentUser();
   const [sources, factors] = await Promise.all([listSources(), listFactors()]);
+  const manage = canManage(user);
 
   return (
     <div className="space-y-4">
-      <div>
-        <Link
-          href="/entries"
-          className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-3 w-3" aria-hidden="true" />
-          Faktury i wpisy
-        </Link>
-        <h2 className="text-2xl font-bold tracking-tight">Dodaj faktury</h2>
-        <p className="text-muted-foreground">
-          Wrzuć jeden lub więcej plików XML z KSeF — system odczyta dane i wypełni
-          formularz dla każdej faktury.
-        </p>
-      </div>
+      <PageHeader
+        description="Wrzuć jeden lub więcej plików XML z KSeF — system odczyta dane i wypełni
+          formularz dla każdej faktury."
+      />
 
-      {sources.length === 0 ? (
+      {/* Manager doda źródło prosto z karty faktury; pracownik musi poprosić. */}
+      {sources.length === 0 && !manage ? (
         <Card className="p-4">
           <p className="text-sm">
             Nie masz jeszcze żadnego źródła emisji. Import wymaga przypisania pozycji
@@ -61,6 +53,7 @@ export default async function NewEntriesPage() {
             validTo: f.validTo,
           }))}
           canVerify={canVerifyEntry(user)}
+          canManage={manage}
         />
       )}
     </div>

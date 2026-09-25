@@ -28,11 +28,23 @@ import { formatFactor } from "@/lib/emissions/format";
 import type { SourceRow } from "@/lib/db/sources";
 import type { FactorDTO } from "@/lib/db/factors";
 
+/** Tylko pola, których formularz potrzebuje — pasuje też do opcji z podglądu importu. */
+export type SourceFormFactor = Pick<FactorDTO, "id" | "name" | "value" | "unit" | "scope" | "validTo">;
+
 interface Props {
   source?: SourceRow;
-  factors: FactorDTO[];
+  factors: SourceFormFactor[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Wartości startowe nowego źródła — np. z pozycji importowanej faktury. */
+  defaults?: {
+    type?: SourceType;
+    unit?: string;
+    ppeNumber?: string;
+    meterNumber?: string;
+    supplierNip?: string;
+  };
+  onCreated?: (source: { id: string; defaultFactorId: string }) => void;
 }
 
 const TYPE_ITEMS = (Object.keys(SOURCE_TYPE_LABELS) as SourceType[]).map((t) => ({
@@ -40,13 +52,28 @@ const TYPE_ITEMS = (Object.keys(SOURCE_TYPE_LABELS) as SourceType[]).map((t) => 
   label: SOURCE_TYPE_LABELS[t],
 }));
 
-export function SourceFormDialog({ source, factors, open, onOpenChange }: Props) {
+/** Jednostka z faktury bywa zapisana inaczej („KWH") — dopasuj do listy typu. */
+function defaultUnitFor(type: SourceType, raw?: string): string {
+  const units = UNITS_BY_TYPE[type];
+  const hit = raw && units.find((u) => u.toLowerCase() === raw.trim().toLowerCase());
+  return hit || units[0]!;
+}
+
+export function SourceFormDialog({
+  source,
+  factors,
+  open,
+  onOpenChange,
+  defaults,
+  onCreated,
+}: Props) {
   const router = useRouter();
   const [errors, setErrors] = useState<string[]>([]);
   const [saving, startSaving] = useTransition();
 
-  const [type, setType] = useState<SourceType>(source?.type ?? "ELECTRICITY");
-  const [unit, setUnit] = useState(source?.unit ?? "kWh");
+  const initialType = source?.type ?? defaults?.type ?? "ELECTRICITY";
+  const [type, setType] = useState<SourceType>(initialType);
+  const [unit, setUnit] = useState(source?.unit ?? defaultUnitFor(initialType, defaults?.unit));
   const [factorId, setFactorId] = useState(source?.defaultFactorId ?? "");
 
   const scope = scopeForType(type);
@@ -77,6 +104,7 @@ export function SourceFormDialog({ source, factors, open, onOpenChange }: Props)
         setErrors(res.errors ?? ["Nie udało się zapisać źródła."]);
         return;
       }
+      if (!source && res.sourceId) onCreated?.({ id: res.sourceId, defaultFactorId: factorId });
       router.refresh();
       onOpenChange(false);
     });
@@ -183,7 +211,7 @@ export function SourceFormDialog({ source, factors, open, onOpenChange }: Props)
                   <Input
                     id="ppeNumber"
                     name="ppeNumber"
-                    defaultValue={source?.ppeNumber ?? ""}
+                    defaultValue={source?.ppeNumber ?? defaults?.ppeNumber ?? ""}
                     placeholder="590543550100711505"
                   />
                 </div>
@@ -192,7 +220,7 @@ export function SourceFormDialog({ source, factors, open, onOpenChange }: Props)
                   <Input
                     id="meterNumber"
                     name="meterNumber"
-                    defaultValue={source?.meterNumber ?? ""}
+                    defaultValue={source?.meterNumber ?? defaults?.meterNumber ?? ""}
                     placeholder="50436458"
                   />
                 </div>
@@ -201,7 +229,7 @@ export function SourceFormDialog({ source, factors, open, onOpenChange }: Props)
                   <Input
                     id="supplierNip"
                     name="supplierNip"
-                    defaultValue={source?.supplierNip ?? ""}
+                    defaultValue={source?.supplierNip ?? defaults?.supplierNip ?? ""}
                     placeholder="9730421440"
                   />
                 </div>

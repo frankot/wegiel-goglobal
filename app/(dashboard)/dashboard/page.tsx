@@ -1,16 +1,14 @@
 import { getCurrentUser } from "@/lib/db/users";
+import { PageHeader } from "@/components/layout/page-header";
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">
-          Witaj, {user.name || user.email}. Przegląd emisji CO₂e — Scope 1 i 2.
-        </p>
-      </div>
+      <PageHeader
+        description={`Witaj, ${user.name || user.email}. Przegląd emisji CO₂e — Scope 1 i 2.`}
+      />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-lg border bg-card p-4">

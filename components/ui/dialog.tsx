@@ -46,10 +46,13 @@ export function DialogContent({
   className,
   children,
   showCloseButton = true,
+  size = "default",
 }: {
   className?: string;
   children: React.ReactNode;
   showCloseButton?: boolean;
+  /** "wide" — okna z tabelami (np. szczegóły faktury). */
+  size?: "default" | "wide";
 }) {
   const { ref, open, close, onClick, onClose } = useNativeDialog();
   return (
@@ -57,7 +60,10 @@ export function DialogContent({
       ref={ref}
       onClick={onClick}
       onClose={onClose}
-      className="m-auto w-full max-w-[calc(100%-2rem)] bg-transparent p-0 text-foreground sm:max-w-lg"
+      className={cn(
+        "m-auto w-full max-w-[calc(100%-2rem)] bg-transparent p-0 text-foreground",
+        size === "wide" ? "sm:max-w-3xl" : "sm:max-w-lg",
+      )}
     >
       {/* Treść montowana tylko przy otwarciu — formularze startują od świeżych wartości. */}
       {open && (

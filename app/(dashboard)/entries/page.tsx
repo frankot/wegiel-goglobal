@@ -8,6 +8,8 @@ import { Card } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { formatTon } from "@/lib/emissions/format";
 import { sumDecimals, divideByPowerOfTen } from "@/lib/emissions/decimal-lite";
+import { PageHeader } from "@/components/layout/page-header";
+import { TopbarActions } from "@/components/layout/topbar-actions";
 
 export default async function EntriesPage() {
   await getCurrentUser();
@@ -18,20 +20,19 @@ export default async function EntriesPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Faktury i wpisy</h2>
-          <p className="text-muted-foreground">
-            {invoices.length === 0
-              ? "Brak zaimportowanych faktur."
-              : `${invoices.length} faktur · łącznie ${formatTon(totalTon)} t CO₂e`}
-          </p>
-        </div>
-        <Link href="/entries/new" className={buttonVariants()}>
+      <PageHeader
+        description={
+          invoices.length === 0
+            ? "Brak zaimportowanych faktur."
+            : `${invoices.length} faktur · łącznie ${formatTon(totalTon)} t CO₂e`
+        }
+      />
+      <TopbarActions>
+        <Link href="/entries/new" className={buttonVariants({ size: "sm" })}>
           <Plus className="h-4 w-4" aria-hidden="true" />
           Dodaj faktury
         </Link>
-      </div>
+      </TopbarActions>
 
       <Card className="overflow-x-auto p-0">
         <InvoiceList invoices={invoices} loadEntries={getEntriesForInvoice} />

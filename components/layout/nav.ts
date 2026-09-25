@@ -11,6 +11,8 @@ import {
 export interface NavItem {
   href: string;
   label: string;
+  /** Pełny tytuł strony w górnym pasku — gdy inny niż krótka etykieta w menu. */
+  title?: string;
   icon: LucideIcon;
   roles: string[];
 }
@@ -37,7 +39,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/entries", label: "Faktury i wpisy", icon: FileText, roles: ALL },
       { href: "/sources", label: "Źródła emisji", icon: Factory, roles: ALL },
-      { href: "/factors", label: "Współczynniki", icon: Scale, roles: ALL },
+      { href: "/factors", label: "Współczynniki", title: "Współczynniki emisji", icon: Scale, roles: ALL },
     ],
   },
   {
@@ -48,7 +50,7 @@ export const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-/** Podstrony, które mają własną nazwę w okruszkach. */
+/** Podstrony — tytuł w górnym pasku, nad nim link do sekcji nadrzędnej. */
 const SUBPAGES: Record<string, string> = {
   "/entries/new": "Dodaj faktury",
 };
@@ -57,13 +59,21 @@ export function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-export function breadcrumbFor(pathname: string): string[] {
+export interface PageTitle {
+  title: string;
+  parent?: { label: string; href: string };
+}
+
+export function pageTitleFor(pathname: string): PageTitle | null {
   const section = NAV_GROUPS.flatMap((g) => g.items).find((i) =>
     isActive(pathname, i.href),
   );
-  if (!section) return [];
+  if (!section) return null;
+  const sectionTitle = section.title ?? section.label;
   const sub = SUBPAGES[pathname];
-  return sub ? [section.label, sub] : [section.label];
+  return sub
+    ? { title: sub, parent: { label: sectionTitle, href: section.href } }
+    : { title: sectionTitle };
 }
 
 export function roleLabel(role: string) {

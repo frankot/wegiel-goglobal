@@ -1,1 +1,2 @@
-export default async function AdminPage() { return <div className="space-y-4"><h2 className="text-2xl font-bold tracking-tight">Administracja</h2><p className="text-muted-foreground">Zarządzanie użytkownikami — Faza 3.</p></div>; }
+import { PageHeader } from "@/components/layout/page-header";
+export default async function AdminPage() { return <div className="space-y-4"><PageHeader description="Zarządzanie użytkownikami — Faza 3." /></div>; }

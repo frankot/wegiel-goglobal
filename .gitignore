@@ -50,3 +50,19 @@ next-env.d.ts
 
 AGENTS.md 
 CLAUDE.md
+plan/opis-dla-klienta.md
+example/demo/01-prad-rzeszow-2026-08.xml
+example/demo/02-prad-krosno-magazyn-2026-08.xml
+example/demo/03-gaz-kotlownia-2026-07-08.xml
+example/demo/04-paliwo-flota-2026-08.xml
+example/demo/05-cieplo-biuro-2026-08.xml
+example/demo/06-prad-nowy-punkt-2026-08.xml
+example/demo/07-prad-rzeszow-2025-12.xml
+example/demo/08-duplikat-prad-rzeszow-2026-06.xml
+example/demo/README.md
+example/demo/historia/cieplo-biuro-2026-06.xml
+example/demo/historia/gaz-kotlownia-2026-q2.xml
+example/demo/historia/paliwo-flota-2026-06.xml
+example/demo/historia/prad-krosno-magazyn-2026-06.xml
+example/demo/historia/prad-rzeszow-2026-05.xml
+example/demo/historia/prad-rzeszow-2026-06.xml

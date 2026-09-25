@@ -21,6 +21,14 @@ interface Props {
   factor?: FactorDTO;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Wartości startowe nowego wskaźnika — np. z pozycji importowanej faktury. */
+  defaults?: {
+    unit?: string;
+    scope?: "SCOPE_1" | "SCOPE_2";
+    validFrom?: string;
+    validTo?: string;
+  };
+  onCreated?: (factorId: string) => void;
 }
 
 const dateOnly = (iso: string) => iso.slice(0, 10);
@@ -36,7 +44,7 @@ const SCOPE_ITEMS = [
   { value: "SCOPE_2", label: "Zakres 2" },
 ] as const;
 
-export function FactorFormDialog({ factor, open, onOpenChange }: Props) {
+export function FactorFormDialog({ factor, open, onOpenChange, defaults, onCreated }: Props) {
   const router = useRouter();
   const [errors, setErrors] = useState<string[]>([]);
   const [pendingRecalc, setPendingRecalc] = useState<number | null>(null);
@@ -60,6 +68,7 @@ export function FactorFormDialog({ factor, open, onOpenChange }: Props) {
         return;
       }
 
+      if (!factor && res.factorId) onCreated?.(res.factorId);
       router.refresh();
       onOpenChange(false);
     });
@@ -145,7 +154,7 @@ export function FactorFormDialog({ factor, open, onOpenChange }: Props) {
               <Input
                 id="unit"
                 name="unit"
-                defaultValue={factor?.unit}
+                defaultValue={factor?.unit ?? defaults?.unit}
                 placeholder="kg CO₂e/kWh"
                 required
               />
@@ -170,7 +179,7 @@ export function FactorFormDialog({ factor, open, onOpenChange }: Props) {
             </div>
             <div className="space-y-1">
               <Label>Zakres</Label>
-              <Select name="scope" items={SCOPE_ITEMS} defaultValue={factor?.scope ?? "SCOPE_2"} className="w-full" />
+              <Select name="scope" items={SCOPE_ITEMS} defaultValue={factor?.scope ?? defaults?.scope ?? "SCOPE_2"} className="w-full" />
             </div>
           </div>
 
@@ -181,7 +190,7 @@ export function FactorFormDialog({ factor, open, onOpenChange }: Props) {
                 id="validFrom"
                 name="validFrom"
                 type="date"
-                defaultValue={factor ? dateOnly(factor.validFrom) : ""}
+                defaultValue={factor ? dateOnly(factor.validFrom) : (defaults?.validFrom ?? "")}
                 required
               />
             </div>
@@ -191,7 +200,7 @@ export function FactorFormDialog({ factor, open, onOpenChange }: Props) {
                 id="validTo"
                 name="validTo"
                 type="date"
-                defaultValue={factor ? dateOnly(factor.validTo) : ""}
+                defaultValue={factor ? dateOnly(factor.validTo) : (defaults?.validTo ?? "")}
                 required
               />
             </div>

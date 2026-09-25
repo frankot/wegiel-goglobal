@@ -5,8 +5,14 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
-import { RotateCcw } from "lucide-react";
+import { Plus, RotateCcw } from "lucide-react";
+import { useState } from "react";
 import { MatchHint } from "./status-badge";
+import { SourceFormDialog } from "@/components/sources/source-form";
+import { FactorFormDialog } from "@/components/factors/factor-form";
+import { inferSourceType } from "@/lib/emissions/match-source";
+import { scopeForType } from "@/lib/emissions/source-types";
+import { lookupUnit } from "@/lib/emissions/unit-table";
 import { formatKg, formatTon, formatFactor } from "@/lib/emissions/format";
 import {
   factorsForLine,
@@ -21,6 +27,9 @@ interface Props {
   line: LineState;
   sources: SourceOption[];
   factors: FactorOption[];
+  /** Manager może dodać źródło/wskaźnik z poziomu faktury, bez zmiany zakładki. */
+  canManage: boolean;
+  invoice: { supplierNip: string; periodStart: string; periodEnd: string };
   onChange: (patch: Partial<LineState>) => void;
 }
 
@@ -50,11 +59,42 @@ function RevertButton({
   );
 }
 
-export function EntryLineRow({ line, sources, factors, onChange }: Props) {
+/** Mały przycisk „+ nowe" obok etykiety pola — otwiera modal tworzenia. */
+function CreateToggle({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      className="h-5 gap-0.5 px-1.5 text-[0.6875rem] font-medium"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+    >
+      <Plus className="size-3" aria-hidden="true" />
+      nowe
+    </Button>
+  );
+}
+
+export function EntryLineRow({
+  line,
+  sources,
+  factors,
+  canManage,
+  invoice,
+  onChange,
+}: Props) {
+  const [creating, setCreating] = useState<"source" | "factor" | null>(null);
   const source = sources.find((s) => s.id === line.sourceId);
   const available = factorsForLine(line, factors, source);
   const preview = linePreview(line, factors);
   const issue = lineIssue(line);
+
+  // Podpowiedzi dla nowego źródła/wskaźnika — wszystko, co już wiemy z faktury.
+  const inferredType = inferSourceType(line.description) ?? undefined;
+  const lineUnit = lookupUnit(line.unit)?.canonical;
+  const year = (invoice.periodEnd || invoice.periodStart).slice(0, 4);
 
   const sourceItems = sources.map((s) => ({ value: s.id, label: s.name }));
   const factorItems = available.map((f) => ({
@@ -112,7 +152,12 @@ export function EntryLineRow({ line, sources, factors, onChange }: Props) {
       <div className="grid gap-3 sm:grid-cols-2">
         {/* Źródło emisji */}
         <div className="space-y-1">
-          <Label className="text-xs">Źródło emisji</Label>
+          <div className="flex h-5 items-center justify-between gap-2">
+            <Label className="text-xs">Źródło emisji</Label>
+            {canManage && (
+              <CreateToggle label="Dodaj nowe źródło emisji" onClick={() => setCreating("source")} />
+            )}
+          </div>
           <Select
             items={sourceItems}
             value={line.sourceId ?? ""}
@@ -149,7 +194,12 @@ export function EntryLineRow({ line, sources, factors, onChange }: Props) {
 
         {/* Wskaźnik */}
         <div className="space-y-1">
-          <Label className="text-xs">Wskaźnik emisji</Label>
+          <div className="flex h-5 items-center justify-between gap-2">
+            <Label className="text-xs">Wskaźnik emisji</Label>
+            {canManage && (
+              <CreateToggle label="Dodaj nowy wskaźnik emisji" onClick={() => setCreating("factor")} />
+            )}
+          </div>
           <Select
             items={factorItems}
             value={line.factorId ?? ""}
@@ -228,6 +278,42 @@ export function EntryLineRow({ line, sources, factors, onChange }: Props) {
       </div>
 
       {issue && <p className="text-xs text-destructive">{issue}</p>}
+
+      {creating === "source" && (
+        <SourceFormDialog
+          factors={factors}
+          open
+          onOpenChange={(open) => !open && setCreating(null)}
+          defaults={{
+            type: inferredType,
+            unit: line.unit,
+            ppeNumber: line.unknownPpe,
+            supplierNip: invoice.supplierNip || undefined,
+          }}
+          onCreated={({ id, defaultFactorId }) =>
+            onChange({
+              sourceId: id,
+              factorId: defaultFactorId || line.factorId,
+              // PPE trafiło już do nowego źródła — nie ma czego zapamiętywać.
+              rememberPpe: false,
+            })
+          }
+        />
+      )}
+
+      {creating === "factor" && (
+        <FactorFormDialog
+          open
+          onOpenChange={(open) => !open && setCreating(null)}
+          defaults={{
+            unit: lineUnit ? `kg CO₂e/${lineUnit}` : undefined,
+            scope: source?.scope ?? (inferredType && scopeForType(inferredType)),
+            validFrom: /^\d{4}$/.test(year) ? `${year}-01-01` : undefined,
+            validTo: /^\d{4}$/.test(year) ? `${year}-12-31` : undefined,
+          }}
+          onCreated={(id) => onChange({ factorId: id })}
+        />
+      )}
     </div>
   );
 }

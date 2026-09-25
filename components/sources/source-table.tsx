@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { Pencil, Plus, Power, KeyRound } from "lucide-react";
+import { TopbarActions } from "@/components/layout/topbar-actions";
 import { SourceFormDialog } from "./source-form";
 import { setSourceActive } from "@/lib/sources/actions";
 import { SOURCE_TYPE_LABELS, type SourceType } from "@/lib/emissions/source-types";
@@ -84,10 +85,12 @@ export function SourceTable({ sources, factors, canManage }: Props) {
         </label>
 
         {canManage && (
-          <Button className="ml-auto" onClick={() => setAdding(true)}>
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Dodaj źródło
-          </Button>
+          <TopbarActions>
+            <Button size="sm" onClick={() => setAdding(true)}>
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Dodaj źródło
+            </Button>
+          </TopbarActions>
         )}
       </div>
 

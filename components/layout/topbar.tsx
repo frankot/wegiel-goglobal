@@ -1,11 +1,12 @@
 "use client";
 
-import { Fragment } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
-import { breadcrumbFor } from "./nav";
+import { pageTitleFor } from "./nav";
+import { TopbarActionsSlot } from "./topbar-actions";
 
 interface TopbarProps {
   collapsed: boolean;
@@ -20,10 +21,10 @@ const today = new Intl.DateTimeFormat("pl-PL", {
 });
 
 export function Topbar({ collapsed, onToggleSidebar, onOpenMobile }: TopbarProps) {
-  const crumbs = breadcrumbFor(usePathname());
+  const page = pageTitleFor(usePathname());
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-3 px-4 sm:px-6 lg:px-8">
+    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/60 px-4 sm:px-6 lg:px-8">
       <Button
         variant="ghost"
         size="icon"
@@ -58,31 +59,31 @@ export function Topbar({ collapsed, onToggleSidebar, onOpenMobile }: TopbarProps
         </Button>
       </Tooltip>
 
-      <nav aria-label="Okruszki" className="min-w-0 flex-1">
-        <ol className="flex items-center gap-2 text-[0.9375rem] font-light">
-          {crumbs.map((c, i) => {
-            const last = i === crumbs.length - 1;
-            return (
-              <Fragment key={c}>
-                {i > 0 && (
-                  <li aria-hidden="true" className="text-muted-foreground/60">
-                    /
-                  </li>
-                )}
-                <li
-                  className={last ? "truncate text-strong" : "truncate text-muted-foreground"}
-                  aria-current={last ? "page" : undefined}
-                >
-                  {c.toLowerCase()}
-                </li>
-              </Fragment>
-            );
-          })}
-        </ol>
-      </nav>
+      <div className="flex min-w-0 flex-1 items-baseline gap-2 text-[0.9375rem]">
+        {page?.parent && (
+          <>
+            <Link
+              href={page.parent.href}
+              className="hidden shrink-0 font-light text-muted-foreground transition-colors hover:text-foreground sm:inline"
+            >
+              {page.parent.label}
+            </Link>
+            <span aria-hidden="true" className="hidden text-muted-foreground/60 sm:inline">
+              /
+            </span>
+          </>
+        )}
+        {page && (
+          <h1 className="truncate font-medium tracking-tight text-strong">
+            {page.title}
+          </h1>
+        )}
+      </div>
+
+      <TopbarActionsSlot />
 
       {/* Data renderowana po stronie klienta może różnić się od serwerowej o północy. */}
-      <time suppressHydrationWarning className="hidden text-xs text-muted-foreground sm:block">
+      <time suppressHydrationWarning className="hidden text-xs text-muted-foreground xl:block">
         {today.format(new Date())}
       </time>
     </header>

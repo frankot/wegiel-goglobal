@@ -9,7 +9,7 @@ export function AddFactorButton() {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button onClick={() => setOpen(true)}>
+      <Button size="sm" onClick={() => setOpen(true)}>
         <Plus className="h-4 w-4" aria-hidden="true" />
         Dodaj wskaźnik
       </Button>

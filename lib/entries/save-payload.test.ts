@@ -41,6 +41,7 @@ function unimotCard(): CardState {
               scope: "SCOPE_2" as const,
               validFrom: new Date("2026-01-01"),
               validTo: new Date("2026-12-31"),
+              lineageId: "fac-1",
             },
           }
         : { status: "NONE" as const, message: l.skipReason! },

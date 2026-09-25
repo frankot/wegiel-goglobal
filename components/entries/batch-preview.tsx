@@ -26,9 +26,10 @@ interface Props {
   sources: SourceOption[];
   factors: FactorOption[];
   canVerify: boolean;
+  canManage: boolean;
 }
 
-export function BatchPreview({ sources, factors, canVerify }: Props) {
+export function BatchPreview({ sources, factors, canVerify, canManage }: Props) {
   const router = useRouter();
   const [cards, setCards] = useState<CardState[]>([]);
   /** Pliki trzymane w stanie klienta — wysyłane PONOWNIE dopiero przy zapisie,
@@ -170,6 +171,7 @@ export function BatchPreview({ sources, factors, canVerify }: Props) {
                 card={card}
                 sources={sources}
                 factors={factors}
+                canManage={canManage}
                 onChange={(patch) => patchCard(card.clientId, patch)}
                 onLineChange={(lineNo, patch) =>
                   patchLine(card.clientId, lineNo, patch)

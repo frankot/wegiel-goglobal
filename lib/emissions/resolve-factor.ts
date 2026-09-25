@@ -19,13 +19,15 @@ export interface FactorCandidate {
   scope: "SCOPE_1" | "SCOPE_2";
   validFrom: Date;
   validTo: Date;
+  /** Id korzenia linii wersji (`parentId ?? id`) — wersje KOBIZE 2025/2026 mają wspólne. */
+  lineageId: string;
 }
 
 export type FactorResolution =
   | {
       status: "RESOLVED";
       factor: FactorCandidate;
-      reason: "ONLY_MATCH" | "SOURCE_DEFAULT";
+      reason: "ONLY_MATCH" | "SOURCE_DEFAULT" | "SOURCE_DEFAULT_VERSION";
     }
   | { status: "AMBIGUOUS"; candidates: FactorCandidate[]; message: string }
   | { status: "NONE"; message: string };
@@ -73,6 +75,20 @@ export function resolveFactor(params: {
 
   if (preferred) {
     return { status: "RESOLVED", factor: preferred, reason: "SOURCE_DEFAULT" };
+  }
+
+  // Domyślny wskaźnik źródła to zwykle wersja bieżąca. Faktura za grudzień
+  // zeszłego roku potrzebuje wersji archiwalnej Z TEJ SAMEJ linii — a nie
+  // dowolnego wskaźnika w tej samej jednostce (np. ciepła, też kg CO₂e/kWh).
+  const defaultLineage = defaultFactorId
+    ? candidates.find((f) => f.id === defaultFactorId)?.lineageId
+    : undefined;
+  const sameLine = defaultLineage
+    ? valid.filter((f) => f.lineageId === defaultLineage)
+    : [];
+
+  if (sameLine.length === 1) {
+    return { status: "RESOLVED", factor: sameLine[0]!, reason: "SOURCE_DEFAULT_VERSION" };
   }
 
   return {
