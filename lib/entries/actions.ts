@@ -11,6 +11,7 @@ import { getInvoiceDetail, getInvoiceEntries } from "@/lib/db/invoices";
 import { calculateEmission } from "@/lib/emissions/calculate";
 import { parseFile, isAttachmentFile, MAX_FILES_PER_BATCH, MAX_BATCH_BYTES } from "@/lib/import/registry";
 import { enrichInvoices } from "@/lib/import/enrich";
+import { identityKeys } from "@/lib/import/dedupe";
 import { storeInvoiceFile } from "@/lib/import/storage";
 import { InvoiceParseError, type EnrichedInvoice, type ParsedInvoice } from "@/lib/import/types";
 import {
@@ -184,6 +185,15 @@ async function saveSingleInvoice(
   const check = validateInvoiceForSave(input);
   if (!check.ok) throw new Error(check.error);
 
+  // Ręcznie wpisana faktura nie przechodzi przez podgląd z deduplikacją (D7),
+  // więc sprawdzamy tutaj — zamiast surowego błędu unikalności z bazy.
+  const existing = await findExistingInvoice(input);
+  if (existing) {
+    throw new Error(
+      `Duplikat — faktura ${existing.invoiceNumber ?? existing.ksefNumber} jest już w systemie.`,
+    );
+  }
+
   const includedLines = input.lines.filter((l) => l.include);
 
   // Wskaźniki pobierane z bazy po id — klient podaje WYBÓR, nie wartość.
@@ -299,6 +309,23 @@ async function saveSingleInvoice(
     invoiceId,
     invoiceNumber: input.invoiceNumber ?? input.fileName ?? "(bez numeru)",
   };
+}
+
+async function findExistingInvoice(input: InvoiceSaveInput) {
+  const keys = identityKeys(input);
+  const or: Prisma.InvoiceWhereInput[] = [];
+  if (keys.ksef) or.push({ ksefNumber: input.ksefNumber!.trim() });
+  if (keys.pair) {
+    or.push({
+      supplierNip: input.supplierNip!.trim(),
+      invoiceNumber: input.invoiceNumber!.trim(),
+    });
+  }
+  if (or.length === 0) return null;
+  return prisma.invoice.findFirst({
+    where: { OR: or },
+    select: { invoiceNumber: true, ksefNumber: true },
+  });
 }
 
 /**

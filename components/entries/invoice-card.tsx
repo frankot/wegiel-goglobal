@@ -9,7 +9,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronRight, RotateCcw, FileX2, AlertTriangle } from "lucide-react";
+import { ChevronRight, RotateCcw, FileX2, AlertTriangle, Plus, Paperclip } from "lucide-react";
 import { CardStatusBadge } from "./status-badge";
 import { EntryLineRow } from "./entry-line-row";
 import { formatTon } from "@/lib/emissions/format";
@@ -32,6 +32,8 @@ interface Props {
   onChange: (patch: Partial<CardState>) => void;
   onLineChange: (lineNo: number, patch: Partial<LineState>) => void;
   onRemove: () => void;
+  onAddLine: () => void;
+  onRemoveLine: (lineNo: number) => void;
 }
 
 function HeaderField({
@@ -84,7 +86,12 @@ export function InvoiceCard({
   onChange,
   onLineChange,
   onRemove,
+  onAddLine,
+  onRemoveLine,
 }: Props) {
+  // Karta ręczna nie ma wartości „z faktury" — bez przycisków ↺.
+  const manual = card.format === "MANUAL";
+  const original = manual ? undefined : card.original;
   const status = cardStatus(card);
   // Karty OK zwinięte, wymagające uwagi rozwinięte automatycznie (D5).
   const [open, setOpen] = useState(status !== "OK");
@@ -121,7 +128,7 @@ export function InvoiceCard({
           />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-medium">
-              {card.supplierName || "(nieznany dostawca)"}{" "}
+              {card.supplierName || (manual ? "Faktura wprowadzana ręcznie" : "(nieznany dostawca)")}{" "}
               <span className="font-normal text-muted-foreground">
                 {card.invoiceNumber || card.fileName}
               </span>
@@ -176,35 +183,58 @@ export function InvoiceCard({
         <div className="space-y-4 border-t p-3">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <HeaderField
-              label="Numer faktury"
+              label={manual ? "Numer faktury *" : "Numer faktury"}
               value={card.invoiceNumber}
-              original={card.original.invoiceNumber}
+              original={original?.invoiceNumber}
               onChange={(v) => onChange({ invoiceNumber: v })}
             />
             <HeaderField
-              label="Data wystawienia"
+              label={manual ? "Data wystawienia *" : "Data wystawienia"}
               type="date"
               value={card.issueDate}
-              original={card.original.issueDate}
+              original={original?.issueDate}
               onChange={(v) => onChange({ issueDate: v })}
             />
             <HeaderField
               label="Okres od"
               type="date"
               value={card.periodStart}
-              original={card.original.periodStart}
+              original={original?.periodStart}
               onChange={(v) => onChange({ periodStart: v })}
             />
             <HeaderField
               label="Okres do"
               type="date"
               value={card.periodEnd}
-              original={card.original.periodEnd}
+              original={original?.periodEnd}
               onChange={(v) => onChange({ periodEnd: v })}
             />
           </div>
 
-          {(card.supplierNip || card.ksefNumber) && (
+          {manual && (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="sm:col-span-1 lg:col-span-2">
+                <HeaderField
+                  label="Dostawca"
+                  value={card.supplierName}
+                  onChange={(v) => onChange({ supplierName: v })}
+                />
+              </div>
+              <HeaderField
+                label="NIP dostawcy"
+                value={card.supplierNip}
+                onChange={(v) => onChange({ supplierNip: v })}
+              />
+              {card.attachmentName && (
+                <p className="flex items-end gap-1.5 pb-2 text-xs text-muted-foreground">
+                  <Paperclip className="h-3 w-3 shrink-0" aria-hidden="true" />
+                  <span className="truncate">{card.attachmentName}</span>
+                </p>
+              )}
+            </div>
+          )}
+
+          {!manual && (card.supplierNip || card.ksefNumber) && (
             <p className="text-xs text-muted-foreground">
               {card.supplierNip && <>Dostawca NIP: {card.supplierNip}</>}
               {card.ksefNumber && <> · Nr KSeF: {card.ksefNumber}</>}
@@ -221,9 +251,21 @@ export function InvoiceCard({
                 factors={factors}
                 canManage={canManage}
                 invoice={card}
+                manual={manual}
                 onChange={(patch) => onLineChange(line.lineNo, patch)}
+                onRemove={
+                  manual && card.lines.length > 1
+                    ? () => onRemoveLine(line.lineNo)
+                    : undefined
+                }
               />
             ))}
+            {manual && (
+              <Button type="button" variant="outline" size="sm" onClick={onAddLine}>
+                <Plus className="h-4 w-4" aria-hidden="true" />
+                Dodaj pozycję
+              </Button>
+            )}
           </div>
         </div>
       </CollapsibleContent>

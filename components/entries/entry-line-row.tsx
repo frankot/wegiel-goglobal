@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
-import { Plus, RotateCcw } from "lucide-react";
+import { Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { MatchHint } from "./status-badge";
 import { SourceFormDialog } from "@/components/sources/source-form";
@@ -30,7 +30,10 @@ interface Props {
   /** Manager może dodać źródło/wskaźnik z poziomu faktury, bez zmiany zakładki. */
   canManage: boolean;
   invoice: { supplierNip: string; periodStart: string; periodEnd: string };
+  /** Pozycja wpisywana ręcznie — edytowalny opis, bez wartości „z faktury". */
+  manual?: boolean;
   onChange: (patch: Partial<LineState>) => void;
+  onRemove?: () => void;
 }
 
 /** Przycisk ↺ — przywraca wartość z dokumentu. Widoczny tylko gdy zmieniono. */
@@ -83,7 +86,9 @@ export function EntryLineRow({
   factors,
   canManage,
   invoice,
+  manual = false,
   onChange,
+  onRemove,
 }: Props) {
   const [creating, setCreating] = useState<"source" | "factor" | null>(null);
   const source = sources.find((s) => s.id === line.sourceId);
@@ -134,9 +139,35 @@ export function EntryLineRow({
   return (
     <div className="space-y-3 rounded-md border p-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <p className="text-sm font-medium">
-          {line.lineNo}. {line.description}
-        </p>
+        {manual ? (
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <span className="text-sm font-medium">{line.lineNo}.</span>
+            <Input
+              value={line.description}
+              onChange={(e) => onChange({ description: e.target.value })}
+              placeholder="Opis pozycji, np. Energia elektryczna czynna"
+              aria-label={`Opis pozycji ${line.lineNo}`}
+              className="flex-1"
+            />
+          </div>
+        ) : (
+          <p className="text-sm font-medium">
+            {line.lineNo}. {line.description}
+          </p>
+        )}
+        {onRemove && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={onRemove}
+            title="Usuń pozycję"
+            aria-label={`Usuń pozycję ${line.lineNo}`}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
         {!line.emissionRelevant && (
           <Button
             type="button"
@@ -167,13 +198,23 @@ export function EntryLineRow({
                 sourceId: value as string,
                 // zmiana źródła podmienia wskaźnik na domyślny dla tego źródła
                 factorId: next?.defaultFactorId ?? line.factorId,
+                // Ręcznie: jednostka ze źródła (wciąż edytowalna, np. MWh),
+                // opis z nazwy źródła, jeśli użytkownik nic nie wpisał.
+                ...(manual && next
+                  ? {
+                      unit: next.unit,
+                      description: line.description.trim() ? line.description : next.name,
+                    }
+                  : {}),
               });
             }}
             className="w-full"
             aria-label="Źródło emisji"
             placeholder="Wybierz źródło…"
           />
-          <MatchHint confidence={line.matchConfidence} reason={line.matchReason} />
+          {!manual && (
+            <MatchHint confidence={line.matchConfidence} reason={line.matchReason} />
+          )}
 
           {/* Oferta zapamiętania PPE — mechanizm samouczenia (§5.4) */}
           {line.unknownPpe && line.sourceId && (
@@ -241,11 +282,13 @@ export function EntryLineRow({
               onChange={(e) => onChange({ unit: e.target.value })}
               className="w-20"
               aria-label="Jednostka"
+              placeholder="kWh"
             />
             <RevertButton
               changed={
-                line.quantity !== line.original.quantity ||
-                line.unit !== line.original.unit
+                !manual &&
+                (line.quantity !== line.original.quantity ||
+                  line.unit !== line.original.unit)
               }
               onRevert={() =>
                 onChange({

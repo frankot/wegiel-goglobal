@@ -16,7 +16,7 @@ export default async function NewEntriesPage() {
     <div className="space-y-4">
       <PageHeader
         description="Wrzuć jeden lub więcej plików XML z KSeF — system odczyta dane i wypełni
-          formularz dla każdej faktury."
+          formularz dla każdej faktury. Fakturę bez pliku XML możesz wpisać ręcznie."
       />
 
       {/* Manager doda źródło prosto z karty faktury; pracownik musi poprosić. */}

@@ -77,6 +77,8 @@ export interface CardState {
   warnings: string[];
   errors: string[];
   duplicateOf?: EnrichedInvoice["duplicateOf"];
+  /** PDF dołączony jako dowód do faktury wprowadzanej ręcznie. */
+  attachmentName?: string;
   /** Usunięta z paczki przez użytkownika — nie idzie do zapisu. */
   removed: boolean;
   saveError?: string;
@@ -135,6 +137,51 @@ export function toCardState(inv: EnrichedInvoice): CardState {
   };
 }
 
+export function emptyLine(lineNo: number): LineState {
+  return {
+    lineNo,
+    description: "",
+    original: { quantity: "", unit: "", sourceId: null, factorId: null },
+    quantity: "",
+    unit: "",
+    sourceId: null,
+    factorId: null,
+    include: true,
+    emissionRelevant: true,
+    matchConfidence: "EXACT",
+    matchReason: "",
+    rememberPpe: false,
+    note: "",
+  };
+}
+
+/**
+ * Pusta karta do ręcznego wprowadzenia faktury — ten sam formularz co po
+ * imporcie XML, tylko bez danych z dokumentu. Opcjonalny PDF jedzie jako
+ * załącznik dowodowy, nie jest odczytywany.
+ */
+export function emptyManualCard(clientId: string, attachmentName?: string): CardState {
+  return {
+    clientId,
+    fileName: attachmentName ?? "",
+    format: "MANUAL",
+    original: { invoiceNumber: "", issueDate: "", periodStart: "", periodEnd: "" },
+    invoiceNumber: "",
+    ksefNumber: "",
+    issueDate: "",
+    periodStart: "",
+    periodEnd: "",
+    supplierNip: "",
+    supplierName: "",
+    buyerNip: "",
+    lines: [emptyLine(1)],
+    warnings: [],
+    errors: [],
+    attachmentName,
+    removed: false,
+  };
+}
+
 /** Wskaźniki pasujące do jednostki pozycji i zakresu źródła. */
 export function factorsForLine(
   line: LineState,
@@ -167,6 +214,7 @@ export function linePreview(line: LineState, factors: FactorOption[]) {
 /** Czy linia jest gotowa do zapisu. */
 export function lineIssue(line: LineState): string | null {
   if (!line.include) return null;
+  if (!line.description.trim()) return `Pozycja ${line.lineNo}: wpisz opis pozycji.`;
   if (!line.sourceId) return `Pozycja ${line.lineNo}: wskaż źródło emisji.`;
   if (!line.factorId) return `Pozycja ${line.lineNo}: wskaż wskaźnik emisji.`;
   if (!lookupUnit(line.unit)) {
@@ -181,6 +229,10 @@ export function lineIssue(line: LineState): string | null {
 export function cardIssues(card: CardState): string[] {
   const issues: string[] = [];
   if (card.errors.length) issues.push(...card.errors);
+  if (card.format === "MANUAL") {
+    if (!card.invoiceNumber.trim()) issues.push("Podaj numer faktury.");
+    if (!card.issueDate) issues.push("Podaj datę wystawienia.");
+  }
   if (card.duplicateOf) {
     issues.push(
       card.duplicateOf.where === "DB"
@@ -256,13 +308,13 @@ export function buildSavePayload(
       clientId: card.clientId,
       fileName: card.fileName,
       sourceFormat: card.format,
-      invoiceNumber: card.invoiceNumber || undefined,
+      invoiceNumber: card.invoiceNumber.trim() || undefined,
       ksefNumber: card.ksefNumber || undefined,
       issueDate: card.issueDate || undefined,
       periodStart: card.periodStart || undefined,
       periodEnd: card.periodEnd || undefined,
-      supplierNip: card.supplierNip || undefined,
-      supplierName: card.supplierName || undefined,
+      supplierNip: card.supplierNip.trim() || undefined,
+      supplierName: card.supplierName.trim() || undefined,
       buyerNip: card.buyerNip || undefined,
       lines: card.lines.map((line) => ({
         lineNo: line.lineNo,

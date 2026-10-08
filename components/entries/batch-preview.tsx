@@ -4,15 +4,18 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { InvoiceDropzone } from "./invoice-dropzone";
 import { InvoiceCard } from "./invoice-card";
 import { BatchResult } from "./batch-result";
 import { formatTon } from "@/lib/emissions/format";
 import { parseInvoiceBatch, saveInvoiceBatch } from "@/lib/entries/actions";
+import { isAttachmentFile } from "@/lib/import/limits";
 import {
   batchTotals,
   buildSavePayload,
+  emptyLine,
+  emptyManualCard,
   isSavable,
   toCardState,
   type CardState,
@@ -43,9 +46,21 @@ export function BatchPreview({ sources, factors, canVerify, canManage }: Props) 
   const totals = batchTotals(cards, factors);
   const savableCount = cards.filter(isSavable).length;
 
-  function handleFiles(files: File[]) {
+  function addManualCard(pdf?: File) {
+    const card = emptyManualCard(crypto.randomUUID(), pdf?.name);
+    setCards((prev) => [...prev, card]);
+    if (pdf) setFilesByCard((prev) => ({ ...prev, [card.clientId]: pdf }));
+  }
+
+  function handleFiles(all: File[]) {
     setResult(null);
     setParseErrors([]);
+
+    // PDF nie jest parsowany (D2) — od razu staje się pustą kartą ręczną
+    // z dołączonym dokumentem, bez wycieczki na serwer.
+    for (const pdf of all.filter((f) => isAttachmentFile(f.name))) addManualCard(pdf);
+    const files = all.filter((f) => !isAttachmentFile(f.name));
+    if (files.length === 0) return;
 
     const formData = new FormData();
     for (const file of files) formData.append("files", file);
@@ -92,6 +107,38 @@ export function BatchPreview({ sources, factors, canVerify, canManage }: Props) 
     );
   }
 
+  function addLine(clientId: string) {
+    setCards((prev) =>
+      prev.map((c) =>
+        c.clientId === clientId
+          ? {
+              ...c,
+              lines: [
+                ...c.lines,
+                emptyLine(Math.max(0, ...c.lines.map((l) => l.lineNo)) + 1),
+              ],
+            }
+          : c,
+      ),
+    );
+  }
+
+  /** Numeracja zostaje ciągła — lineNo jest kluczem pozycji w karcie. */
+  function removeLine(clientId: string, lineNo: number) {
+    setCards((prev) =>
+      prev.map((c) =>
+        c.clientId === clientId
+          ? {
+              ...c,
+              lines: c.lines
+                .filter((l) => l.lineNo !== lineNo)
+                .map((l, i) => ({ ...l, lineNo: i + 1 })),
+            }
+          : c,
+      ),
+    );
+  }
+
   function handleSave(status: "DRAFT" | "VERIFIED") {
     const payload = buildSavePayload(cards, status);
     if (payload.invoices.length === 0) return;
@@ -129,6 +176,14 @@ export function BatchPreview({ sources, factors, canVerify, canManage }: Props) 
     <div className="space-y-4">
       <InvoiceDropzone onFiles={handleFiles} busy={parsing} />
 
+      <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
+        <span>Nie masz pliku XML?</span>
+        <Button type="button" variant="outline" size="sm" onClick={() => addManualCard()}>
+          <Plus className="h-4 w-4" aria-hidden="true" />
+          Dodaj fakturę ręcznie
+        </Button>
+      </div>
+
       {parseErrors.length > 0 && (
         <Card className="border-destructive/40 p-3">
           {parseErrors.map((e, i) => (
@@ -145,7 +200,7 @@ export function BatchPreview({ sources, factors, canVerify, canManage }: Props) 
         <>
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold">
-              Podgląd importu: {cards.length}{" "}
+              Faktury do zapisania: {cards.length}{" "}
               {cards.length === 1 ? "faktura" : "faktury"}
             </h3>
             {cards.length > 0 && (
@@ -177,6 +232,8 @@ export function BatchPreview({ sources, factors, canVerify, canManage }: Props) 
                   patchLine(card.clientId, lineNo, patch)
                 }
                 onRemove={() => patchCard(card.clientId, { removed: true })}
+                onAddLine={() => addLine(card.clientId)}
+                onRemoveLine={(lineNo) => removeLine(card.clientId, lineNo)}
               />
             ))}
           </div>

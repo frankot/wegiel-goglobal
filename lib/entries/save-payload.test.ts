@@ -8,7 +8,14 @@ import {
   batchEnvelopeSchema,
   validateInvoiceForSave,
 } from "@/schemas/invoice";
-import { buildSavePayload, toCardState, type CardState } from "./batch-state";
+import {
+  buildSavePayload,
+  cardIssues,
+  emptyManualCard,
+  isSavable,
+  toCardState,
+  type CardState,
+} from "./batch-state";
 import type { EnrichedInvoice } from "@/lib/import/types";
 
 /** Odtwarza kartę tak, jak powstaje po imporcie prawdziwej faktury Unimotu. */
@@ -141,5 +148,72 @@ describe("REGRESJA: jedna zła faktura nie unieważnia paczki (D4)", () => {
   test("koperta odrzuca pustą paczkę", () => {
     const res = batchEnvelopeSchema.safeParse({ status: "DRAFT", invoices: [] });
     assert.equal(res.success, false);
+  });
+});
+
+describe("Faktura wprowadzana ręcznie", () => {
+  function filledManualCard(): CardState {
+    const card = emptyManualCard("m-1", "skan.pdf");
+    return {
+      ...card,
+      invoiceNumber: " FV/1/2026 ",
+      issueDate: "2026-03-31",
+      lines: [
+        {
+          ...card.lines[0]!,
+          description: "Energia elektryczna",
+          quantity: "1234,5",
+          unit: "kWh",
+          sourceId: "src-1",
+          factorId: "fac-1",
+        },
+      ],
+    };
+  }
+
+  test("pusta karta nie jest gotowa do zapisu", () => {
+    const card = emptyManualCard("m-0");
+    assert.equal(card.format, "MANUAL");
+    assert.equal(card.lines.length, 1);
+    assert.equal(isSavable(card), false);
+    const issues = cardIssues(card);
+    assert.ok(issues.includes("Podaj numer faktury."));
+    assert.ok(issues.includes("Podaj datę wystawienia."));
+    assert.ok(issues.some((i) => i.includes("wpisz opis")));
+  });
+
+  test("wypełniona karta przechodzi do payloadu i schematu", () => {
+    const card = filledManualCard();
+    assert.deepEqual(cardIssues(card), []);
+
+    const payload = buildSavePayload([card], "DRAFT");
+    const inv = payload.invoices[0]!;
+    assert.equal(inv.sourceFormat, "MANUAL");
+    assert.equal(inv.invoiceNumber, "FV/1/2026");
+    assert.equal(inv.fileName, "skan.pdf");
+    assert.equal(inv.lines[0]!.quantity, "1234.5");
+    assert.equal(invoiceSaveSchema.safeParse(inv).success, true);
+  });
+
+  test("schemat odrzuca ręczną fakturę bez numeru i daty", () => {
+    const inv = buildSavePayload([filledManualCard()], "DRAFT").invoices[0]!;
+    const res = invoiceSaveSchema.safeParse({
+      ...inv,
+      invoiceNumber: undefined,
+      issueDate: undefined,
+    });
+    assert.equal(res.success, false);
+    assert.equal(res.error!.issues.length, 2);
+  });
+
+  test("XML bez numeru i daty nadal przechodzi — wymóg dotyczy tylko MANUAL", () => {
+    const inv = buildSavePayload([filledManualCard()], "DRAFT").invoices[0]!;
+    const res = invoiceSaveSchema.safeParse({
+      ...inv,
+      sourceFormat: "KSEF_XML",
+      invoiceNumber: undefined,
+      issueDate: undefined,
+    });
+    assert.equal(res.success, true);
   });
 });

@@ -112,8 +112,8 @@ export function InvoiceDropzone({ onFiles, busy }: Props) {
               Przeciągnij pliki XML z KSeF (do {MAX_FILES_PER_BATCH})
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Każdy plik to jedna faktura. PDF zostanie dołączony jako załącznik —
-              nie jest odczytywany automatycznie.
+              Każdy plik to jedna faktura. PDF otworzy pusty formularz do ręcznego
+              wypełnienia — zostanie dołączony jako załącznik.
             </p>
             <Button
               type="button"

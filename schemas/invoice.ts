@@ -52,20 +52,32 @@ export const lineSaveSchema = z
     }
   });
 
-export const invoiceSaveSchema = z.object({
-  clientId: z.string().min(1),
-  fileName: z.string().optional(),
-  sourceFormat: z.enum(["KSEF_XML", "MANUAL"]),
-  invoiceNumber: z.string().max(200).optional(),
-  ksefNumber: z.string().max(200).optional(),
-  issueDate: isoDate,
-  periodStart: isoDate,
-  periodEnd: isoDate,
-  supplierNip: z.string().max(20).optional(),
-  supplierName: z.string().max(300).optional(),
-  buyerNip: z.string().max(20).optional(),
-  lines: z.array(lineSaveSchema),
-});
+export const invoiceSaveSchema = z
+  .object({
+    clientId: z.string().min(1),
+    fileName: z.string().optional(),
+    sourceFormat: z.enum(["KSEF_XML", "MANUAL"]),
+    invoiceNumber: z.string().max(200).optional(),
+    ksefNumber: z.string().max(200).optional(),
+    issueDate: isoDate,
+    periodStart: isoDate,
+    periodEnd: isoDate,
+    supplierNip: z.string().max(20).optional(),
+    supplierName: z.string().max(300).optional(),
+    buyerNip: z.string().max(20).optional(),
+    lines: z.array(lineSaveSchema),
+  })
+  .superRefine((inv, ctx) => {
+    // Faktura wprowadzona ręcznie nie ma dokumentu źródłowego — numer i data
+    // to jedyne, po czym da się ją później odnaleźć i zdeduplikować.
+    if (inv.sourceFormat !== "MANUAL") return;
+    if (!inv.invoiceNumber?.trim()) {
+      ctx.addIssue({ code: "custom", path: ["invoiceNumber"], message: "Podaj numer faktury" });
+    }
+    if (!inv.issueDate) {
+      ctx.addIssue({ code: "custom", path: ["issueDate"], message: "Podaj datę wystawienia" });
+    }
+  });
 
 export const batchSaveSchema = z.object({
   status: z.enum(["DRAFT", "VERIFIED"]),
