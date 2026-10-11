@@ -5,6 +5,7 @@ import {
   FileText,
   BarChart3,
   Settings,
+  Building2,
   type LucideIcon,
 } from "lucide-react";
 
@@ -45,6 +46,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "System",
     items: [
+      { href: "/company", label: "O firmie", title: "Dane firmy", icon: Building2, roles: ALL },
       { href: "/admin", label: "Administracja", icon: Settings, roles: ["MANAGER"] },
     ],
   },

@@ -8,12 +8,14 @@ import { Topbar } from "@/components/layout/topbar";
 import { TopbarActionsProvider } from "@/components/layout/topbar-actions";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { SIDEBAR_COOKIE } from "./nav";
+import type { SidebarCompany } from "./sidebar";
 
 interface AppLayoutProps {
   children: React.ReactNode;
   userName: string;
   userEmail: string;
   userRole: string;
+  company: SidebarCompany | null;
   defaultCollapsed: boolean;
 }
 
@@ -22,6 +24,7 @@ export function AppLayout({
   userName,
   userEmail,
   userRole,
+  company,
   defaultCollapsed,
 }: AppLayoutProps) {
   const pathname = usePathname();
@@ -50,7 +53,7 @@ export function AppLayout({
     return () => window.removeEventListener("keydown", onKey);
   }, [toggleCollapsed]);
 
-  const user = { userName, userEmail, userRole };
+  const user = { userName, userEmail, userRole, company };
 
   return (
     <TopbarActionsProvider>

@@ -10,11 +10,18 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { NAV_GROUPS, initials, isActive, roleLabel } from "./nav";
 import { BrandMark, BrandWordmark } from "./brand";
 
+export interface SidebarCompany {
+  name: string;
+  nip: string | null;
+}
+
 interface SidebarProps {
   collapsed: boolean;
   userName: string;
   userEmail: string;
   userRole: string;
+  /** Skrót danych firmy — null, dopóki Manager ich nie uzupełni. */
+  company: SidebarCompany | null;
   onNavigate?: () => void;
   /** Tylko wersja desktopowa — nazwa przejścia musi być na stronie unikalna. */
   brandTransition?: boolean;
@@ -38,6 +45,7 @@ export function Sidebar({
   userName,
   userEmail,
   userRole,
+  company,
   onNavigate,
   brandTransition = false,
 }: SidebarProps) {
@@ -46,27 +54,45 @@ export function Sidebar({
 
   return (
     <div className="flex h-full flex-col bg-navy text-navy-foreground">
-      <Link
-        href="/dashboard"
-        onClick={onNavigate}
-        className={cn("flex h-16 shrink-0 items-center gap-3", collapsed ? "justify-center" : "px-6")}
-        aria-label="Ślad węglowy — strona główna"
-      >
-        {brandTransition ? (
-          // Wspólna nazwa z logo ekranu logowania — logo „przejeżdża" po zalogowaniu.
-          <ViewTransition name="brand-logo" share="brand-logo" default="none">
-            <span className="flex items-center gap-3">
+      <MaybeTooltip collapsed={collapsed && !!company} label={company?.name ?? ""}>
+        <Link
+          href="/dashboard"
+          onClick={onNavigate}
+          className={cn("flex h-16 shrink-0 items-center gap-3", collapsed ? "justify-center" : "px-6")}
+          aria-label="Ślad węglowy — strona główna"
+        >
+          {brandTransition ? (
+            // Wspólna nazwa z logo ekranu logowania — logo „przejeżdża" po zalogowaniu.
+            <ViewTransition name="brand-logo" share="brand-logo" default="none">
+              <span className="flex items-center gap-3">
+                <BrandMark />
+                {!collapsed && <BrandWordmark />}
+              </span>
+            </ViewTransition>
+          ) : (
+            <>
               <BrandMark />
               {!collapsed && <BrandWordmark />}
+            </>
+          )}
+        </Link>
+      </MaybeTooltip>
+
+      {company && !collapsed && (
+        <Link
+          href="/company"
+          onClick={onNavigate}
+          title={company.name}
+          className="mx-3 block rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 leading-tight transition-colors hover:bg-white/[0.08]"
+        >
+          <span className="block truncate text-[0.8125rem] text-white/90">{company.name}</span>
+          {company.nip && (
+            <span className="mt-0.5 block text-[0.6875rem] tabular-nums text-white/50">
+              NIP {company.nip}
             </span>
-          </ViewTransition>
-        ) : (
-          <>
-            <BrandMark />
-            {!collapsed && <BrandWordmark />}
-          </>
-        )}
-      </Link>
+          )}
+        </Link>
+      )}
 
       <nav
         aria-label="Główna nawigacja"

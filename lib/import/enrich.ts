@@ -10,6 +10,8 @@ import {
 import { factorDenominatorUnit, lookupUnit } from "@/lib/emissions/units";
 import { getSourceCandidates } from "@/lib/db/sources";
 import { getFactorCandidates } from "@/lib/db/factors";
+import { getCompany } from "@/lib/db/company";
+import { buyerNipWarning } from "@/lib/company/identifiers";
 import { findDuplicates, type ExistingInvoiceKey } from "./dedupe";
 import { sumCo2eKg } from "@/lib/emissions/calculate";
 import type {
@@ -27,15 +29,22 @@ import type {
 export async function enrichInvoices(
   parsed: ParsedInvoice[],
 ): Promise<EnrichedInvoice[]> {
-  const [sources, factors, existing] = await Promise.all([
+  const [sources, factors, existing, company] = await Promise.all([
     getSourceCandidates(),
     getFactorCandidates(),
     loadExistingKeys(parsed),
+    getCompany(),
   ]);
 
   const duplicates = findDuplicates(parsed, existing);
 
-  return parsed.map((inv) => {
+  return parsed.map((parsedInv) => {
+    // Faktura na inny podmiot nie jest blokowana — tylko wymaga spojrzenia.
+    const buyerWarning = buyerNipWarning(parsedInv.buyerNip, company?.nip);
+    const inv = buyerWarning
+      ? { ...parsedInv, warnings: [...parsedInv.warnings, buyerWarning] }
+      : parsedInv;
+
     const refDate = resolveRefDate(inv);
     const lines = inv.lines.map((line) =>
       enrichLine(line, { sources, factors, refDate, supplierNip: inv.supplierNip }),
