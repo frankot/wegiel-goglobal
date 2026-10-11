@@ -1,38 +1,56 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { getCurrentUser } from "@/lib/db/users";
 import { PageHeader } from "@/components/layout/page-header";
+import { buttonVariants } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { CategoryCard, MonthlyCard, ReportKpis } from "@/components/reports/report-view";
+import { parseReportParams } from "@/lib/reports/params";
+import { getReport } from "@/lib/reports/query";
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
+  // Ten sam silnik co /reports: bieżący rok, wpisy zweryfikowane.
+  const params = parseReportParams({ preset: "currentYear" });
+  const data = await getReport(params);
+  const year = params.from.slice(0, 4);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PageHeader
-        description={`Witaj, ${user.name || user.email}. Przegląd emisji CO₂e — Scope 1 i 2.`}
+        description={`Witaj, ${user.name || user.email}. Emisje CO₂e w ${year} r. (od początku roku, wpisy zweryfikowane) — Zakres 1 i 2.`}
       />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg border bg-card p-4">
-          <p className="text-sm text-muted-foreground">Całkowite CO₂e (2026)</p>
-          <p className="text-2xl font-bold">— t</p>
-        </div>
-        <div className="rounded-lg border bg-card p-4">
-          <p className="text-sm text-muted-foreground">Scope 1</p>
-          <p className="text-2xl font-bold text-green-600">— t</p>
-        </div>
-        <div className="rounded-lg border bg-card p-4">
-          <p className="text-sm text-muted-foreground">Scope 2</p>
-          <p className="text-2xl font-bold text-blue-600">— t</p>
-        </div>
-        <div className="rounded-lg border bg-card p-4">
-          <p className="text-sm text-muted-foreground">Zmiana YoY</p>
-          <p className="text-2xl font-bold">—</p>
-        </div>
-      </div>
+      <ReportKpis data={data} />
 
-      <div className="rounded-lg border bg-card p-6">
-        <p className="text-muted-foreground">
-          Wykresy i szczegółowe dane zostaną dodane w Fazie 3 (Raporty).
+      {data.entryCount === 0 ? (
+        <Card className="px-5">
+          <p className="text-sm text-muted-foreground">
+            W tym roku nie ma jeszcze zweryfikowanych wpisów.{" "}
+            <Link href="/entries/new" className="text-primary underline-offset-4 hover:underline">
+              Dodaj faktury
+            </Link>{" "}
+            albo zweryfikuj szkice na liście faktur.
+          </p>
+        </Card>
+      ) : (
+        <>
+          <MonthlyCard data={data} title={`Emisja miesięczna ${year}`} />
+          <CategoryCard data={data} />
+        </>
+      )}
+
+      {data.quality.excludedDrafts > 0 && (
+        <p className="text-xs text-muted-foreground">
+          {data.quality.excludedDrafts} wpisów czeka na weryfikację i nie jest ujętych w podsumowaniu.
         </p>
+      )}
+
+      <div className="flex justify-end">
+        <Link href="/reports" className={buttonVariants({ variant: "outline" })}>
+          Pełny raport i eksport
+          <ArrowRight aria-hidden="true" />
+        </Link>
       </div>
     </div>
   );
