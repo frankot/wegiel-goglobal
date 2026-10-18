@@ -1,18 +1,4 @@
-/**
- * Dopasowanie pozycji faktury do źródła emisji — kaskada (D8).
- *
- *   1. PPE           → EXACT
- *   2. nr licznika   → EXACT
- *   3. NIP dostawcy  → LIKELY (tylko gdy jednoznaczny)
- *   4. słownik słów  → GUESS  (tylko gdy jednoznaczny)
- *   5. brak          → NONE
- *
- * Krok 1 jest tym, dzięki któremu paczka faktur od znanych dostawców po kilku
- * miesiącach wchodzi w całości bez pracy człowieka: po pierwszym ręcznym
- * przypisaniu zapamiętujemy PPE na źródle i kolejne faktury trafiają same.
- *
- * Funkcja jest czysta — źródła przychodzą z warstwy DAL.
- */
+/** Source matching cascade */
 
 export type MatchConfidence = "EXACT" | "LIKELY" | "GUESS" | "NONE";
 
@@ -32,13 +18,10 @@ export interface SourceCandidate {
 export interface SourceMatch {
   sourceId: string | null;
   confidence: MatchConfidence;
-  /** Tekst pokazywany na karcie: „dopasowano po PPE" itp. */
   reason: string;
-  /** PPE z dokumentu, którego nie znaleziono — oferta zapamiętania. */
   unknownPpe?: string;
 }
 
-/** Słowa kluczowe z opisu pozycji → typ źródła emisji. */
 const KEYWORD_TYPES: Array<{
   pattern: RegExp;
   type: SourceCandidate["type"];
@@ -73,7 +56,7 @@ export function matchSource(params: {
   const { ppeNumber, meterNumber, supplierNip, description } = params;
   const sources = params.sources.filter((s) => s.active);
 
-  // 1. PPE — klucz najpewniejszy
+  // 1. PPE
   if (ppeNumber) {
     const hit = sources.find((s) => s.ppeNumber === ppeNumber);
     if (hit) {
@@ -85,7 +68,7 @@ export function matchSource(params: {
     }
   }
 
-  // 2. numer licznika
+  // 2. Meter number
   if (meterNumber) {
     const hit = sources.find((s) => s.meterNumber === meterNumber);
     if (hit) {
@@ -99,7 +82,7 @@ export function matchSource(params: {
 
   const unknownPpe = ppeNumber ?? undefined;
 
-  // 3. NIP dostawcy — tylko gdy jednoznaczny
+  // 3. Supplier NIP
   if (supplierNip) {
     const hits = sources.filter((s) => s.supplierNip === supplierNip);
     if (hits.length === 1) {
@@ -112,7 +95,7 @@ export function matchSource(params: {
     }
   }
 
-  // 4. słownik słów kluczowych — tylko gdy jednoznaczny
+  // 4. Keywords
   if (description) {
     const type = inferSourceType(description);
     if (type) {

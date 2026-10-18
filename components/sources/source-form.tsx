@@ -28,7 +28,6 @@ import { formatFactor } from "@/lib/emissions/format";
 import type { SourceRow } from "@/lib/db/sources";
 import type { FactorDTO } from "@/lib/db/factors";
 
-/** Tylko pola, których formularz potrzebuje — pasuje też do opcji z podglądu importu. */
 export type SourceFormFactor = Pick<FactorDTO, "id" | "name" | "value" | "unit" | "scope" | "validTo">;
 
 interface Props {
@@ -36,7 +35,6 @@ interface Props {
   factors: SourceFormFactor[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Wartości startowe nowego źródła — np. z pozycji importowanej faktury. */
   defaults?: {
     type?: SourceType;
     unit?: string;
@@ -52,7 +50,6 @@ const TYPE_ITEMS = (Object.keys(SOURCE_TYPE_LABELS) as SourceType[]).map((t) => 
   label: SOURCE_TYPE_LABELS[t],
 }));
 
-/** Jednostka z faktury bywa zapisana inaczej („KWH") — dopasuj do listy typu. */
 function defaultUnitFor(type: SourceType, raw?: string): string {
   const units = UNITS_BY_TYPE[type];
   const hit = raw && units.find((u) => u.toLowerCase() === raw.trim().toLowerCase());
@@ -79,8 +76,6 @@ export function SourceFormDialog({
   const scope = scopeForType(type);
   const showGridIds = supportsGridIdentifiers(type);
 
-  // Pokazujemy tylko wskaźniki, które faktycznie da się użyć z tym typem
-  // i jednostką — zamiast pozwolić wybrać i odrzucić dopiero przy zapisie.
   const usableFactors = factors.filter(
     (f) =>
       f.scope === scope &&

@@ -1,12 +1,4 @@
-/**
- * Parametry raportu — czysta logika bez zależności serwerowych.
- *
- * Te same parametry sterują podglądem na /reports (przez URL, więc widok da
- * się podlinkować) i plikami do pobrania (ten sam query string trafia do
- * route handlera). Dzięki temu PDF zawsze pokazuje dokładnie to, co podgląd.
- *
- * Daty to `YYYY-MM-DD` interpretowane w UTC, włącznie z obu stron.
- */
+/** Report params */
 import { SOURCE_TYPE_LABELS, type Scope, type SourceType } from "@/lib/emissions/source-types";
 
 export type EntryStatus = "DRAFT" | "VERIFIED" | "CORRECTED";
@@ -41,19 +33,14 @@ const ALL_STATUSES = Object.keys(STATUS_LABELS) as EntryStatus[];
 export interface ReportParams {
   from: string;
   to: string;
-  /** Preset, z którego wzięto daty — "custom" po ręcznej zmianie. */
   preset: PresetId | "custom";
-  /** Puste = wszystkie. */
   scopes: Scope[];
   types: SourceType[];
   sourceIds: string[];
-  /** Nigdy puste — brak filtra oznacza wartość domyślną (zweryfikowane). */
   statuses: EntryStatus[];
 }
 
-/* ---------------------------------------------------------------------- */
-/* Daty                                                                    */
-/* ---------------------------------------------------------------------- */
+/* Dates */
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -78,7 +65,6 @@ function utc(y: number, m: number, d: number): Date {
   return new Date(Date.UTC(y, m, d));
 }
 
-/** Ostatni dzień miesiąca (m: 0–11). */
 function endOfMonth(y: number, m: number): Date {
   return utc(y, m + 1, 0);
 }
@@ -96,17 +82,14 @@ export function presetRange(preset: PresetId, today: Date): { from: string; to: 
     case "previousMonth":
       return { from: toIsoDate(utc(y, m - 1, 1)), to: toIsoDate(endOfMonth(y, m - 1)) };
     case "last12Months":
-      // 12 miesięcy kalendarzowych łącznie z bieżącym — wykres ma pełne słupki.
       return { from: toIsoDate(utc(y, m - 11, 1)), to: toIsoDate(today) };
   }
 }
 
-/** Liczba dni w zakresie, włącznie z obu stron. */
 export function rangeDays(from: string, to: string): number {
   return Math.round((parseIsoDate(to).getTime() - parseIsoDate(from).getTime()) / 86_400_000) + 1;
 }
 
-/** Okres tej samej długości bezpośrednio przed zakresem. */
 export function previousPeriod(from: string, to: string): { from: string; to: string } {
   const days = rangeDays(from, to);
   const prevTo = new Date(parseIsoDate(from).getTime() - 86_400_000);
@@ -118,17 +101,14 @@ function minusYear(s: string): string {
   const d = parseIsoDate(s);
   const y = d.getUTCFullYear() - 1;
   const m = d.getUTCMonth();
-  // 29 lutego → 28 lutego, zamiast przeskoku na 1 marca.
   const day = Math.min(d.getUTCDate(), endOfMonth(y, m).getUTCDate());
   return toIsoDate(utc(y, m, day));
 }
 
-/** Ten sam zakres dat rok wcześniej. */
 export function samePeriodLastYear(from: string, to: string): { from: string; to: string } {
   return { from: minusYear(from), to: minusYear(to) };
 }
 
-/** Miesiące zakresu jako `YYYY-MM`, w kolejności. */
 export function monthsInRange(from: string, to: string): string[] {
   const out: string[] = [];
   const end = to.slice(0, 7);
@@ -149,21 +129,17 @@ export function monthsInRange(from: string, to: string): string[] {
 
 const MONTHS_SHORT = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
 
-/** `2026-03` → „mar 2026" (albo „mar", gdy rok jest oczywisty z kontekstu). */
 export function monthLabel(key: string, withYear = true): string {
   const m = MONTHS_SHORT[Number(key.slice(5, 7)) - 1]!;
   return withYear ? `${m} ${key.slice(0, 4)}` : m;
 }
 
-/** „01.01.2026 – 11.10.2026" */
 export function formatRange(from: string, to: string): string {
   const f = (s: string) => `${s.slice(8, 10)}.${s.slice(5, 7)}.${s.slice(0, 4)}`;
   return `${f(from)} – ${f(to)}`;
 }
 
-/* ---------------------------------------------------------------------- */
-/* URL ⇄ parametry                                                         */
-/* ---------------------------------------------------------------------- */
+/* URL ⇄ params */
 
 type RawParams = Record<string, string | string[] | undefined> | URLSearchParams;
 
@@ -172,7 +148,6 @@ function getAll(raw: RawParams, key: string): string[] {
     raw instanceof URLSearchParams
       ? raw.getAll(key)
       : ([] as string[]).concat(raw[key] ?? []);
-  // Obsługa zarówno `?scope=A&scope=B`, jak i `?scope=A,B`.
   return values.flatMap((v) => v.split(",")).map((v) => v.trim()).filter(Boolean);
 }
 
@@ -180,10 +155,6 @@ function getOne(raw: RawParams, key: string): string | undefined {
   return getAll(raw, key)[0];
 }
 
-/**
- * Parsuje parametry z URL-a. Nieznane wartości są odrzucane po cichu —
- * zepsuty link pokazuje raport domyślny, a nie błąd.
- */
 export function parseReportParams(raw: RawParams, today = new Date()): ReportParams {
   const presetRaw = getOne(raw, "preset");
   const preset = PRESETS.some((p) => p.id === presetRaw) ? (presetRaw as PresetId) : undefined;
@@ -221,7 +192,6 @@ export function parseReportParams(raw: RawParams, today = new Date()): ReportPar
   };
 }
 
-/** Odwrotność `parseReportParams` — preset zamiast dat, gdy to możliwe. */
 export function reportParamsToSearch(p: ReportParams): URLSearchParams {
   const s = new URLSearchParams();
   if (p.preset !== "custom") {

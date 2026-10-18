@@ -89,11 +89,9 @@ export function InvoiceCard({
   onAddLine,
   onRemoveLine,
 }: Props) {
-  // Karta ręczna nie ma wartości „z faktury" — bez przycisków ↺.
   const manual = card.format === "MANUAL";
   const original = manual ? undefined : card.original;
   const status = cardStatus(card);
-  // Karty OK zwinięte, wymagające uwagi rozwinięte automatycznie (D5).
   const [open, setOpen] = useState(status !== "OK");
   const issues = cardIssues(card);
   const totalKg = cardTotalKg(card, factors);
@@ -156,7 +154,6 @@ export function InvoiceCard({
         )}
       </div>
 
-      {/* Problemy widoczne również przy zwiniętej karcie */}
       {(issues.length > 0 || card.warnings.length > 0) && (
         <div className="space-y-1 border-t px-3 py-2">
           {issues.map((issue, i) => (

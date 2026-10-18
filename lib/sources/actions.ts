@@ -34,7 +34,6 @@ interface Normalized {
   supplierNip: string | null;
 }
 
-/** Walidacja domenowa wspólna dla tworzenia i edycji. */
 async function normalize(
   formData: FormData,
   excludeId?: string,
@@ -61,16 +60,12 @@ async function normalize(
     );
   }
 
-  // Niezgodność jednostek wywaliłaby się dopiero przy liczeniu emisji
-  // z faktury — lepiej zatrzymać to tutaj.
   if (!isUnitCompatibleWithFactor(input.unit, factor.unit)) {
     errors.push(
       `Jednostki „${input.unit}" nie da się przeliczyć na mianownik wskaźnika (${factor.unit}).`,
     );
   }
 
-  // Wskaźnik musi obowiązywać dziś — przypisywanie przeterminowanego
-  // domyślnego wskaźnika tylko odsuwa problem do pierwszego importu.
   const now = new Date();
   if (factor.validTo < now) {
     errors.push(
@@ -95,8 +90,6 @@ async function normalize(
     );
   }
 
-  // Nazwa i PPE są unikalne w bazie; sprawdzamy wcześniej, żeby dać czytelny
-  // komunikat zamiast surowego błędu ograniczenia.
   const nameTaken = await prisma.emissionSource.findFirst({
     where: { name: input.name, NOT: excludeId ? { id: excludeId } : undefined },
     select: { id: true },
@@ -194,11 +187,6 @@ export async function updateSource(
   return { ok: true, sourceId: id };
 }
 
-/**
- * Dezaktywacja zamiast usunięcia (spec §5.2): źródło znika z list wyboru,
- * ale historyczne wpisy zostają nienaruszone. Blokujemy, gdy wiszą na nim
- * szkice — inaczej zniknęłoby źródło, którego ktoś właśnie używa.
- */
 export async function setSourceActive(
   id: string,
   active: boolean,

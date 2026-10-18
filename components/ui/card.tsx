@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 
-/** Płaska biała karta — bez cienia, bez obramowania; odcina się od płótna samym kolorem. */
 export function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -10,7 +9,6 @@ export function Card({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-/** Nagłówek z opcjonalną akcją po prawej (np. wyszukiwarka) i cienką kreską pod spodem. */
 export function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   return <div className={cn("flex flex-col gap-0.5 px-5", className)} {...props} />;
 }

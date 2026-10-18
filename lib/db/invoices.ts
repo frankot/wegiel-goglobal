@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { cleanText, ksefXmlParser } from "@/lib/import/ksef-xml";
 
-/** Wszystkie Decimal zmapowane na string — granica RSC (§8). */
 export interface InvoiceListItem {
   id: string;
   invoiceNumber: string | null;
@@ -167,8 +166,7 @@ export interface InvoiceDetail {
   entries: InvoiceEntryItem[];
   totalCo2eKg: string;
   totalCo2eTon: string;
-  attachments: Array<{ id: string; kind: string; fileName: string; blobUrl: string }>;
-  /** Dokument odczytany ponownie z zapisanego XML — null dla starszych faktur. */
+  attachments: Array<{ id: string; kind: string; fileName: string }>;
   document: {
     fileName: string;
     currency: string | null;
@@ -182,7 +180,6 @@ export interface InvoiceDetail {
   } | null;
 }
 
-/** Kształt `Invoice.rawPayload` zapisywany przy imporcie. */
 export function storedXml(raw: unknown): { fileName: string; xml: string } | null {
   if (!raw || typeof raw !== "object") return null;
   const r = raw as { xml?: unknown; fileName?: unknown };
@@ -195,7 +192,6 @@ function readDocument(raw: unknown): InvoiceDetail["document"] {
   const stored = storedXml(raw);
   if (!stored) return null;
   try {
-    // Ten sam parser co przy imporcie — podgląd pokazuje dokładnie to, co system odczytał.
     const parsed = ksefXmlParser.parse({
       name: stored.fileName,
       content: Buffer.from(stored.xml, "utf8"),
@@ -262,13 +258,18 @@ export async function getInvoiceDetail(id: string): Promise<InvoiceDetail | null
       id: a.id,
       kind: a.kind,
       fileName: a.fileName,
-      blobUrl: a.blobUrl,
     })),
     document: readDocument(inv.rawPayload),
   };
 }
 
-/** Oryginalny XML do pobrania — trasa `/api/invoices/[id]/xml`. */
+export async function getAttachmentForDownload(id: string) {
+  return prisma.invoiceAttachment.findUnique({
+    where: { id },
+    select: { id: true, invoiceId: true, kind: true, fileName: true, blobUrl: true },
+  });
+}
+
 export async function getInvoiceXml(id: string) {
   const inv = await prisma.invoice.findUnique({
     where: { id },

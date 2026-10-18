@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { hashPassword } from "@/lib/auth/hash";
+import { hashPassword, hashToken } from "@/lib/auth/hash";
 import { createSession } from "@/lib/auth/session";
 import { signupSchema } from "@/schemas/auth";
 import { redirect } from "next/navigation";
@@ -32,7 +32,7 @@ export async function activateAccount(
 
   const user = await prisma.user.findFirst({
     where: {
-      invitationToken: token,
+      invitationToken: hashToken(token),
       invitationExpires: { gte: new Date() },
     },
   });

@@ -15,7 +15,16 @@ export async function clientIp(): Promise<string | undefined> {
 export interface AuditInput {
   userId: string;
   userName: string;
-  action: "CREATE" | "UPDATE" | "DELETE" | "VERIFY" | "CORRECT" | "IMPORT" | "RECALC";
+  action:
+    | "LOGIN"
+    | "CREATE"
+    | "UPDATE"
+    | "DELETE"
+    | "VERIFY"
+    | "CORRECT"
+    | "IMPORT"
+    | "RECALC"
+    | "DOWNLOAD";
   entity: string;
   entityId?: string;
   details?: string;
@@ -36,7 +45,6 @@ export async function writeAudit(input: AuditInput): Promise<void> {
   });
 }
 
-/** Wariant transakcyjny — audyt musi powstać razem z encją albo wcale. */
 export async function writeAuditTx(
   tx: Prisma.TransactionClient,
   input: AuditInput,

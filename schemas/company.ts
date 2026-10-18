@@ -12,7 +12,6 @@ const optionalText = (max: number) =>
     .optional()
     .transform((v) => (v && v.trim() !== "" ? v.trim() : undefined));
 
-/** Pole opcjonalne z normalizacją — pusta wartość przechodzi, zła nie. */
 const optionalId = (normalize: (s: string) => string | null, message: string) =>
   optionalText(30).superRefine((v, ctx) => {
     if (v && !normalize(v)) ctx.addIssue({ code: "custom", message });

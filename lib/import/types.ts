@@ -9,25 +9,19 @@ export interface ParsedLine {
   lineNo: number;
   description: string;
   indeks?: string;
-  /** Ilość jako string — do `Prisma.Decimal` bez wycieczki przez Number. */
   quantity: string;
-  /** Jednostka surowa z dokumentu ("kWh", "mc"). */
   unit: string;
-  /** Cena/wartość netto — wyłącznie podgląd, nigdy podstawa obliczeń. */
   netValue?: string;
   ppeNumber?: string;
   meterNumber?: string;
   tariffGroup?: string;
-  /** false dla pozycji typu „Opłata handlowa" — nie tworzy wpisu. */
   emissionRelevant: boolean;
   skipReason?: string;
 }
 
-/** Pozycja wzbogacona o dopasowanie źródła i wskaźnika (robi to serwer). */
 export interface EnrichedLine extends ParsedLine {
   match: SourceMatch;
   factor: FactorResolution;
-  /** Podgląd wyliczonej emisji — wartość wiążąca liczona ponownie przy zapisie. */
   preview?: {
     quantity: string;
     unit: string;
@@ -39,13 +33,11 @@ export interface EnrichedLine extends ParsedLine {
 }
 
 export interface ParsedInvoice {
-  /** Id karty w podglądzie — nadawane przy parsowaniu, stabilne do zapisu. */
   clientId: string;
   fileName: string;
   format: InvoiceFormat;
   invoiceNumber?: string;
   ksefNumber?: string;
-  /** Daty jako ISO string — Date nie przechodzi czysto przez granicę RSC. */
   issueDate?: string;
   periodStart?: string;
   periodEnd?: string;

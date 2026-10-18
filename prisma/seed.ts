@@ -12,8 +12,6 @@ const prisma = new PrismaClient({ adapter });
 
 const SEED_FACTORS = [
   {
-    // Tabela 2 — referencyjny wskaźnik dla odbiorców końcowych, dane za 2024,
-    // publikacja XII 2025. Zgodny z example/unimot-calc.md.
     name: "Energia elektryczna PL — odbiorcy końcowi (KOBIZE, dane 2024)",
     category: "Energia elektryczna",
     value: 0.553,
@@ -88,10 +86,7 @@ const SEED_FACTORS = [
 async function main() {
   console.log("🌱 Seeding database...");
 
-
   for (const factor of SEED_FACTORS) {
-    // Po nazwie ALBO po treści — nazwę można zmienić w aplikacji, a duplikat
-    // linii wskaźnika robi remis przy każdym imporcie.
     const existing = await prisma.emissionFactor.findFirst({
       where: {
         OR: [
@@ -116,9 +111,6 @@ async function main() {
 
   console.log(`✅ Seeded ${SEED_FACTORS.length} emission factors`);
 
-  // Wersja archiwalna tej samej linii wskaźnika: 0,685 za 2025 rok.
-  // Dzięki temu historia wersji ma od razu co pokazać, a `resolveFactor`
-  // ma realny przypadek dwóch wersji rozdzielonych datami.
   const current = await prisma.emissionFactor.findFirst({
     where: {
       category: "Energia elektryczna",
@@ -154,13 +146,9 @@ async function main() {
   await seedDemoHistory();
 }
 
-/**
- * Dane demo — źródła emisji używane przez faktury z example/demo/
- * (scenariusze opisane w example/demo/README.md).
- */
+/** Demo sources */
 const DEMO_SOURCES = [
   {
-    // PPE z example/unimoto-x.xml — import przykładowej faktury trafia na EXACT.
     name: "Licznik główny — Rzeszów, Boya-Żeleńskiego 11",
     type: "ELECTRICITY" as const,
     scope: "SCOPE_2" as const,
@@ -193,7 +181,6 @@ const DEMO_SOURCES = [
     supplierNip: "8130013777",
   },
   {
-    // Gaz i paliwo nie mają PPE — dopasowanie po NIP dostawcy (LIKELY).
     name: "Kotłownia gazowa — Rzeszów",
     type: "STATIONARY_INSTALLATION" as const,
     scope: "SCOPE_1" as const,
@@ -214,10 +201,6 @@ const DEMO_SOURCES = [
   },
 ];
 
-/**
- * Źródło demo już w bazie — po nazwie albo po PPE (unikalnym). Nazwę można
- * zmienić w aplikacji, PPE zostaje, więc sama nazwa nie wystarcza.
- */
 function findDemoSource(source: (typeof DEMO_SOURCES)[number]) {
   const ppeNumber = "ppeNumber" in source ? source.ppeNumber : undefined;
   return prisma.emissionSource.findFirst({
@@ -252,11 +235,7 @@ async function seedDemoSources() {
   }
 }
 
-/**
- * Historia: kilka zatwierdzonych faktur z maja–czerwca 2026, żeby lista
- * faktur nie była pusta. Faktura czerwcowa z Rzeszowa ma ten sam numer co
- * example/demo/08-duplikat-*.xml — import tego pliku pokazuje deduplikację.
- */
+/** Demo history */
 const DEMO_HISTORY = [
   {
     invoiceNumber: "UE/F2/1103911/183/06/2026/FR",
@@ -332,7 +311,6 @@ const DEMO_HISTORY = [
   },
 ];
 
-/** Oryginał XML z example/demo/historia — ten sam kształt co przy imporcie. */
 function historyPayload(fileName: string) {
   const xml = readFileSync(join(__dirname, "../example/demo/historia", fileName), "utf8");
   return { format: "KSEF_XML" as const, fileName, xml };
@@ -353,7 +331,6 @@ async function seedDemoHistory() {
       where: { supplierNip: h.supplierNip, invoiceNumber: h.invoiceNumber },
     });
     if (existing) {
-      // Faktury z wcześniejszego seeda nie miały zapisanego XML — uzupełniamy.
       if (existing.rawPayload == null) {
         await prisma.invoice.update({
           where: { id: existing.id },
@@ -374,7 +351,6 @@ async function seedDemoHistory() {
       continue;
     }
 
-    // Ta sama funkcja co przy imporcie — wynik demo = wynik aplikacji.
     const r = calculateEmission({
       quantity: h.quantity,
       quantityUnit: h.unit,

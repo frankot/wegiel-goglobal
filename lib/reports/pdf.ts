@@ -21,16 +21,11 @@ import { STATUS_LABELS } from "./params";
 import { SOURCE_TYPE_LABELS } from "@/lib/emissions/source-types";
 import { SCOPE_COLORS } from "./colors";
 
-/**
- * Raport PDF (§5.5.2) rysowany wektorowo w jsPDF — wykresy to prymitywy
- * PDF, nie zrzuty ekranu, więc są ostre w druku. Polskie znaki wymagają
- * osadzonej czcionki TTF (jsPDF nie ma UTF-8 w czcionkach standardowych).
- */
+/** PDF report */
 
 type RGB = [number, number, number];
 const hex = (h: string): RGB => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)) as RGB;
 
-// Kolor = zakres, wszędzie. Para zwalidowana pod kątem daltonizmu (dataviz).
 const C = {
   scope1: hex(SCOPE_COLORS.SCOPE_1),
   scope2: hex(SCOPE_COLORS.SCOPE_2),
@@ -48,7 +43,7 @@ const scopeColor = (s: "SCOPE_1" | "SCOPE_2") => (s === "SCOPE_1" ? C.scope1 : C
 
 const PAGE_W = 210;
 const PAGE_H = 297;
-const M = 16; // margines
+const M = 16;
 const CONTENT_W = PAGE_W - 2 * M;
 const FOOTER_H = 14;
 const FONT = "NunitoSans";
@@ -105,7 +100,6 @@ class Pdf {
     return this.doc.getTextWidth(s);
   }
 
-  /** Łamanie tekstu przy KONKRETNYM rozmiarze — jsPDF mierzy bieżącą czcionką. */
   split(s: string, width: number, size: number, bold = false): string[] {
     this.doc.setFont(FONT, bold ? "bold" : "normal");
     this.doc.setFontSize(size);
@@ -121,7 +115,6 @@ class Pdf {
     this.doc.setLineWidth(width);
   }
 
-  /** Nowa strona, jeśli zostało mniej miejsca niż `h`. */
   ensure(h: number) {
     if (this.y + h > PAGE_H - M - FOOTER_H) this.addPage();
   }
@@ -131,7 +124,6 @@ class Pdf {
     this.y = M;
   }
 
-  /** `keep` — ile miejsca pod nagłówkiem musi się zmieścić, żeby nie wisiał sam. */
   heading(title: string, subtitle?: string, keep = 30) {
     this.ensure((subtitle ? 16 : 12) + keep);
     this.y += 4;
@@ -165,7 +157,6 @@ class Pdf {
       footStyles: { fontStyle: "bold", fillColor: C.panel, textColor: C.ink, lineWidth: 0 },
       ...opts,
       didParseCell: (hook) => {
-        // Nagłówek i stopka kolumny liczbowej wyrównane jak jej wartości.
         const col = opts.columnStyles?.[hook.column.index];
         if (hook.section !== "body" && col?.halign === "right") hook.cell.styles.halign = "right";
         userHook?.(hook);
@@ -175,11 +166,8 @@ class Pdf {
   }
 }
 
-/* ---------------------------------------------------------------------- */
-/* Wykresy                                                                 */
-/* ---------------------------------------------------------------------- */
+/* Charts */
 
-/** Pierścień udziałów — wielokąt przybliżający łuki (jsPDF nie ma wypełnianego łuku). */
 function donut(
   pdf: Pdf,
   cx: number,
@@ -192,7 +180,6 @@ function donut(
   if (total <= 0) return;
   let start = -Math.PI / 2;
   const visible = segments.filter((s) => s.value > 0);
-  // Szczelina 2 px między segmentami (≈0,7 mm), tylko gdy jest ich więcej niż jeden.
   const gap = visible.length > 1 ? 0.7 / r : 0;
 
   for (const seg of visible) {
@@ -218,7 +205,6 @@ function donut(
   }
 }
 
-/** „Ładna" górna granica osi i krok podziałki. */
 function niceScale(max: number, ticks = 4): { max: number; step: number } {
   if (max <= 0) return { max: 1, step: 0.25 };
   const raw = max / ticks;
@@ -242,7 +228,6 @@ function monthlyChart(pdf: Pdf, data: ReportData, x: number, y: number, w: numbe
   const baseY = y + plotH;
   const yOf = (t: number) => baseY - (t / max) * plotH;
 
-  // Siatka i oś Y (t CO₂e) — w tle, cienka.
   for (let v = 0; v <= max + 1e-9; v += step) {
     const gy = yOf(v);
     pdf.stroke(C.grid, v === 0 ? 0.3 : 0.15);
@@ -260,7 +245,6 @@ function monthlyChart(pdf: Pdf, data: ReportData, x: number, y: number, w: numbe
     const bx = plotX + slot * i + (slot - barW) / 2;
     const s1 = Number(m.scope1Kg) / 1000;
     const s2 = Number(m.scope2Kg) / 1000;
-    // Stos od podstawy: Zakres 1, potem Zakres 2, z cienką przerwą między.
     if (s1 > 0) {
       pdf.fill(C.scope1);
       pdf.doc.rect(bx, yOf(s1), barW, baseY - yOf(s1), "F");
@@ -282,7 +266,6 @@ function monthlyChart(pdf: Pdf, data: ReportData, x: number, y: number, w: numbe
     }
   });
 
-  // Rok wcześniej — przerywana linia neutralna, nie kolejny kolor serii.
   if (ly.some((v) => v > 0)) {
     pdf.stroke(C.lastYear, 0.45);
     pdf.doc.setLineDashPattern([1.2, 0.9], 0);
@@ -302,7 +285,6 @@ function monthlyChart(pdf: Pdf, data: ReportData, x: number, y: number, w: numbe
     });
   }
 
-  // Legenda nad wykresem, po prawej.
   const items: { label: string; color: RGB; dashed?: boolean }[] = [
     { label: "Zakres 1", color: C.scope1 },
     { label: "Zakres 2", color: C.scope2 },
@@ -327,7 +309,6 @@ function monthlyChart(pdf: Pdf, data: ReportData, x: number, y: number, w: numbe
   }
 }
 
-/** Poziome słupki z etykietą po lewej i wartością po prawej. */
 function horizontalBars(
   pdf: Pdf,
   rows: { label: string; kg: number; share: number; color: RGB }[],
@@ -350,9 +331,7 @@ function horizontalBars(
   }
 }
 
-/* ---------------------------------------------------------------------- */
-/* Sekcje                                                                  */
-/* ---------------------------------------------------------------------- */
+/* Sections */
 
 function cover(pdf: Pdf, data: ReportData, ctx: PdfContext) {
   const bandH = 34;
@@ -377,7 +356,6 @@ function cover(pdf: Pdf, data: ReportData, ctx: PdfContext) {
     pdf.text("Dane firmy nie zostały uzupełnione", M, pdf.y, { size: 10, color: C.muted });
   }
 
-  // Metryczka raportu po prawej.
   const rx = M + CONTENT_W * 0.58;
   const meta: [string, string][] = [
     ["Okres", periodTitle(data.params)],
@@ -478,7 +456,6 @@ function scopeAndComparison(pdf: Pdf, data: ReportData) {
   pdf.ensure(blockH);
   const top = pdf.y;
 
-  // Pierścień + legenda z wartościami (kolor nigdy sam — zawsze z etykietą).
   const s1 = Number(data.scope1Kg);
   const s2 = Number(data.scope2Kg);
   const total = s1 + s2;
@@ -506,7 +483,6 @@ function scopeAndComparison(pdf: Pdf, data: ReportData) {
     });
   });
 
-  // Porównanie okresów — tabela po prawej.
   const tx = M + CONTENT_W * 0.5;
   pdf.y = top;
   const row = (label: string, c: { totalKg: string; scope1Kg: string; scope2Kg: string }, change?: string): RowInput => [

@@ -18,7 +18,6 @@ export function Dialog({
   return <DialogContext.Provider value={{ open, onOpenChange }}>{children}</DialogContext.Provider>;
 }
 
-/** Natywny modalny <dialog>: pułapka fokusu, Esc i warstwa tła za darmo. */
 export function useNativeDialog() {
   const { open, onOpenChange } = useContext(DialogContext);
   const ref = useRef<HTMLDialogElement>(null);
@@ -34,7 +33,6 @@ export function useNativeDialog() {
     ref,
     open,
     close: () => onOpenChange(false),
-    // Klik w tło (sam <dialog>, nie jego zawartość) zamyka okno.
     onClick: (e: React.MouseEvent<HTMLDialogElement>) => {
       if (e.target === e.currentTarget) onOpenChange(false);
     },
@@ -51,7 +49,6 @@ export function DialogContent({
   className?: string;
   children: React.ReactNode;
   showCloseButton?: boolean;
-  /** "wide" — okna z tabelami (np. szczegóły faktury). */
   size?: "default" | "wide";
 }) {
   const { ref, open, close, onClick, onClose } = useNativeDialog();
@@ -65,7 +62,6 @@ export function DialogContent({
         size === "wide" ? "sm:max-w-3xl" : "sm:max-w-lg",
       )}
     >
-      {/* Treść montowana tylko przy otwarciu — formularze startują od świeżych wartości. */}
       {open && (
         <div className={cn("relative grid gap-5 rounded-sm bg-card p-6 text-sm", className)}>
           {children}

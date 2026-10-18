@@ -36,7 +36,6 @@ describe("decimal-lite — podgląd klienta zgadza się z zapisem serwera", () =
   });
 
   test("mnożenie jest dokładne tam, gdzie float by skłamał", () => {
-    // Number: 2852 * 0.553 === 1577.1560000000002
     assert.equal(multiplyDecimal("2852", "0.553"), "1577.156");
     assert.equal(multiplyDecimal("0.1", "0.2"), "0.02");
     assert.notEqual((2852 * 0.553).toString(), "1577.156");

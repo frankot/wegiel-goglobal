@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 
-/** Tabela bez linii siatki — rytm robią odstępy i szary tekst. */
 export function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div className="relative w-full overflow-x-auto">

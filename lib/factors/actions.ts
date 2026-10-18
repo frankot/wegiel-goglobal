@@ -11,7 +11,6 @@ import { calculateEmission } from "@/lib/emissions/calculate";
 import { factorSchema, factorVersionSchema } from "@/schemas/factor";
 import { getVersionLineage } from "@/lib/db/factors";
 
-/** Wszystkie wersje linii wskaźnika — modal historii. */
 export async function getFactorHistory(factorId: string) {
   await getCurrentUser();
   return getVersionLineage(factorId);
@@ -20,14 +19,12 @@ export async function getFactorHistory(factorId: string) {
 export interface FactorResult {
   ok: boolean;
   errors?: string[];
-  /** Ile szkiców korzysta z tego wskaźnika — podstawa pytania o przeliczenie. */
   affectedDrafts?: number;
   factorId?: string;
 }
 
 const day = 24 * 60 * 60 * 1000;
 
-/** Wersje z tej samej linii (korzeń + potomkowie), bez wskazanej wersji. */
 async function lineageVersions(rootId: string) {
   return prisma.emissionFactor.findMany({
     where: { OR: [{ id: rootId }, { parentId: rootId }] },
@@ -76,10 +73,6 @@ export async function createFactor(formData: FormData): Promise<FactorResult> {
   return { ok: true, factorId: factor.id };
 }
 
-/**
- * Coroczna aktualizacja KOBIZE (D11): klonuje wskaźnik z nową wartością
- * i sam domyka poprzednią wersję. Cała obsługa to dwie minuty raz na rok.
- */
 export async function createFactorVersion(formData: FormData): Promise<FactorResult> {
   const user = await getCurrentUser();
   if (!canManage(user)) return { ok: false, errors: ["Brak uprawnień"] };
@@ -101,8 +94,6 @@ export async function createFactorVersion(formData: FormData): Promise<FactorRes
     return { ok: false, errors: ["Data początku nie może być późniejsza niż data końca."] };
   }
 
-  // Poprzednia wersja domykana dzień przed startem nowej — bez tego
-  // resolveFactor zwracałby AMBIGUOUS przy każdym imporcie (§9).
   const previous = await prisma.emissionFactor.findFirst({
     where: {
       OR: [{ id: rootId }, { parentId: rootId }],
@@ -169,11 +160,6 @@ export async function createFactorVersion(formData: FormData): Promise<FactorRes
   return { ok: true, factorId: created.id };
 }
 
-/**
- * Korekta wartości. Zapisane wpisy pozostają nietknięte — snapshot na wpisie
- * jest gwarancją odtwarzalności raportu (D10). Zwracamy liczbę szkiców, żeby
- * UI mógł zapytać o przeliczenie.
- */
 export async function updateFactor(
   id: string,
   formData: FormData,
@@ -241,11 +227,6 @@ export async function updateFactor(
   return { ok: true, affectedDrafts };
 }
 
-/**
- * Przelicza WYŁĄCZNIE wpisy w statusie DRAFT (D10).
- * VERIFIED i CORRECTED nie są dotykane nigdy — to jest obietnica audytowa
- * całego systemu i nie ma od niej wyjątku.
- */
 export async function recalculateDrafts(factorId: string): Promise<FactorResult> {
   const user = await getCurrentUser();
   if (!canManage(user)) return { ok: false, errors: ["Brak uprawnień"] };

@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 
-/** Liść z dwóch łuków — znak marki zamiast gotowej ikony. */
 export function BrandMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={cn("size-5 shrink-0", className)} fill="none" aria-hidden="true">
@@ -15,10 +14,6 @@ export function BrandMark({ className }: { className?: string }) {
   );
 }
 
-/**
- * „carbon print / GO GLOBAL GROUP". `tone="dark"` na granatowym tle
- * (panel boczny, ekran logowania), `tone="light"` na jasnym płótnie.
- */
 export function BrandWordmark({
   tone = "dark",
   className,

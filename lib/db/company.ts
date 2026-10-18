@@ -18,7 +18,6 @@ export interface CompanyDTO {
   updatedAt: string;
 }
 
-/** Dane firmy albo null, gdy nikt ich jeszcze nie uzupełnił. */
 export const getCompany = cache(async (): Promise<CompanyDTO | null> => {
   const c = await prisma.company.findUnique({ where: { id: COMPANY_ID } });
   if (!c) return null;
@@ -36,10 +35,6 @@ export const getCompany = cache(async (): Promise<CompanyDTO | null> => {
   };
 });
 
-/**
- * Nagłówek raportu (Faza 3): linie tekstu gotowe do wstawienia w PDF/CSV.
- * Puste pola są pomijane, żeby nie drukować „NIP: —".
- */
 export function companyHeaderLines(c: CompanyDTO): string[] {
   const address = [
     c.street,

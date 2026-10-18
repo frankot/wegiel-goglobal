@@ -34,7 +34,6 @@ export async function updateCompany(formData: FormData): Promise<CompanyResult> 
     return { ok: false, errors: parsed.error.issues.map((i) => i.message) };
   }
 
-  // Puste pole formularza czyści wartość w bazie — stąd null, nie undefined.
   const data = Object.fromEntries(
     FIELDS.map((f) => [f, parsed.data[f] ?? null]),
   ) as Record<(typeof FIELDS)[number], string | null> & { name: string };
@@ -47,7 +46,6 @@ export async function updateCompany(formData: FormData): Promise<CompanyResult> 
     update: { ...data, updatedById: user.id },
   });
 
-  // W dzienniku tylko pola, które faktycznie się zmieniły.
   const changes = Object.fromEntries(
     FIELDS.filter((f) => (before?.[f] ?? null) !== data[f]).map((f) => [
       f,
@@ -67,7 +65,6 @@ export async function updateCompany(formData: FormData): Promise<CompanyResult> 
     });
   }
 
-  // Nazwa i NIP są w panelu bocznym na każdej stronie.
   revalidatePath("/", "layout");
   return { ok: true };
 }

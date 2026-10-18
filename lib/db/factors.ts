@@ -2,12 +2,6 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import type { FactorCandidate } from "@/lib/emissions/resolve-factor";
 
-/**
- * UWAGA: `Prisma.Decimal` to instancja klasy i NIE przechodzi przez granicę
- * RSC ani z akcji serwerowej do stanu klienta. Każda funkcja w tej warstwie
- * mapuje Decimal → string zanim odda dane wyżej.
- */
-
 export interface FactorDTO {
   id: string;
   name: string;
@@ -52,7 +46,6 @@ export async function listFactors(): Promise<FactorDTO[]> {
   return rows.map(toDTO);
 }
 
-/** Kandydaci dla `resolveFactor` — Date zamiast ISO, bo porównujemy daty. */
 export async function getFactorCandidates(
   category?: string,
 ): Promise<FactorCandidate[]> {
@@ -78,7 +71,6 @@ export async function getFactorById(id: string): Promise<FactorDTO | null> {
   return f ? toDTO(f) : null;
 }
 
-/** Wszystkie wersje jednej linii wskaźnika (korzeń + potomkowie). */
 export async function getVersionLineage(factorId: string): Promise<FactorDTO[]> {
   const factor = await prisma.emissionFactor.findUnique({ where: { id: factorId } });
   if (!factor) return [];

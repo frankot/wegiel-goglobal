@@ -19,7 +19,6 @@ export default async function NewEntriesPage() {
           formularz dla każdej faktury. Fakturę bez pliku XML możesz wpisać ręcznie."
       />
 
-      {/* Manager doda źródło prosto z karty faktury; pracownik musi poprosić. */}
       {sources.length === 0 && !manage ? (
         <Card className="p-4">
           <p className="text-sm">

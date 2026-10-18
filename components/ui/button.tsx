@@ -23,7 +23,6 @@ export interface ButtonStyleProps {
   className?: string;
 }
 
-/** Klasy przycisku — także dla <Link>, żeby nawigacja wyglądała jak akcja. */
 export function buttonVariants({ variant = "default", size = "default", className }: ButtonStyleProps = {}) {
   return cn(
     "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full font-semibold whitespace-nowrap transition-[background-color,border-color,color,transform] duration-150 select-none active:translate-y-px disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",

@@ -10,13 +10,6 @@ interface Props {
   busy?: boolean;
 }
 
-/**
- * Dropzone przyjmujący 1..N plików XML.
- *
- * Ma PRAWDZIWY <input type="file" multiple> — samo `onDrop` odcięłoby obsługę
- * klawiaturą i czytnikiem ekranu. Limity walidowane tutaj, PRZED wysyłką,
- * bo przekroczenie bodySizeLimit odrzuca całą paczkę bez czytelnego powodu.
- */
 export function InvoiceDropzone({ onFiles, busy }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);

@@ -1,14 +1,6 @@
 import "server-only";
-import { put } from "@vercel/blob";
+import { del, put } from "@vercel/blob";
 
-/**
- * Upload plików źródłowych do Vercel Blob.
- *
- * WYWOŁYWANE WYŁĄCZNIE PRZY ZAPISIE, nigdy przy parsowaniu — inaczej każda
- * porzucona paczka zostawiałaby sieroty w storage. Przy plikach rzędu 4 KB
- * ponowny transfer przy zapisie jest darmowy, a do Bloba trafia tylko to,
- * co faktycznie wylądowało w bazie (kryterium akceptacji 11).
- */
 export interface StoredFile {
   kind: "SOURCE_XML" | "EVIDENCE_PDF";
   fileName: string;
@@ -32,4 +24,13 @@ export async function storeInvoiceFile(
     mimeType: file.type || (kind === "SOURCE_XML" ? "application/xml" : "application/pdf"),
     blobUrl: blob.url,
   };
+}
+
+export async function deleteInvoiceFiles(blobUrls: string[]): Promise<void> {
+  if (blobUrls.length === 0) return;
+  try {
+    await del(blobUrls);
+  } catch (e) {
+    console.error("Nie udało się usunąć plików faktury z Vercel Blob:", blobUrls, e);
+  }
 }

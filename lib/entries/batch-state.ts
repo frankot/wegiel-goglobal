@@ -1,10 +1,4 @@
-/**
- * Model stanu podglądu paczki + czysta logika (bez Reacta, bez Prismy).
- *
- * Trzymanie tego poza komponentami daje dwie rzeczy: komponenty są cienkie,
- * a reguły „kiedy karta jest gotowa do zapisu" i „co leci na serwer" dają się
- * przetestować bez renderowania czegokolwiek.
- */
+/** Batch preview state */
 import {
   divideByPowerOfTen,
   previewEmission,
@@ -38,7 +32,6 @@ export interface FactorOption {
 export interface LineState {
   lineNo: number;
   description: string;
-  /** Wartości z dokumentu — do przycisku „przywróć" (↺). */
   original: { quantity: string; unit: string; sourceId: string | null; factorId: string | null };
   quantity: string;
   unit: string;
@@ -77,9 +70,7 @@ export interface CardState {
   warnings: string[];
   errors: string[];
   duplicateOf?: EnrichedInvoice["duplicateOf"];
-  /** PDF dołączony jako dowód do faktury wprowadzanej ręcznie. */
   attachmentName?: string;
-  /** Usunięta z paczki przez użytkownika — nie idzie do zapisu. */
   removed: boolean;
   saveError?: string;
   savedInvoiceId?: string;
@@ -123,7 +114,6 @@ export function toCardState(inv: EnrichedInvoice): CardState {
       unit: l.unit,
       sourceId: l.match.sourceId,
       factorId: l.factor.status === "RESOLVED" ? l.factor.factor.id : null,
-      // Pozycja nieemisyjna startuje wyłączona, ale zostaje widoczna.
       include: l.emissionRelevant,
       emissionRelevant: l.emissionRelevant,
       skipReason: l.skipReason,
@@ -155,11 +145,6 @@ export function emptyLine(lineNo: number): LineState {
   };
 }
 
-/**
- * Pusta karta do ręcznego wprowadzenia faktury — ten sam formularz co po
- * imporcie XML, tylko bez danych z dokumentu. Opcjonalny PDF jedzie jako
- * załącznik dowodowy, nie jest odczytywany.
- */
 export function emptyManualCard(clientId: string, attachmentName?: string): CardState {
   return {
     clientId,
@@ -182,7 +167,6 @@ export function emptyManualCard(clientId: string, attachmentName?: string): Card
   };
 }
 
-/** Wskaźniki pasujące do jednostki pozycji i zakresu źródła. */
 export function factorsForLine(
   line: LineState,
   factors: FactorOption[],
@@ -211,7 +195,6 @@ export function linePreview(line: LineState, factors: FactorOption[]) {
   });
 }
 
-/** Czy linia jest gotowa do zapisu. */
 export function lineIssue(line: LineState): string | null {
   if (!line.include) return null;
   if (!line.description.trim()) return `Pozycja ${line.lineNo}: wpisz opis pozycji.`;
@@ -251,7 +234,6 @@ export function cardIssues(card: CardState): string[] {
   return issues;
 }
 
-/** Status przeliczany po każdej edycji — badge reaguje na poprawki. */
 export function cardStatus(card: CardState): ParsedInvoiceStatus {
   if (card.errors.length > 0 || card.duplicateOf) return "ERROR";
   if (cardIssues(card).length > 0) return "NEEDS_ATTENTION";
@@ -265,7 +247,6 @@ export function isSavable(card: CardState): boolean {
   return !card.removed && !card.savedInvoiceId && cardIssues(card).length === 0;
 }
 
-/** Suma CO₂e liczona TYLKO z faktur, które faktycznie pójdą do zapisu. */
 export function batchTotals(cards: CardState[], factors: FactorOption[]) {
   const values: string[] = [];
   let invoiceCount = 0;
@@ -287,7 +268,6 @@ export function batchTotals(cards: CardState[], factors: FactorOption[]) {
   };
 }
 
-/** Suma CO₂e jednej faktury — nagłówek zwiniętej karty. */
 export function cardTotalKg(card: CardState, factors: FactorOption[]): string {
   return sumDecimals(
     card.lines
@@ -297,7 +277,6 @@ export function cardTotalKg(card: CardState, factors: FactorOption[]): string {
   );
 }
 
-/** Payload wysyłany do `saveInvoiceBatch`. */
 export function buildSavePayload(
   cards: CardState[],
   status: "DRAFT" | "VERIFIED",

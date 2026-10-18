@@ -34,13 +34,11 @@ export function AppLayout({
   const toggleCollapsed = useCallback(() => {
     setCollapsed((prev) => {
       const next = !prev;
-      // Ciasteczko, a nie localStorage — serwer renderuje od razu właściwą szerokość.
       document.cookie = `${SIDEBAR_COOKIE}=${next ? "collapsed" : "expanded"}; path=/; max-age=31536000; samesite=lax`;
       return next;
     });
   }, []);
 
-  // „[" zwija panel, jak w edytorach — ale nie wtedy, gdy ktoś pisze w polu.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key !== "[" || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -58,7 +56,6 @@ export function AppLayout({
   return (
     <TopbarActionsProvider>
       <div className="flex h-dvh overflow-hidden bg-canvas">
-        {/* Granatowy pas ekranu logowania zwęża się w ten panel (ta sama nazwa). */}
         <ViewTransition name="brand-panel" share="brand-panel" default="none">
           <aside
             className={cn(
@@ -80,8 +77,6 @@ export function AppLayout({
           </DrawerContent>
         </Drawer>
 
-        {/* Wejście treści po zalogowaniu; nawigacja w panelu tego nie odpala,
-            bo layout się wtedy nie montuje ponownie. */}
         <ViewTransition enter="auth-enter" exit="auth-exit" default="none">
           <div className="flex min-w-0 flex-1 flex-col">
             <Topbar

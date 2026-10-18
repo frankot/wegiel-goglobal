@@ -17,11 +17,6 @@ import {
 } from "@/lib/reports/format";
 import { MonthlyChart, ScopeDonut } from "./report-charts";
 
-/**
- * Podgląd raportu — te same sekcje i liczby co PDF (oba czytają `ReportData`).
- * Dashboard składa swój widok z eksportowanych kawałków (KPI, miesiące, kategorie).
- */
-
 function ScopeSwatch({ scope }: { scope: "SCOPE_1" | "SCOPE_2" }) {
   return (
     <span
@@ -36,7 +31,6 @@ function share(part: string, total: string): number {
   return Number(total) ? (Number(part) / Number(total)) * 100 : 0;
 }
 
-/** Zmiana: wzrost emisji to zła wiadomość — ale kolor zostawiamy tekstowi, bez czerwieni/zieleni. */
 function Change({ value }: { value: number | null }) {
   return <span className="tabular-nums">{fmtChange(value)}</span>;
 }

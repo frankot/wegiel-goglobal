@@ -1,15 +1,4 @@
-/**
- * Deduplikacja faktur (D7).
- *
- * Klucz główny: `ksefNumber` (nadawany przez KSeF, globalnie unikalny).
- * Fallback: `(supplierNip, invoiceNumber)` — bo XML pobrany przed wysyłką
- * do KSeF numeru jeszcze nie ma.
- *
- * Sprawdzamy w DWÓCH miejscach:
- *   - wobec bazy       — faktura zaimportowana wcześniej,
- *   - wewnątrz paczki  — ten sam plik wybrany dwa razy w jednym wsadzie.
- * Drugie jest łatwe do przeoczenia, a zdarza się najczęściej.
- */
+/** Invoice deduplication */
 import type { ParsedInvoice } from "./types";
 
 export interface DuplicateRef {
@@ -25,7 +14,6 @@ export interface ExistingInvoiceKey {
   invoiceNumber: string | null;
 }
 
-/** Klucze, po których szukamy duplikatu. Null = faktura bez tożsamości. */
 export function identityKeys(inv: {
   ksefNumber?: string;
   supplierNip?: string;
@@ -48,10 +36,6 @@ function existingKeys(e: ExistingInvoiceKey) {
   });
 }
 
-/**
- * Oznacza duplikaty w paczce. Zwraca mapę clientId → DuplicateRef.
- * Pierwsze wystąpienie w paczce zostaje, kolejne są duplikatami.
- */
 export function findDuplicates(
   invoices: ParsedInvoice[],
   existing: ExistingInvoiceKey[],

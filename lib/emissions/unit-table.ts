@@ -1,24 +1,12 @@
-/**
- * Tabela jednostek — JEDYNE źródło prawdy, współdzielone przez serwer i klienta.
- *
- * Ten plik nie importuje Prismy, więc wchodzi do bundla przeglądarki. Jest to
- * celowe: gdyby klient miał własną kopię listy jednostek, reguła „`mc` to
- * miesiąc, nie metr sześcienny" mogłaby się rozjechać między podglądem
- * a zapisem — a to jest dokładnie ta klasa błędu, której unikamy.
- */
+/** Unit table */
 
 export type CanonicalUnit = "kWh" | "m³" | "litr" | "kg";
 
 export interface UnitDefinition {
   canonical: CanonicalUnit;
-  /** Mnożnik do jednostki kanonicznej, jako string (nigdy float). */
   multiplier: string;
 }
 
-/**
- * Klucze znormalizowane: małe litery, bez spacji, `³`→`3`.
- * `mc`, `szt`, `usł`, `kpl` celowo NIE występują.
- */
 export const UNIT_TABLE: Record<string, UnitDefinition> = {
   kwh: { canonical: "kWh", multiplier: "1" },
   mwh: { canonical: "kWh", multiplier: "1000" },
@@ -57,7 +45,6 @@ export function isKnownUnit(raw: string): boolean {
   return lookupUnit(raw) !== null;
 }
 
-/** "kg CO₂e/kWh" → "kWh" */
 export function factorDenominatorUnit(factorUnit: string): string | null {
   const parts = factorUnit.split("/");
   if (parts.length < 2) return null;

@@ -3,11 +3,6 @@
 import { createContext, useContext, useState } from "react";
 import { createPortal } from "react-dom";
 
-/**
- * Akcje strony (np. „Dodaj wskaźnik") renderowane w górnym pasku.
- * Strona deklaruje je u siebie przez <TopbarActions>, a portal przenosi je
- * do slotu w `Topbar` — dzięki temu strony serwerowe nie muszą znać layoutu.
- */
 const SlotContext = createContext<{
   target: HTMLElement | null;
   setTarget: (el: HTMLElement | null) => void;

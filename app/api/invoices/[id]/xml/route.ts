@@ -1,13 +1,24 @@
 import { getCurrentUser } from "@/lib/db/users";
 import { getInvoiceXml } from "@/lib/db/invoices";
+import { clientIp, writeAudit } from "@/lib/db/audit";
 
-/** GET /api/invoices/:id/xml — oryginalny plik faktury, tylko dla zalogowanych. */
+/** GET /api/invoices/:id/xml */
 export async function GET(_req: Request, ctx: RouteContext<"/api/invoices/[id]/xml">) {
-  await getCurrentUser();
+  const user = await getCurrentUser();
   const { id } = await ctx.params;
 
   const file = await getInvoiceXml(id);
   if (!file) return new Response("Brak zapisanego pliku XML", { status: 404 });
+
+  await writeAudit({
+    userId: user.id,
+    userName: user.name || user.email,
+    action: "DOWNLOAD",
+    entity: "Invoice",
+    entityId: id,
+    details: JSON.stringify({ fileName: file.fileName }),
+    ipAddress: await clientIp(),
+  });
 
   return new Response(file.xml, {
     headers: {

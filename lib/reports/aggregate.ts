@@ -1,10 +1,4 @@
-/**
- * Agregacja wpisów emisyjnych do raportu — czysta funkcja, bez bazy.
- *
- * Sumy liczone w `Prisma.Decimal` (jak całe `lib/emissions`), na wyjściu
- * stringi — dane przechodzą przez granicę RSC i trafiają do PDF/XLSX.
- * Każdy wpis liczy się w całości w miesiącu swojej `entryDate`.
- */
+/** Report aggregation */
 import { Prisma } from "@/lib/generated/prisma/client";
 import { SOURCE_TYPE_LABELS, type Scope, type SourceType } from "@/lib/emissions/source-types";
 import {
@@ -19,17 +13,15 @@ type Decimal = Prisma.Decimal;
 const D = (v: string | number) => new Prisma.Decimal(v);
 const ZERO = D(0);
 
-/** Wpis w postaci potrzebnej raportowi — wszystkie liczby jako string. */
 export interface ReportRow {
   id: string;
-  entryDate: string; // YYYY-MM-DD
+  entryDate: string;
   periodStart: string | null;
   periodEnd: string | null;
   sourceId: string;
   sourceName: string;
   sourceType: SourceType;
   scope: Scope;
-  /** Ilość w jednostce mianownika wskaźnika (podstawa obliczenia). */
   quantity: string;
   unit: string;
   factorId: string;
@@ -54,16 +46,14 @@ export interface ScopeTotals {
 export interface Comparison extends ScopeTotals {
   from: string;
   to: string;
-  /** Zmiana sumy w %, null gdy okres bazowy jest pusty (dzielenie przez 0). */
   changePct: number | null;
 }
 
 export interface MonthPoint {
-  month: string; // YYYY-MM
+  month: string;
   scope1Kg: string;
   scope2Kg: string;
   totalKg: string;
-  /** Suma z tego samego miesiąca rok wcześniej — linia porównawcza. */
   lastYearKg: string;
 }
 
@@ -90,7 +80,6 @@ export interface SourceBreakdown {
   kg: string;
   sharePct: number;
   usage: UsageTotal[];
-  /** Wskaźniki użyte dla tego źródła — zwykle jeden, po zmianie roku dwa. */
   factors: { value: string; unit: string }[];
   entryCount: number;
 }
@@ -116,13 +105,9 @@ export interface InvoiceSummary {
 }
 
 export interface DataQuality {
-  /** Liczone ze WSZYSTKICH statusów w zakresie i filtrach — także pominiętych. */
   byStatus: Record<EntryStatus, { count: number; kg: string }>;
-  /** Udział CO₂e z wpisów zweryfikowanych/skorygowanych w %, null gdy brak danych. */
   verifiedSharePct: number | null;
-  /** Wpisy w raporcie bez powiązanej faktury. */
   withoutInvoice: number;
-  /** Szkice istniejące w zakresie, ale pominięte przez filtr statusu. */
   excludedDrafts: number;
 }
 
@@ -140,11 +125,8 @@ export interface ReportData extends ScopeTotals {
   factors: FactorUsed[];
   invoices: InvoiceSummary[];
   quality: DataQuality;
-  /** Wiersze raportu — eksport XLSX/CSV. */
   rows: ReportRow[];
 }
-
-/* ---------------------------------------------------------------------- */
 
 function sum(rows: ReportRow[]): Decimal {
   return rows.reduce((a, r) => a.add(r.co2eKg), ZERO);
@@ -158,7 +140,6 @@ function scopeTotals(rows: ReportRow[]): ScopeTotals {
   };
 }
 
-/** Zmiana procentowa — liczba tylko do wyświetlenia, nie do dalszych obliczeń. */
 export function changePct(current: string, base: string): number | null {
   const b = D(base);
   if (b.isZero()) return null;
@@ -188,11 +169,6 @@ function groupBy<K, T>(items: T[], key: (t: T) => K): Map<K, T[]> {
 
 const byKgDesc = (a: { kg: string }, b: { kg: string }) => D(b.kg).cmp(D(a.kg));
 
-/**
- * @param all       wiersze z zakresu i filtrów, WSZYSTKIE statusy (do jakości danych)
- * @param previous  wiersze okresu poprzedniego (już po filtrze statusu)
- * @param lastYear  wiersze tego samego okresu rok wcześniej (już po filtrze statusu)
- */
 export function buildReport(
   params: ReportParams,
   all: ReportRow[],
@@ -208,7 +184,6 @@ export function buildReport(
   const prevTotals = scopeTotals(previous);
   const lyTotals = scopeTotals(lastYear);
 
-  // Miesiące: każdy miesiąc zakresu, także pusty — wykres nie „skleja" przerw.
   const byMonth = groupBy(rows, (r) => r.entryDate.slice(0, 7));
   const lyByMonth = groupBy(lastYear, (r) => r.entryDate.slice(0, 7));
   const monthly: MonthPoint[] = monthsInRange(params.from, params.to).map((month) => {
@@ -252,7 +227,6 @@ export function buildReport(
     })
     .sort(byKgDesc);
 
-  // Wskaźnik identyfikowany po wartości z migawki — ta sama wersja, ta sama wartość.
   const factors: FactorUsed[] = [
     ...groupBy(rows, (r) => `${r.factorId}|${r.factorValue}|${r.factorUnit}`).values(),
   ]

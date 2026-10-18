@@ -4,7 +4,6 @@ import type { Prisma } from "@/lib/generated/prisma/client";
 import { parseIsoDate, previousPeriod, samePeriodLastYear, toIsoDate, type ReportParams } from "./params";
 import { buildReport, type ReportData, type ReportRow } from "./aggregate";
 
-/** Zakres dat włącznie: [from 00:00 UTC, to+1 00:00 UTC). */
 function dateWhere(from: string, to: string): Prisma.DateTimeFilter {
   return {
     gte: parseIsoDate(from),
@@ -56,7 +55,6 @@ async function loadRows(where: Prisma.EmissionEntryWhereInput): Promise<ReportRo
     factorId: e.factorId,
     factorName: e.factor.name,
     factorOrigin: e.factor.source,
-    // Migawka z chwili zapisu — raport pokazuje to, czym faktycznie liczono.
     factorValue: e.factorSnapshotValue.toString(),
     factorUnit: e.factorSnapshotUnit,
     co2eKg: e.co2eKg.toString(),
@@ -70,7 +68,6 @@ async function loadRows(where: Prisma.EmissionEntryWhereInput): Promise<ReportRo
 
 export async function getReport(p: ReportParams): Promise<ReportData> {
   const [all, previous, lastYear] = await Promise.all([
-    // Bez filtra statusu — sekcja jakości danych liczy też pominięte szkice.
     loadRows(entryWhere(p, p, false)),
     loadRows(entryWhere(p, previousPeriod(p.from, p.to), true)),
     loadRows(entryWhere(p, samePeriodLastYear(p.from, p.to), true)),

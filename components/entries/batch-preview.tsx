@@ -35,8 +35,6 @@ interface Props {
 export function BatchPreview({ sources, factors, canVerify, canManage }: Props) {
   const router = useRouter();
   const [cards, setCards] = useState<CardState[]>([]);
-  /** Pliki trzymane w stanie klienta — wysyłane PONOWNIE dopiero przy zapisie,
-   *  żeby porzucona paczka nie zostawiła sierot w Vercel Blob (§4.3). */
   const [filesByCard, setFilesByCard] = useState<Record<string, File>>({});
   const [parseErrors, setParseErrors] = useState<string[]>([]);
   const [result, setResult] = useState<SaveBatchResult | null>(null);
@@ -56,8 +54,6 @@ export function BatchPreview({ sources, factors, canVerify, canManage }: Props) 
     setResult(null);
     setParseErrors([]);
 
-    // PDF nie jest parsowany (D2) — od razu staje się pustą kartą ręczną
-    // z dołączonym dokumentem, bez wycieczki na serwer.
     for (const pdf of all.filter((f) => isAttachmentFile(f.name))) addManualCard(pdf);
     const files = all.filter((f) => !isAttachmentFile(f.name));
     if (files.length === 0) return;
@@ -72,8 +68,6 @@ export function BatchPreview({ sources, factors, canVerify, canManage }: Props) 
         return;
       }
 
-      // enrichInvoices zachowuje kolejność plików 1:1, więc indeks jest
-      // wiarygodnym powiązaniem karty z plikiem (nazwy mogą się powtarzać).
       const nextFiles: Record<string, File> = {};
       res.invoices.forEach((inv, i) => {
         const file = files[i];
@@ -123,7 +117,6 @@ export function BatchPreview({ sources, factors, canVerify, canManage }: Props) 
     );
   }
 
-  /** Numeracja zostaje ciągła — lineNo jest kluczem pozycji w karcie. */
   function removeLine(clientId: string, lineNo: number) {
     setCards((prev) =>
       prev.map((c) =>
@@ -164,7 +157,6 @@ export function BatchPreview({ sources, factors, canVerify, canManage }: Props) 
             savedInvoiceId: savedIds.get(c.clientId) ?? c.savedInvoiceId,
             saveError: failures.get(c.clientId),
           }))
-          // Zapisane karty znikają; nieudane zostają z powodem (D4).
           .filter((c) => !savedIds.has(c.clientId)),
       );
 

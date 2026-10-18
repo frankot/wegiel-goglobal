@@ -24,11 +24,6 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
-/**
- * Coroczna aktualizacja KOBIZE. Pyta tylko o nową wartość i datę startu —
- * resztę (nazwa, kategoria, jednostka, zakres) dziedziczy, a poprzednią
- * wersję domyka sama. Dwie minuty raz na rok.
- */
 export function FactorVersionDialog({ factor, open, onOpenChange }: Props) {
   const router = useRouter();
   const [errors, setErrors] = useState<string[]>([]);

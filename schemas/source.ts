@@ -20,7 +20,6 @@ export const sourceSchema = z.object({
     "HEAT",
     "COOLING",
   ]),
-  // Zakres NIE jest polem formularza — wynika z typu (patrz scopeForType).
   defaultFactorId: z.string().min(1, "Wybierz domyślny wskaźnik emisji"),
   unit: z.string().min(1, "Jednostka jest wymagana"),
   registrationNumber: optionalText(50),

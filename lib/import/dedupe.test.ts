@@ -47,7 +47,6 @@ describe("deduplikacja", () => {
       ],
       [],
     );
-    // pierwsze wystąpienie zostaje, drugie jest duplikatem
     assert.equal(dups.has("a"), false);
     assert.equal(dups.get("b")?.where, "BATCH");
   });

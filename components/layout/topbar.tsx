@@ -82,7 +82,6 @@ export function Topbar({ collapsed, onToggleSidebar, onOpenMobile }: TopbarProps
 
       <TopbarActionsSlot />
 
-      {/* Data renderowana po stronie klienta może różnić się od serwerowej o północy. */}
       <time suppressHydrationWarning className="hidden text-xs text-muted-foreground xl:block">
         {today.format(new Date())}
       </time>

@@ -4,13 +4,7 @@ import Papa from "papaparse";
 import { SOURCE_TYPE_LABELS } from "@/lib/emissions/source-types";
 import type { ReportData } from "./aggregate";
 import { STATUS_LABELS } from "./params";
-import { ORIGIN_LABELS, scopeLabel } from "./format";
-
-/**
- * Eksport tabelaryczny (§5.5.3): jeden wiersz = jeden wpis emisyjny.
- * Liczby jako liczby (XLSX) albo z przecinkiem dziesiętnym (CSV dla
- * polskiego Excela) — nigdy z separatorem tysięcy.
- */
+import { ORIGIN_LABELS, csvSafeText, scopeLabel } from "./format";
 
 const HEADERS = [
   "Data wpisu",
@@ -33,31 +27,33 @@ const HEADERS = [
   "Autor",
 ] as const;
 
-function tableRows(data: ReportData, decimal: (v: string) => string | number) {
+function tableRows(
+  data: ReportData,
+  decimal: (v: string) => string | number,
+  text: (v: string) => string = (v) => v,
+) {
   return data.rows.map((r) => [
     r.entryDate,
     r.periodStart ?? "",
     r.periodEnd ?? "",
-    r.sourceName,
+    text(r.sourceName),
     SOURCE_TYPE_LABELS[r.sourceType],
     scopeLabel(r.scope),
     decimal(r.quantity),
-    r.unit,
-    r.factorName,
+    text(r.unit),
+    text(r.factorName),
     decimal(r.factorValue),
-    r.factorUnit,
+    text(r.factorUnit),
     ORIGIN_LABELS[r.factorOrigin],
     decimal(r.co2eKg),
-    // Tony liczone z kg przez przesunięcie przecinka — bez błędu zmiennoprzecinkowego.
     decimal(shiftDecimal(r.co2eKg, 3)),
     STATUS_LABELS[r.status],
-    r.invoiceNumber ?? "",
-    r.supplierName ?? "",
-    r.authorName,
+    text(r.invoiceNumber ?? ""),
+    text(r.supplierName ?? ""),
+    text(r.authorName),
   ]);
 }
 
-/** Dzieli dziesiętny string przez 10^n tekstowo. */
 function shiftDecimal(v: string, n: number): string {
   const neg = v.startsWith("-");
   const [int, frac = ""] = (neg ? v.slice(1) : v).split(".");
@@ -69,10 +65,10 @@ function shiftDecimal(v: string, n: number): string {
 
 export function renderReportCsv(data: ReportData): Uint8Array {
   const csv = Papa.unparse(
-    { fields: [...HEADERS], data: tableRows(data, (v) => v.replace(".", ",")) },
+    { fields: [...HEADERS], data: tableRows(data, (v) => v.replace(".", ","), csvSafeText) },
     { delimiter: ";", newline: "\r\n" },
   );
-  // BOM — bez niego Excel otwiera UTF-8 jako Windows-1250 i psuje polskie znaki.
+  // UTF-8 BOM
   return new TextEncoder().encode(`﻿${csv}`);
 }
 

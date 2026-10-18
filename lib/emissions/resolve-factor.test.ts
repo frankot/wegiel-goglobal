@@ -19,8 +19,6 @@ const factor = (
   lineageId,
 });
 
-// Linia KOBIZE: bieżąca 2026 (korzeń) + archiwalna 2025. Ciepło w tej samej
-// jednostce i zakresie, ważne w obu latach — typowa pułapka remisu.
 const ee2026 = factor("ee2026", "2026-01-01", "2026-12-31");
 const ee2025 = factor("ee2025", "2025-01-01", "2025-12-31", "ee2026");
 const heat = factor("heat", "2025-01-01", "2027-12-31");

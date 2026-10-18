@@ -6,7 +6,6 @@ export function Input({ className, ...props }: React.ComponentProps<"input">) {
   return <input className={cn(fieldClasses, "h-8", className)} {...props} />;
 }
 
-/** Wyszukiwarka w nagłówku karty: szare wypełnienie, ikona lupy po prawej. */
 export function SearchInput({ className, ...props }: React.ComponentProps<"input">) {
   return (
     <span className={cn("relative inline-flex w-full max-w-56", className)}>

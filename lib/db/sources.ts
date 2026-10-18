@@ -17,7 +17,6 @@ export interface SourceDTO {
   registrationNumber: string | null;
 }
 
-/** Wiersz listy /sources — z nazwą wskaźnika i licznikami użycia. */
 export interface SourceRow extends SourceDTO {
   defaultFactorName: string | null;
   defaultFactorUnit: string | null;
@@ -82,7 +81,6 @@ export async function listSources(includeInactive = false): Promise<SourceDTO[]>
   }));
 }
 
-/** Kandydaci dla `matchSource` — ten sam kształt, węższy typ. */
 export async function getSourceCandidates(): Promise<SourceCandidate[]> {
   const rows = await listSources(false);
   return rows.map((s) => ({
@@ -99,11 +97,6 @@ export async function getSourceCandidates(): Promise<SourceCandidate[]> {
   }));
 }
 
-/**
- * Zapamiętuje PPE na źródle po ręcznym przypisaniu przez użytkownika.
- * To jest mechanizm, dzięki któremu kolejne faktury tego dostawcy wchodzą
- * automatycznie (§5.4). Nie nadpisuje PPE przypisanego do innego źródła.
- */
 export async function rememberPpeForSource(
   sourceId: string,
   ppeNumber: string,

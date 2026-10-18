@@ -37,7 +37,6 @@ const TONES = {
 
 export type Tone = keyof typeof TONES;
 
-/** Kropka + etykieta — status w tabelach, bez ciężkich plakietek. */
 export function StatusDot({
   tone,
   className,
@@ -52,7 +51,6 @@ export function StatusDot({
   );
 }
 
-/** Okrągły licznik, jak przy pozycjach menu. */
 export function CountBadge({
   tone = "pink",
   className,

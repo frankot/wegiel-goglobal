@@ -13,7 +13,6 @@ type Props = Omit<React.ComponentProps<"select">, "children"> & {
   onValueChange?: (value: string) => void;
 };
 
-/** Natywny <select> — klawiatura, czytniki ekranu i mobile działają same. */
 export function Select({ items, placeholder, onValueChange, onChange, className, ...props }: Props) {
   return (
     <span className={cn("relative inline-flex w-fit", className)}>

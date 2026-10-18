@@ -27,16 +27,13 @@ interface Props {
   line: LineState;
   sources: SourceOption[];
   factors: FactorOption[];
-  /** Manager może dodać źródło/wskaźnik z poziomu faktury, bez zmiany zakładki. */
   canManage: boolean;
   invoice: { supplierNip: string; periodStart: string; periodEnd: string };
-  /** Pozycja wpisywana ręcznie — edytowalny opis, bez wartości „z faktury". */
   manual?: boolean;
   onChange: (patch: Partial<LineState>) => void;
   onRemove?: () => void;
 }
 
-/** Przycisk ↺ — przywraca wartość z dokumentu. Widoczny tylko gdy zmieniono. */
 function RevertButton({
   changed,
   onRevert,
@@ -62,7 +59,6 @@ function RevertButton({
   );
 }
 
-/** Mały przycisk „+ nowe" obok etykiety pola — otwiera modal tworzenia. */
 function CreateToggle({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <Button
@@ -96,7 +92,6 @@ export function EntryLineRow({
   const preview = linePreview(line, factors);
   const issue = lineIssue(line);
 
-  // Podpowiedzi dla nowego źródła/wskaźnika — wszystko, co już wiemy z faktury.
   const inferredType = inferSourceType(line.description) ?? undefined;
   const lineUnit = lookupUnit(line.unit)?.canonical;
   const year = (invoice.periodEnd || invoice.periodStart).slice(0, 4);
@@ -107,7 +102,6 @@ export function EntryLineRow({
     label: `${f.name} — ${formatFactor(f.value)} ${f.unit}`,
   }));
 
-  // Pozycja nieemisyjna — pokazana, ale nie licząca się. Nigdy nie znika.
   if (!line.emissionRelevant && !line.include) {
     return (
       <div className="rounded-md border border-dashed bg-muted/30 px-3 py-2 text-sm">
@@ -181,7 +175,7 @@ export function EntryLineRow({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        {/* Źródło emisji */}
+        {/* Source */}
         <div className="space-y-1">
           <div className="flex h-5 items-center justify-between gap-2">
             <Label className="text-xs">Źródło emisji</Label>
@@ -196,10 +190,7 @@ export function EntryLineRow({
               const next = sources.find((s) => s.id === value);
               onChange({
                 sourceId: value as string,
-                // zmiana źródła podmienia wskaźnik na domyślny dla tego źródła
                 factorId: next?.defaultFactorId ?? line.factorId,
-                // Ręcznie: jednostka ze źródła (wciąż edytowalna, np. MWh),
-                // opis z nazwy źródła, jeśli użytkownik nic nie wpisał.
                 ...(manual && next
                   ? {
                       unit: next.unit,
@@ -216,7 +207,7 @@ export function EntryLineRow({
             <MatchHint confidence={line.matchConfidence} reason={line.matchReason} />
           )}
 
-          {/* Oferta zapamiętania PPE — mechanizm samouczenia (§5.4) */}
+          {/* Remember PPE */}
           {line.unknownPpe && line.sourceId && (
             <label className="mt-1 flex items-start gap-2 text-xs text-muted-foreground">
               <Checkbox
@@ -233,7 +224,7 @@ export function EntryLineRow({
           )}
         </div>
 
-        {/* Wskaźnik */}
+        {/* Factor */}
         <div className="space-y-1">
           <div className="flex h-5 items-center justify-between gap-2">
             <Label className="text-xs">Wskaźnik emisji</Label>
@@ -264,7 +255,7 @@ export function EntryLineRow({
             })()}
         </div>
 
-        {/* Ilość */}
+        {/* Quantity */}
         <div className="space-y-1">
           <Label className="text-xs" htmlFor={`qty-${line.lineNo}`}>
             Ilość
@@ -301,7 +292,7 @@ export function EntryLineRow({
           </div>
         </div>
 
-        {/* Wynik */}
+        {/* Result */}
         <div className="space-y-1">
           <Label className="text-xs">Wyliczona emisja</Label>
           {preview ? (
@@ -337,7 +328,6 @@ export function EntryLineRow({
             onChange({
               sourceId: id,
               factorId: defaultFactorId || line.factorId,
-              // PPE trafiło już do nowego źródła — nie ma czego zapamiętywać.
               rememberPpe: false,
             })
           }

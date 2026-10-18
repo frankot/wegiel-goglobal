@@ -1,21 +1,10 @@
-/**
- * Parser faktury KSeF FA(3).
- *
- * Schemat: http://crd.gov.pl/wzor/2025/06/25/13775/
- * Zweryfikowany na example/unimoto-x.xml (2 pozycje + załącznik),
- * example/unimot-1poz.xml (1 pozycja) i example/unimot-bez-zalacznika.xml.
- */
+/** KSeF FA(3) parser */
 import { XMLParser } from "fast-xml-parser";
 import { randomUUID } from "node:crypto";
 import { isKnownUnit } from "@/lib/emissions/units";
 import { InvoiceParseError, type InvoiceParser, type ParsedInvoice, type ParsedLine } from "./types";
 
-/**
- * WARSTWA 1 obrony przed pułapką „pojedyncza pozycja to obiekt".
- * Ścieżki (jPath), nie nazwy tagów: `Wiersz`, `Kol` i `WKom` to nazwy
- * generyczne w generycznej strukturze tabel załącznika, a `Zalacznik`
- * i `BlokDanych` mogą się powtarzać (wiele punktów poboru).
- */
+/** Array paths */
 const ARRAY_PATHS = new Set([
   "Faktura.Fa.FaWiersz",
   "Faktura.Zalacznik",
@@ -30,27 +19,18 @@ const ARRAY_PATHS = new Set([
 const xmlParser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: "@",
-  removeNSPrefix: true, // pułapka 4 — domyślny ns bez prefiksu, ale etd: bywa
-  parseTagValue: false, // pułapka 5 — liczby jako string, precyzja Decimal
+  removeNSPrefix: true,
+  parseTagValue: false,
   trimValues: true,
-  // jPath: true → callbacki dostają ścieżkę jako string. To jest domyślne,
-  // ale ustawiamy jawnie: przy `false` `isArray` dostałby obiekt Matcher
-  // i porównanie z Set-em po cichu przestałoby cokolwiek dopasowywać.
   jPath: true,
-  isArray: (_name, jpath) => typeof jpath === "string" && ARRAY_PATHS.has(jpath), // pułapka 2
+  isArray: (_name, jpath) => typeof jpath === "string" && ARRAY_PATHS.has(jpath),
 });
 
-/**
- * WARSTWA 2 — totalny akcesor. Warstwa 1 jest allow-listą, a każda allow-lista
- * kiedyś się zdezaktualizuje. `toArray` sprawia, że niekompletna lista daje
- * poprawny wynik zamiast wyjątku albo — gorzej — cichego zera pozycji.
- */
 export function toArray<T>(v: T | T[] | null | undefined): T[] {
   if (v == null) return [];
   return Array.isArray(v) ? v : [v];
 }
 
-/** pułapka 3 — `_x000D_` to zakodowany CR, wchodzi też w nazwy firm. */
 export function cleanText(v: unknown): string {
   if (v == null) return "";
   return String(v).replace(/_x000D_/g, "").replace(/\s+/g, " ").trim();
@@ -61,7 +41,6 @@ function cleanOptional(v: unknown): string | undefined {
   return s === "" ? undefined : s;
 }
 
-/** Jednostki, które nie są zużyciem — „mc" to miesiąc, nie metr sześcienny. */
 function assessLine(description: string, unit: string): Pick<ParsedLine, "emissionRelevant" | "skipReason"> {
   if (!unit) {
     return { emissionRelevant: false, skipReason: "pozycja bez jednostki" };
@@ -89,10 +68,7 @@ function readMeta(blocks: Record<string, unknown>[], key: string): string | unde
   return undefined;
 }
 
-/**
- * Kontrola krzyżowa: tabela „Odczyty" w załączniku ma kolumnę „Zużycie [kWh]".
- * Rozbieżność z `P_8B` to ostrzeżenie, nie błąd — decyzję podejmuje człowiek.
- */
+/** Readings cross-check */
 function readConsumptionFromReadings(
   blocks: Record<string, unknown>[],
 ): string | undefined {
@@ -169,7 +145,6 @@ export const ksefXmlParser: InvoiceParser = {
     const periodStart = cleanOptional(okres.P_6_Od);
     const periodEnd = cleanOptional(okres.P_6_Do);
 
-    // WARSTWA 2 w akcji — brak Zalacznik daje [], nie wyjątek (pułapka 6)
     const blocks = toArray<Record<string, unknown>>(
       faktura.Zalacznik as Record<string, unknown>[],
     ).flatMap((z) => toArray<Record<string, unknown>>(z.BlokDanych as Record<string, unknown>[]));
@@ -180,7 +155,6 @@ export const ksefXmlParser: InvoiceParser = {
 
     const warnings: string[] = [];
 
-    // Jeden FaWiersz przychodzi jako obiekt — toArray to naprawia (pułapka 2)
     const rows = toArray<Record<string, unknown>>(fa.FaWiersz as Record<string, unknown>[]);
     if (rows.length === 0) {
       throw new InvoiceParseError("Faktura nie zawiera żadnych pozycji (<FaWiersz>).");
@@ -199,7 +173,6 @@ export const ksefXmlParser: InvoiceParser = {
         quantity,
         unit,
         netValue: cleanOptional(row.P_11),
-        // PPE/licznik z załącznika dotyczą punktu poboru całej faktury
         ppeNumber: assessment.emissionRelevant ? ppeNumber : undefined,
         meterNumber: assessment.emissionRelevant ? meterNumber : undefined,
         tariffGroup: assessment.emissionRelevant ? tariffGroup : undefined,
@@ -207,7 +180,6 @@ export const ksefXmlParser: InvoiceParser = {
       };
     });
 
-    // Kontrola krzyżowa z tabelą odczytów
     const readingConsumption = readConsumptionFromReadings(blocks);
     if (readingConsumption) {
       const energyLine = lines.find((l) => l.emissionRelevant);

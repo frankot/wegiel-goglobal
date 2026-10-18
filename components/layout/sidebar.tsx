@@ -20,14 +20,11 @@ interface SidebarProps {
   userName: string;
   userEmail: string;
   userRole: string;
-  /** Skrót danych firmy — null, dopóki Manager ich nie uzupełni. */
   company: SidebarCompany | null;
   onNavigate?: () => void;
-  /** Tylko wersja desktopowa — nazwa przejścia musi być na stronie unikalna. */
   brandTransition?: boolean;
 }
 
-/** Tooltip tylko w wersji zwiniętej — rozwinięta ma etykiety na wierzchu. */
 function MaybeTooltip({
   collapsed,
   label,
@@ -62,7 +59,6 @@ export function Sidebar({
           aria-label="Ślad węglowy — strona główna"
         >
           {brandTransition ? (
-            // Wspólna nazwa z logo ekranu logowania — logo „przejeżdża" po zalogowaniu.
             <ViewTransition name="brand-logo" share="brand-logo" default="none">
               <span className="flex items-center gap-3">
                 <BrandMark />
@@ -129,7 +125,6 @@ export function Sidebar({
                               : "text-white/80 hover:bg-white/[0.06] hover:text-white",
                           )}
                         >
-                          {/* Cienka jasna kreska przy aktywnej pozycji. */}
                           {active && (
                             <span aria-hidden="true" className="absolute inset-y-0 left-0 w-[3px] bg-blue" />
                           )}

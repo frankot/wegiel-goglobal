@@ -1,12 +1,3 @@
-/**
- * Konwersja jednostek po stronie serwera, na `Prisma.Decimal`.
- * Tabela jednostek mieszka w `unit-table.ts` i jest współdzielona z klientem.
- *
- * Powód istnienia allow-listy: faktura Unimotu ma pozycję "Opłata handlowa"
- * z jednostką `mc` (miesiąc) i ilością 1,000. Mapper oparty na zgadywaniu
- * potraktuje `mc` jako metr sześcienny i dopisze emisję z 1 m³ gazu ziemnego,
- * której nigdy nie było.
- */
 import { Prisma } from "@/lib/generated/prisma/client";
 import { lookupUnit } from "./unit-table";
 
@@ -32,11 +23,6 @@ export class UnitConversionError extends Error {
   }
 }
 
-/**
- * Przelicza ilość z jednostki dokumentu na jednostkę mianownika wskaźnika.
- * Rzuca `UnitConversionError` zamiast zwracać przybliżenie — wywołujący
- * zamienia to na czytelny komunikat na karcie faktury.
- */
 export function convertQuantity(
   quantity: Decimal,
   fromUnit: string,

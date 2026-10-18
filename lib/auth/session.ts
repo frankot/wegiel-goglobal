@@ -1,10 +1,7 @@
 import "server-only";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
-
-const SECRET = new TextEncoder().encode(
-  process.env.SESSION_SECRET || "dev-secret-change-in-production",
-);
+import { sessionSecretKey } from "@/lib/env";
 
 export interface SessionPayload {
   userId: string;
@@ -18,7 +15,7 @@ export async function createSession(payload: SessionPayload): Promise<string> {
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(expiresAt)
-    .sign(SECRET);
+    .sign(sessionSecretKey());
 
   const cookieStore = await cookies();
   cookieStore.set("session", token, {
@@ -38,7 +35,7 @@ export async function verifySession(): Promise<SessionPayload | null> {
   if (!token) return null;
 
   try {
-    const { payload } = await jwtVerify<SessionPayload>(token, SECRET, {
+    const { payload } = await jwtVerify<SessionPayload>(token, sessionSecretKey(), {
       algorithms: ["HS256"],
     });
     return payload;

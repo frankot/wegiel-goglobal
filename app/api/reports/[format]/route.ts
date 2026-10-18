@@ -13,10 +13,7 @@ const FORMATS = {
   csv: "text/csv; charset=utf-8",
 } as const;
 
-/**
- * GET /api/reports/:format?preset=…&scope=… — plik raportu budowany na żądanie
- * z tych samych parametrów co podgląd na /reports. Nic nie jest zapisywane.
- */
+/** GET /api/reports/:format */
 export async function GET(req: Request, ctx: RouteContext<"/api/reports/[format]">) {
   const user = await getCurrentUser();
   const { format } = await ctx.params;

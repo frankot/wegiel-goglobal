@@ -12,7 +12,7 @@ import { calculateEmission } from "@/lib/emissions/calculate";
 import { parseFile, isAttachmentFile, MAX_FILES_PER_BATCH, MAX_BATCH_BYTES } from "@/lib/import/registry";
 import { enrichInvoices } from "@/lib/import/enrich";
 import { identityKeys } from "@/lib/import/dedupe";
-import { storeInvoiceFile } from "@/lib/import/storage";
+import { deleteInvoiceFiles, storeInvoiceFile } from "@/lib/import/storage";
 import { InvoiceParseError, type EnrichedInvoice, type ParsedInvoice } from "@/lib/import/types";
 import {
   batchEnvelopeSchema,
@@ -28,12 +28,8 @@ export interface ParseBatchResult {
   errors?: string[];
 }
 
-/**
- * Etap 2 przepływu (§4.3): parsuje całą paczkę i zwraca wypełnione karty.
- * NICZEGO nie zapisuje — ani do bazy, ani do Vercel Blob.
- */
 export async function parseInvoiceBatch(formData: FormData): Promise<ParseBatchResult> {
-  await getCurrentUser(); // oba role mogą importować (D6)
+  await getCurrentUser();
 
   const files = formData.getAll("files").filter((f): f is File => f instanceof File);
 
@@ -66,7 +62,6 @@ export async function parseInvoiceBatch(formData: FormData): Promise<ParseBatchR
       parsed.push(invoice);
     } catch (e) {
       const message = e instanceof InvoiceParseError ? e.message : (e as Error).message;
-      // Nieparsowalny plik dostaje własną kartę ERROR — nie znika po cichu.
       parsed.push({
         clientId: randomUUID(),
         fileName: file.name,
@@ -89,13 +84,6 @@ export interface SaveBatchResult {
   failed: Array<{ clientId: string; error: string }>;
 }
 
-/**
- * Etap 4 przepływu (§4.3): zapis PER FAKTURA (D4).
- *
- * Nie rzuca wyjątkiem na pierwszym błędzie — każda faktura ma własną
- * transakcję, wyniki zbierane są do saved/failed. Jedna zła faktura nie
- * unieważnia paczki dziesięciu dobrych.
- */
 export async function saveInvoiceBatch(formData: FormData): Promise<SaveBatchResult> {
   const user = await getCurrentUser();
 
@@ -124,15 +112,12 @@ export async function saveInvoiceBatch(formData: FormData): Promise<SaveBatchRes
     };
   }
 
-  // Pracownik NIGDY nie zapisuje jako zweryfikowane, cokolwiek przyszło
-  // z klienta (D6, kryterium akceptacji 8).
   const status = canVerifyEntry(user) ? envelope.data.status : "DRAFT";
   const ip = await clientIp();
 
   const result: SaveBatchResult = { saved: [], failed: [] };
 
   for (const raw of envelope.data.invoices) {
-    // Walidacja PER FAKTURA — błąd w jednej nie unieważnia pozostałych (D4).
     const parsed = invoiceSaveSchema.safeParse(raw);
     if (!parsed.success) {
       const clientId =
@@ -163,7 +148,6 @@ export async function saveInvoiceBatch(formData: FormData): Promise<SaveBatchRes
     }
   }
 
-  // Rewalidacja raz po całej paczce, nie po każdej fakturze.
   if (result.saved.length > 0) {
     revalidatePath("/entries");
     revalidatePath("/dashboard");
@@ -185,8 +169,6 @@ async function saveSingleInvoice(
   const check = validateInvoiceForSave(input);
   if (!check.ok) throw new Error(check.error);
 
-  // Ręcznie wpisana faktura nie przechodzi przez podgląd z deduplikacją (D7),
-  // więc sprawdzamy tutaj — zamiast surowego błędu unikalności z bazy.
   const existing = await findExistingInvoice(input);
   if (existing) {
     throw new Error(
@@ -196,7 +178,6 @@ async function saveSingleInvoice(
 
   const includedLines = input.lines.filter((l) => l.include);
 
-  // Wskaźniki pobierane z bazy po id — klient podaje WYBÓR, nie wartość.
   const factorIds = [...new Set(includedLines.map((l) => l.factorId))];
   const factors = await prisma.emissionFactor.findMany({
     where: { id: { in: factorIds } },
@@ -210,7 +191,6 @@ async function saveSingleInvoice(
   });
   const sourceById = new Map(sources.map((s) => [s.id, s]));
 
-  // Obliczenia WYŁĄCZNIE serwerowo. Klient nigdy nie dyktuje wyniku.
   const computed = includedLines.map((line) => {
     const factor = factorById.get(line.factorId);
     if (!factor) throw new Error(`Pozycja ${line.lineNo}: wskaźnik nie istnieje.`);
@@ -299,8 +279,6 @@ async function saveSingleInvoice(
     return invoice.id;
   });
 
-  // Po udanej transakcji: plik źródłowy do Bloba i zapamiętanie PPE.
-  // Awaria tutaj nie unieważnia zapisanej faktury — logujemy i idziemy dalej.
   await attachSourceFiles(invoiceId, input.clientId, ctx.formData);
   await rememberPpeAssignments(includedLines);
 
@@ -328,11 +306,6 @@ async function findExistingInvoice(input: InvoiceSaveInput) {
   });
 }
 
-/**
- * Oryginalny XML faktury trzymany w bazie (`Invoice.rawPayload`) — kilka KB.
- * Bez zależności od Vercel Blob: podgląd szczegółów i pobranie pliku działają
- * zawsze, a ponowna interpretacja dokumentu (nowa wersja parsera) jest możliwa.
- */
 async function readSourceXml(
   clientId: string,
   formData: FormData,
@@ -387,21 +360,17 @@ async function rememberPpeAssignments(
   }
 }
 
-/** Szczegóły faktury — modal na liście faktur. */
 export async function getInvoiceDetailAction(invoiceId: string) {
   await getCurrentUser();
   return getInvoiceDetail(invoiceId);
 }
 
-/** Pozycje faktury — doczytywane przy rozwijaniu wiersza na liście. */
 export async function getEntriesForInvoice(invoiceId: string) {
   await getCurrentUser();
   return getInvoiceEntries(invoiceId);
 }
 
-/* ---------------------------------------------------------------------- */
-/* Operacje na pojedynczych wpisach                                        */
-/* ---------------------------------------------------------------------- */
+/* Single entries */
 
 export interface ActionResult {
   ok: boolean;
@@ -491,10 +460,14 @@ export async function deleteInvoice(id: string): Promise<ActionResult> {
 
   const invoice = await prisma.invoice.findUnique({
     where: { id },
-    include: { entries: { select: { id: true, status: true } } },
+    include: {
+      entries: { select: { id: true, status: true } },
+      attachments: { select: { blobUrl: true } },
+    },
   });
   if (!invoice) return { ok: false, error: "Faktura nie istnieje" };
 
+  const ip = await clientIp();
   await prisma.$transaction(async (tx) => {
     await tx.emissionEntry.deleteMany({ where: { invoiceId: id } });
     await tx.invoice.delete({ where: { id } });
@@ -507,10 +480,13 @@ export async function deleteInvoice(id: string): Promise<ActionResult> {
       details: JSON.stringify({
         invoiceNumber: invoice.invoiceNumber,
         entries: invoice.entries.length,
+        attachments: invoice.attachments.length,
       }),
-      ipAddress: await clientIp(),
+      ipAddress: ip,
     });
   });
+
+  await deleteInvoiceFiles(invoice.attachments.map((a) => a.blobUrl));
 
   revalidatePath("/entries");
   revalidatePath("/dashboard");

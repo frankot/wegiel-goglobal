@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 
-/** Karta formularza na ekranach logowania i aktywacji konta. */
 export function AuthCard({
   title,
   description,
@@ -19,7 +18,6 @@ export function AuthCard({
   );
 }
 
-/** Lista błędów formularza — ten sam wygląd na obu ekranach. */
 export function AuthMessage({
   tone = "error",
   children,

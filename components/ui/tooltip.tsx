@@ -6,7 +6,6 @@ const SIDES = {
   top: "bottom-full left-1/2 mb-2 -translate-x-1/2",
 } as const;
 
-/** Dymek bez JS — pokazuje się przy najechaniu i przy fokusie klawiatury. */
 export function Tooltip({
   content,
   side = "right",

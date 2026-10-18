@@ -18,7 +18,6 @@ import {
 } from "./batch-state";
 import type { EnrichedInvoice } from "@/lib/import/types";
 
-/** Odtwarza kartę tak, jak powstaje po imporcie prawdziwej faktury Unimotu. */
 function unimotCard(): CardState {
   const parsed = ksefXmlParser.parse({
     name: "unimoto-x.xml",
@@ -108,14 +107,12 @@ describe("REGRESJA: jedna zła faktura nie unieważnia paczki (D4)", () => {
       status: "DRAFT",
       invoices: [{ garbage: true }, { also: "bad" }],
     });
-    // koperta przechodzi — faktury sprawdzane są pojedynczo w pętli zapisu
     assert.equal(envelope.success, true);
     assert.equal(envelope.success && envelope.data.invoices.length, 2);
   });
 
   test("dobra faktura przechodzi walidację obok złej", () => {
     const good = buildSavePayload([unimotCard()], "DRAFT").invoices[0]!;
-    // realny przypadek: pozycja ZAPISYWANA bez wskazanego źródła
     const bad = {
       clientId: "x",
       sourceFormat: "KSEF_XML",

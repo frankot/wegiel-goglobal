@@ -12,7 +12,6 @@ import {
 export interface NavItem {
   href: string;
   label: string;
-  /** Pełny tytuł strony w górnym pasku — gdy inny niż krótka etykieta w menu. */
   title?: string;
   icon: LucideIcon;
   roles: string[];
@@ -52,7 +51,6 @@ export const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-/** Podstrony — tytuł w górnym pasku, nad nim link do sekcji nadrzędnej. */
 const SUBPAGES: Record<string, string> = {
   "/entries/new": "Dodaj faktury",
 };

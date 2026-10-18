@@ -1,19 +1,7 @@
-/**
- * Dokładna arytmetyka dziesiętna na BigInt — dla PODGLĄDU po stronie klienta.
- *
- * Wartość zapisywana do bazy liczy wyłącznie serwer na `Prisma.Decimal`
- * (lib/emissions/calculate.ts). Ten moduł istnieje, żeby podgląd na żywo
- * pokazywał dokładnie tę samą liczbę co zapis — gdyby używał `number`,
- * 2852 × 0,553 dałoby 1577.1560000000002 i użytkownik zobaczyłby inną
- * wartość przed zapisem niż po nim.
- *
- * Bez zależności zewnętrznych — decimal.js jest schowany w runtime Prismy
- * i nie da się go zaimportować bez wciągania klienta bazy do przeglądarki.
- */
+/** Exact decimal math (client preview) */
 import { lookupUnit } from "./unit-table";
 
 interface Scaled {
-  /** Wartość jako liczba całkowita przeskalowana o 10^scale. */
   value: bigint;
   scale: number;
 }
@@ -40,7 +28,6 @@ function render({ value, scale }: Scaled): string {
   return `${negative ? "-" : ""}${intPart}${fracPart ? `.${fracPart}` : ""}`;
 }
 
-/** Mnożenie dokładne: 2852 × 0.553 = 1577.156, bez błędu zmiennoprzecinkowego. */
 export function multiplyDecimal(a: string, b: string): string | null {
   const x = parse(a);
   const y = parse(b);
@@ -48,14 +35,12 @@ export function multiplyDecimal(a: string, b: string): string | null {
   return render({ value: x.value * y.value, scale: x.scale + y.scale });
 }
 
-/** Dzielenie przez potęgę dziesiątki — przesunięcie przecinka, zawsze dokładne. */
 export function divideByPowerOfTen(a: string, power: number): string | null {
   const x = parse(a);
   if (!x) return null;
   return render({ value: x.value, scale: x.scale + power });
 }
 
-/** Dodawanie dokładne — do sum faktury i całej paczki. */
 export function addDecimal(a: string, b: string): string | null {
   const x = parse(a);
   const y = parse(b);
@@ -65,7 +50,6 @@ export function addDecimal(a: string, b: string): string | null {
   return render({ value: lift(x) + lift(y), scale });
 }
 
-/** Suma listy wartości dziesiętnych; pomija wpisy nieparsowalne. */
 export function sumDecimals(values: string[]): string {
   let acc = "0";
   for (const v of values) {
@@ -75,10 +59,6 @@ export function sumDecimals(values: string[]): string {
   return acc;
 }
 
-/**
- * Konwersja jednostki po stronie klienta — używa tej samej tabeli co serwer.
- * Zwraca null dla jednostki spoza allow-listy (np. `mc`).
- */
 export function convertQuantityLite(
   quantity: string,
   fromUnit: string,
@@ -92,14 +72,12 @@ export function convertQuantityLite(
     return parsed ? render(parsed) : null;
   }
 
-  // Mnożniki w tabeli to albo potęgi 10, albo 277.777778 (GJ→kWh).
   const scaled = multiplyDecimal(quantity, from.multiplier);
   if (!scaled) return null;
   const divisor = parse(to.multiplier);
   if (!divisor) return null;
   if (divisor.value === 0n) return null;
 
-  // Dzielenie tylko przez potęgi 10 — pozostałe przypadki w tabeli nie występują.
   const asString = render(divisor);
   const power = /^1(0*)$/.test(asString) ? asString.length - 1 : null;
   if (power === null) return null;
@@ -113,7 +91,6 @@ export interface LivePreview {
   co2eTon: string;
 }
 
-/** Podgląd emisji dla jednej pozycji — dokładnie ta sama liczba co przy zapisie. */
 export function previewEmission(params: {
   quantity: string;
   quantityUnit: string;

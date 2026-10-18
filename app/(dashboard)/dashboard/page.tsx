@@ -10,7 +10,6 @@ import { getReport } from "@/lib/reports/query";
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
-  // Ten sam silnik co /reports: bieżący rok, wpisy zweryfikowane.
   const params = parseReportParams({ preset: "currentYear" });
   const data = await getReport(params);
   const year = params.from.slice(0, 4);

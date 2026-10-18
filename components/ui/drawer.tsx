@@ -4,7 +4,6 @@ import { Dialog, useNativeDialog } from "./dialog";
 
 export { Dialog as Drawer };
 
-/** Wysuwany z lewej panel na natywnym <dialog> — nawigacja na telefonie. */
 export function DrawerContent({ label, children }: { label: string; children: React.ReactNode }) {
   const { ref, onClick, onClose } = useNativeDialog();
   return (

@@ -44,7 +44,6 @@ describe("parser KSeF FA(3) — faktura z 2 pozycjami", () => {
     assert.equal(oplata.unit, "mc");
     assert.equal(oplata.emissionRelevant, false);
     assert.match(oplata.skipReason!, /nie jest jednostką zużycia/);
-    // kluczowe: pozycja NIE znika z wyniku parsowania
     assert.equal(parsed.lines.length, 2);
   });
 

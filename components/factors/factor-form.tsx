@@ -21,7 +21,6 @@ interface Props {
   factor?: FactorDTO;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Wartości startowe nowego wskaźnika — np. z pozycji importowanej faktury. */
   defaults?: {
     unit?: string;
     scope?: "SCOPE_1" | "SCOPE_2";
@@ -62,7 +61,6 @@ export function FactorFormDialog({ factor, open, onOpenChange, defaults, onCreat
         return;
       }
 
-      // Zapisane wpisy zostają nietknięte; pytamy tylko o szkice (D10).
       if (res.affectedDrafts && res.affectedDrafts > 0) {
         setPendingRecalc(res.affectedDrafts);
         return;

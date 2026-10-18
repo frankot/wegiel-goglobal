@@ -73,9 +73,7 @@ export function ReportFilters({ params, sources }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const [pending, startTransition] = useTransition();
-  // Stan lokalny — UI reaguje od razu, zanim serwer odda nowy podgląd.
   const [p, setP] = useState(params);
-  // Wstecz/dalej w przeglądarce zmienia URL bez udziału tego komponentu.
   const [synced, setSynced] = useState(params);
   if (synced !== params) {
     setSynced(params);
@@ -173,7 +171,6 @@ export function ReportFilters({ params, sources }: Props) {
               pressed={p.scopes.includes(scope)}
               onClick={() => {
                 const scopes = toggle(p.scopes, scope);
-                // Obie wybrane = brak filtra.
                 apply({ ...p, scopes: scopes.length === 2 ? [] : scopes, sourceIds: [] });
               }}
             >
@@ -250,7 +247,6 @@ export function ReportFilters({ params, sources }: Props) {
               pressed={p.statuses.includes(status)}
               onClick={() => {
                 const next = toggle(p.statuses, status);
-                // Nie da się odznaczyć wszystkiego — pusty filtr wraca do domyślnego.
                 apply({ ...p, statuses: next.length ? next : DEFAULT_STATUSES });
               }}
             >

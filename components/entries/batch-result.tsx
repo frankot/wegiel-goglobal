@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import { CheckCircle2, XCircle } from "lucide-react";
 import type { SaveBatchResult } from "@/lib/entries/actions";
 
-/** „Zapisano 2 z 3" — wynik zapisu częściowego (D4). */
 export function BatchResult({ result }: { result: SaveBatchResult }) {
   const total = result.saved.length + result.failed.length;
 

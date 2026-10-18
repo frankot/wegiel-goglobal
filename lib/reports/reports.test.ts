@@ -172,3 +172,18 @@ describe("Agregacja raportu", () => {
     assert.equal(report.invoiceCount, 2);
   });
 });
+
+describe("Eksport CSV — ochrona przed formułami", async () => {
+  const { csvSafeText } = await import("./format");
+
+  test("tekst zaczynający się od znaku formuły dostaje apostrof", () => {
+    for (const v of ["=HYPERLINK(\"http://x\")", "+48 123", "-cmd", "@SUM(A1)", "\tx", "\rx"]) {
+      assert.equal(csvSafeText(v), `'${v}`);
+    }
+  });
+
+  test("zwykły tekst bez zmian", () => {
+    assert.equal(csvSafeText("UNIMOT ENERGIA i GAZ Sp. z o.o."), "UNIMOT ENERGIA i GAZ Sp. z o.o.");
+    assert.equal(csvSafeText(""), "");
+  });
+});

@@ -218,7 +218,7 @@ function Detail({ detail: d }: { detail: InvoiceDetail }) {
             {pdfs.map((a) => (
               <a
                 key={a.id}
-                href={a.blobUrl}
+                href={`/api/attachments/${a.id}`}
                 target="_blank"
                 rel="noreferrer"
                 className={buttonVariants({ variant: "outline", size: "sm" })}

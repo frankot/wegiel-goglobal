@@ -21,11 +21,7 @@ import type {
   ParsedInvoiceStatus,
 } from "./types";
 
-/**
- * Wzbogaca sparsowane faktury o: dopasowanie źródła, wersję wskaźnika,
- * podgląd emisji i status karty. Czysta logika siedzi w `lib/emissions/*`,
- * tutaj jest tylko orkiestracja i dostęp do bazy.
- */
+/** Import enrichment */
 export async function enrichInvoices(
   parsed: ParsedInvoice[],
 ): Promise<EnrichedInvoice[]> {
@@ -39,7 +35,6 @@ export async function enrichInvoices(
   const duplicates = findDuplicates(parsed, existing);
 
   return parsed.map((parsedInv) => {
-    // Faktura na inny podmiot nie jest blokowana — tylko wymaga spojrzenia.
     const buyerWarning = buyerNipWarning(parsedInv.buyerNip, company?.nip);
     const inv = buyerWarning
       ? { ...parsedInv, warnings: [...parsedInv.warnings, buyerWarning] }
@@ -87,8 +82,6 @@ function enrichLine(
     supplierNip?: string;
   },
 ): EnrichedLine {
-  // Pozycja nieemisyjna („Opłata handlowa") zostaje widoczna, ale nie jest
-  // dopasowywana ani liczona — kryterium akceptacji 4.
   if (!line.emissionRelevant) {
     return {
       ...line,
@@ -109,8 +102,6 @@ function enrichLine(
     ? ctx.sources.find((s) => s.id === match.sourceId)
     : undefined;
 
-  // Kandydaci: wskaźniki, których mianownik da się przeliczyć z jednostki
-  // pozycji, zawężone do zakresu źródła gdy je znamy.
   const lineUnit = lookupUnit(line.unit);
   const candidates = ctx.factors.filter((f) => {
     const denom = factorDenominatorUnit(f.unit);
@@ -170,8 +161,6 @@ function deriveStatus(
   );
   if (needsWork) return "NEEDS_ATTENTION";
 
-  // Dopasowanie po NIP/słowniku jest tylko prawdopodobne — niech człowiek
-  // rzuci okiem, zanim to wejdzie do raportu.
   const uncertain = relevant.some((l) => l.match.confidence !== "EXACT");
   if (uncertain) return "NEEDS_ATTENTION";
 

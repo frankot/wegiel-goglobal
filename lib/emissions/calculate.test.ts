@@ -27,7 +27,6 @@ describe("test złoty — faktura Unimot (example/unimot-calc.md)", () => {
       factorValue: "0.553",
       factorUnit: "kg CO₂e/kWh",
     });
-    // Decimal(12,4) zapisałby 1,5772 — stąd zmiana kolumny na (16,6).
     assert.equal(r.co2eTon.toFixed(6), "1.577156");
     assert.notEqual(r.co2eTon.toFixed(4), "1.577156");
   });
@@ -41,7 +40,6 @@ describe("konwersja jednostek — allow-lista", () => {
       factorValue: "0.553",
       factorUnit: "kg CO₂e/kWh",
     });
-    // 2,852 MWh to te same 2852 kWh — musi dać identyczny wynik co test złoty
     assert.equal(r.co2eKg.toString(), "1577.156");
     assert.equal(r.quantity.toString(), "2852");
     assert.equal(r.converted, true);

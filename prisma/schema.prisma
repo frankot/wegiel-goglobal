@@ -65,10 +65,10 @@ model EmissionSource {
   registrationNumber String?
   location           String?
 
-  // Klucze automatycznego dopasowania pozycji faktury do źródła (kaskada §5.4)
-  ppeNumber   String? @unique // punkt poboru energii — klucz #1
-  meterNumber String? // numer licznika — klucz #2
-  supplierNip String? // NIP dostawcy — klucz #3
+  // Matching keys
+  ppeNumber   String? @unique
+  meterNumber String?
+  supplierNip String?
 
   defaultFactor EmissionFactor? @relation(fields: [defaultFactorId], references: [id])
   entries       EmissionEntry[]
@@ -109,13 +109,13 @@ model Invoice {
   sourceFormat  String    @default("MANUAL") // KSEF_XML | MANUAL
   importStatus  String    @default("PENDING")
 
-  // Tożsamość faktury — podstawa deduplikacji (§4.3)
+  // Invoice identity
   ksefNumber   String? @unique
   supplierNip  String?
   supplierName String?
   buyerNip     String?
 
-  rawPayload Json? // { format, fileName, xml } — oryginał dokumentu: audyt, podgląd, ponowna interpretacja
+  rawPayload Json?
 
   uploadedById String?
   uploadedBy   User?   @relation("Uploader", fields: [uploadedById], references: [id])
@@ -159,10 +159,9 @@ model EmissionEntry {
   entryDate   DateTime
   periodStart DateTime?
   periodEnd   DateTime?
-  quantity    Decimal   @db.Decimal(12, 4) // ilość w jednostce mianownika wskaźnika
+  quantity    Decimal   @db.Decimal(12, 4)
   unit        String
 
-  // Ilość tak, jak widnieje na dokumencie (np. 2,852 MWh) — przed konwersją jednostek
   originalQuantity Decimal? @db.Decimal(14, 4)
   originalUnit     String?
 
@@ -170,8 +169,6 @@ model EmissionEntry {
   factorSnapshotUnit  String
 
   co2eKg  Decimal @db.Decimal(12, 4)
-  // Decimal(16,6), nie (12,4): 1577,156 kg to 1,577156 t — przy (12,4) zapisałoby się
-  // jako 1,5772 i suma roczna przestałaby się zgadzać z sumą kilogramów.
   co2eTon Decimal @db.Decimal(16, 6)
 
   status EntryStatus @default(DRAFT)
@@ -200,7 +197,7 @@ model AuditLog {
   createdAt DateTime @default(now())
 }
 
-/// Dane firmy — jedna firma w systemie (§3.1), więc jeden wiersz o stałym id.
+/// Single company row
 model Company {
   id         String  @id @default("default")
   name       String
@@ -216,4 +213,15 @@ model Company {
   updatedById String?
   updatedAt   DateTime @updatedAt
   createdAt   DateTime @default(now())
+}
+
+model LoginAttempt {
+  id        String  @id @default(cuid())
+  email     String
+  ipAddress String?
+
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ipAddress, createdAt])
 }
