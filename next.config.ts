@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
   // PDF fonts
   outputFileTracingIncludes: {
     "/api/reports/*": ["./lib/reports/fonts/*.ttf"],
+    "/manual": ["./docs/manual/*.md"],
   },
 };
 

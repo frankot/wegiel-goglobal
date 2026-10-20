@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, PanelLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CircleHelp, Menu, PanelLeft } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
-import { pageTitleFor } from "./nav";
+import { MANUAL_HREF, pageTitleFor } from "./nav";
 import { TopbarActionsSlot } from "./topbar-actions";
 
 interface TopbarProps {
@@ -21,7 +22,9 @@ const today = new Intl.DateTimeFormat("pl-PL", {
 });
 
 export function Topbar({ collapsed, onToggleSidebar, onOpenMobile }: TopbarProps) {
-  const page = pageTitleFor(usePathname());
+  const pathname = usePathname();
+  const page = pageTitleFor(pathname);
+  const onManual = pathname === MANUAL_HREF;
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/60 px-4 sm:px-6 lg:px-8">
@@ -81,6 +84,20 @@ export function Topbar({ collapsed, onToggleSidebar, onOpenMobile }: TopbarProps
       </div>
 
       <TopbarActionsSlot />
+
+      <Tooltip side="bottom" content="Instrukcja obsługi">
+        <Link
+          href={MANUAL_HREF}
+          aria-label="Instrukcja obsługi"
+          aria-current={onManual ? "page" : undefined}
+          className={cn(
+            buttonVariants({ variant: "ghost", size: "icon" }),
+            onManual && "bg-muted text-strong",
+          )}
+        >
+          <CircleHelp strokeWidth={1.6} aria-hidden="true" />
+        </Link>
+      </Tooltip>
 
       <time suppressHydrationWarning className="hidden text-xs text-muted-foreground xl:block">
         {today.format(new Date())}

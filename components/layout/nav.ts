@@ -55,6 +55,12 @@ const SUBPAGES: Record<string, string> = {
   "/entries/new": "Dodaj faktury",
 };
 
+export const MANUAL_HREF = "/manual";
+
+const STANDALONE: Record<string, string> = {
+  [MANUAL_HREF]: "Instrukcja obsługi",
+};
+
 export function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(href + "/");
 }
@@ -65,6 +71,7 @@ export interface PageTitle {
 }
 
 export function pageTitleFor(pathname: string): PageTitle | null {
+  if (STANDALONE[pathname]) return { title: STANDALONE[pathname] };
   const section = NAV_GROUPS.flatMap((g) => g.items).find((i) =>
     isActive(pathname, i.href),
   );
