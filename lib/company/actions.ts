@@ -11,6 +11,7 @@ import { companySchema } from "@/schemas/company";
 export interface CompanyResult {
   ok: boolean;
   errors?: string[];
+  fieldErrors?: Partial<Record<CompanyField, string>>;
 }
 
 const FIELDS = [
@@ -25,18 +26,25 @@ const FIELDS = [
   "country",
 ] as const;
 
+export type CompanyField = (typeof FIELDS)[number];
+
 export async function updateCompany(formData: FormData): Promise<CompanyResult> {
   const user = await getCurrentUser();
   if (!canManage(user)) return { ok: false, errors: ["Brak uprawnień"] };
 
   const parsed = companySchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
-    return { ok: false, errors: parsed.error.issues.map((i) => i.message) };
+    const fieldErrors: Partial<Record<CompanyField, string>> = {};
+    for (const issue of parsed.error.issues) {
+      const field = issue.path[0] as CompanyField;
+      fieldErrors[field] ??= issue.message;
+    }
+    return { ok: false, fieldErrors };
   }
 
   const data = Object.fromEntries(
     FIELDS.map((f) => [f, parsed.data[f] ?? null]),
-  ) as Record<(typeof FIELDS)[number], string | null> & { name: string };
+  ) as Record<CompanyField, string | null> & { name: string };
 
   const before = await prisma.company.findUnique({ where: { id: COMPANY_ID } });
 
