@@ -17,6 +17,8 @@ import {
   emptyLine,
   emptyManualCard,
   isSavable,
+  removeCard,
+  sortByStatus,
   toCardState,
   type CardState,
   type FactorOption,
@@ -74,7 +76,7 @@ export function BatchPreview({ sources, factors, canVerify, canManage }: Props) 
         if (file) nextFiles[inv.clientId] = file;
       });
 
-      setCards((prev) => [...prev, ...res.invoices!.map(toCardState)]);
+      setCards((prev) => sortByStatus([...prev, ...res.invoices!.map(toCardState)]));
       setFilesByCard((prev) => ({ ...prev, ...nextFiles }));
       if (res.errors?.length) setParseErrors(res.errors);
     });
@@ -84,6 +86,15 @@ export function BatchPreview({ sources, factors, canVerify, canManage }: Props) 
     setCards((prev) =>
       prev.map((c) => (c.clientId === clientId ? { ...c, ...patch } : c)),
     );
+  }
+
+  function handleRemove(clientId: string) {
+    setCards((prev) => removeCard(prev, clientId));
+    setFilesByCard((prev) => {
+      const next = { ...prev };
+      delete next[clientId];
+      return next;
+    });
   }
 
   function patchLine(clientId: string, lineNo: number, patch: Partial<LineState>) {
@@ -223,7 +234,7 @@ export function BatchPreview({ sources, factors, canVerify, canManage }: Props) 
                 onLineChange={(lineNo, patch) =>
                   patchLine(card.clientId, lineNo, patch)
                 }
-                onRemove={() => patchCard(card.clientId, { removed: true })}
+                onRemove={() => handleRemove(card.clientId)}
                 onAddLine={() => addLine(card.clientId)}
                 onRemoveLine={(lineNo) => removeLine(card.clientId, lineNo)}
               />

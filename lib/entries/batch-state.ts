@@ -5,6 +5,7 @@ import {
   sumDecimals,
 } from "@/lib/emissions/decimal-lite";
 import { lookupUnit } from "@/lib/emissions/unit-table";
+import { identityKeys } from "@/lib/import/dedupe";
 import type { MatchConfidence } from "@/lib/emissions/match-source";
 import type { EnrichedInvoice, ParsedInvoiceStatus } from "@/lib/import/types";
 
@@ -71,7 +72,6 @@ export interface CardState {
   errors: string[];
   duplicateOf?: EnrichedInvoice["duplicateOf"];
   attachmentName?: string;
-  removed: boolean;
   saveError?: string;
   savedInvoiceId?: string;
 }
@@ -100,7 +100,6 @@ export function toCardState(inv: EnrichedInvoice): CardState {
     warnings: inv.warnings,
     errors: inv.errors,
     duplicateOf: inv.duplicateOf,
-    removed: false,
     lines: inv.lines.map((l) => ({
       lineNo: l.lineNo,
       description: l.description,
@@ -163,7 +162,6 @@ export function emptyManualCard(clientId: string, attachmentName?: string): Card
     warnings: [],
     errors: [],
     attachmentName,
-    removed: false,
   };
 }
 
@@ -243,8 +241,40 @@ export function cardStatus(card: CardState): ParsedInvoiceStatus {
   return "OK";
 }
 
+function cardKeys(card: CardState) {
+  return identityKeys({
+    ksefNumber: card.ksefNumber,
+    supplierNip: card.supplierNip,
+    invoiceNumber: card.format === "MANUAL" ? card.invoiceNumber : card.original.invoiceNumber,
+  });
+}
+
+export function removeCard(cards: CardState[], clientId: string): CardState[] {
+  const removed = cards.find((c) => c.clientId === clientId);
+  const rest = cards.filter((c) => c.clientId !== clientId);
+  if (!removed || removed.duplicateOf) return rest;
+
+  const k = cardKeys(removed);
+  const twin = rest.find((c) => {
+    if (c.duplicateOf?.where !== "BATCH") return false;
+    const ck = cardKeys(c);
+    return (!!k.ksef && ck.ksef === k.ksef) || (!!k.pair && ck.pair === k.pair);
+  });
+  return rest.map((c) => (c === twin ? { ...c, duplicateOf: undefined } : c));
+}
+
+const STATUS_ORDER: Record<ParsedInvoiceStatus, number> = {
+  OK: 0,
+  NEEDS_ATTENTION: 1,
+  ERROR: 2,
+};
+
+export function sortByStatus(cards: CardState[]): CardState[] {
+  return [...cards].sort((a, b) => STATUS_ORDER[cardStatus(a)] - STATUS_ORDER[cardStatus(b)]);
+}
+
 export function isSavable(card: CardState): boolean {
-  return !card.removed && !card.savedInvoiceId && cardIssues(card).length === 0;
+  return !card.savedInvoiceId && cardIssues(card).length === 0;
 }
 
 export function batchTotals(cards: CardState[], factors: FactorOption[]) {

@@ -99,7 +99,7 @@ Pozycje, które nie są zużyciem (np. „opłata handlowa 1 mc" czy abonament),
 
 Każde pole odczytane z faktury można zmienić. Obok zmienionego pola pojawia się ikona strzałki — kliknij ją, aby **przywrócić wartość z faktury**.
 
-Jednostki przeliczają się same: jeśli faktura jest w MWh, a wskaźnik w kWh, system zamieni 1 MWh na 1000 kWh. Tak samo GJ → kWh i tony → kg.
+Jednostki przeliczają się same: jeśli faktura jest w MWh, a wskaźnik w kWh, system zamieni 1 MWh na 1000 kWh. Tak samo GJ → kWh i tony → kg. O każdym takim przeliczeniu informuje niebieska podpowiedź pod polem ilości, np. „↻ przeliczono 2,852 MWh → 2 852 kWh (jednostka wskaźnika)".
 
 ### Tworzenie źródła lub wskaźnika w trakcie importu
 

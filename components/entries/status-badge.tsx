@@ -1,5 +1,6 @@
 import { StatusDot, type Tone } from "@/components/ui/badge";
 import type { ParsedInvoiceStatus } from "@/lib/import/types";
+import { formatQuantity } from "@/lib/emissions/format";
 
 const CARD_STATUS: Record<ParsedInvoiceStatus, { label: string; tone: Tone }> = {
   OK: { label: "Gotowa", tone: "green" },
@@ -44,6 +45,24 @@ export function MatchHint({
   return (
     <span className={`text-xs ${cfg.className}`}>
       {confidence === "EXACT" ? "✓" : confidence === "NONE" ? "✗" : "⚠"} {reason}
+    </span>
+  );
+}
+
+export function UnitConversionHint({
+  quantity,
+  unit,
+  convertedQuantity,
+  convertedUnit,
+}: {
+  quantity: string;
+  unit: string;
+  convertedQuantity: string;
+  convertedUnit: string;
+}) {
+  return (
+    <span className="text-xs text-primary">
+      ↻ przeliczono {quantity} {unit} → {formatQuantity(convertedQuantity)} {convertedUnit} (jednostka wskaźnika)
     </span>
   );
 }

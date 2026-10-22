@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { MatchHint } from "./status-badge";
+import { MatchHint, UnitConversionHint } from "./status-badge";
 import { SourceFormDialog } from "@/components/sources/source-form";
 import { FactorFormDialog } from "@/components/factors/factor-form";
 import { inferSourceType } from "@/lib/emissions/match-source";
@@ -93,7 +93,10 @@ export function EntryLineRow({
   const issue = lineIssue(line);
 
   const inferredType = inferSourceType(line.description) ?? undefined;
-  const lineUnit = lookupUnit(line.unit)?.canonical;
+  const lineUnitDef = lookupUnit(line.unit);
+  const lineUnit = lineUnitDef?.canonical;
+  const converted =
+    !!preview && !!lineUnitDef && lineUnitDef.multiplier !== lookupUnit(preview.unit)?.multiplier;
   const year = (invoice.periodEnd || invoice.periodStart).slice(0, 4);
 
   const sourceItems = sources.map((s) => ({ value: s.id, label: s.name }));
@@ -290,6 +293,14 @@ export function EntryLineRow({
               label="Przywróć wartość z faktury"
             />
           </div>
+          {converted && (
+            <UnitConversionHint
+              quantity={line.quantity}
+              unit={line.unit}
+              convertedQuantity={preview.quantity}
+              convertedUnit={preview.unit}
+            />
+          )}
         </div>
 
         {/* Result */}
@@ -299,11 +310,6 @@ export function EntryLineRow({
             <p className="text-sm font-medium tabular-nums">
               {formatKg(preview.co2eKg)} kg ={" "}
               <span className="text-primary">{formatTon(preview.co2eTon)} t CO₂e</span>
-              {preview.unit !== line.unit && (
-                <span className="ml-1 text-xs font-normal text-muted-foreground">
-                  ({line.quantity} {line.unit} → {preview.quantity} {preview.unit})
-                </span>
-              )}
             </p>
           ) : (
             <p className="text-sm text-muted-foreground">—</p>

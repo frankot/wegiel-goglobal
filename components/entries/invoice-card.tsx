@@ -116,7 +116,7 @@ export function InvoiceCard({
           : status === "NEEDS_ATTENTION"
             ? "border-amber-500/40"
             : "border-emerald-500/30"
-      } ${card.removed ? "opacity-50" : ""}`}
+      }`}
     >
       <div className="flex flex-wrap items-center gap-2 px-3 py-2">
         <CollapsibleTrigger className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left">
@@ -140,18 +140,16 @@ export function InvoiceCard({
 
         <CardStatusBadge status={status} />
 
-        {!card.removed && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={onRemove}
-            title="Usuń z paczki"
-          >
-            <FileX2 className="h-4 w-4" />
-            <span className="sr-only">Usuń z paczki</span>
-          </Button>
-        )}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onRemove}
+          title="Usuń z paczki"
+        >
+          <FileX2 className="h-4 w-4" />
+          <span className="sr-only">Usuń z paczki</span>
+        </Button>
       </div>
 
       {(issues.length > 0 || card.warnings.length > 0) && (
