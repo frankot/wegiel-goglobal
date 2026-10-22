@@ -10,6 +10,10 @@ const adapter = new PrismaNeon({
 });
 const prisma = new PrismaClient({ adapter });
 
+const categoryRef = (name: string) => ({
+  connectOrCreate: { where: { name }, create: { name } },
+});
+
 const SEED_FACTORS = [
   {
     name: "Energia elektryczna PL — odbiorcy końcowi (KOBIZE, dane 2024)",
@@ -92,7 +96,7 @@ async function main() {
         OR: [
           { name: factor.name },
           {
-            category: factor.category,
+            category: { name: factor.category },
             unit: factor.unit,
             value: factor.value,
             validFrom: factor.validFrom,
@@ -102,7 +106,9 @@ async function main() {
       },
     });
     if (!existing) {
-      await prisma.emissionFactor.create({ data: factor });
+      await prisma.emissionFactor.create({
+        data: { ...factor, category: categoryRef(factor.category) },
+      });
       console.log(`  ✅ ${factor.name}`);
     } else {
       console.log(`  ⏭️  ${factor.name} (already exists)`);
@@ -113,7 +119,7 @@ async function main() {
 
   const current = await prisma.emissionFactor.findFirst({
     where: {
-      category: "Energia elektryczna",
+      category: { name: "Energia elektryczna" },
       value: 0.553,
       validFrom: new Date("2026-01-01"),
       parentId: null,
@@ -128,7 +134,7 @@ async function main() {
       await prisma.emissionFactor.create({
         data: {
           name: "Energia elektryczna PL — odbiorcy końcowi (KOBIZE, dane 2023)",
-          category: "Energia elektryczna",
+          categoryId: current.categoryId,
           value: 0.685,
           unit: "kg CO₂e/kWh",
           source: "KOBIZE",
@@ -221,7 +227,7 @@ async function seedDemoSources() {
       where: {
         OR: [
           { name: factorName },
-          { category: seeded.category, unit: seeded.unit, value: seeded.value, parentId: null },
+          { category: { name: seeded.category }, unit: seeded.unit, value: seeded.value, parentId: null },
         ],
       },
       orderBy: { validFrom: "desc" },

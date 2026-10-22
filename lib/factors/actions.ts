@@ -8,12 +8,50 @@ import { canManage } from "@/lib/auth/permissions";
 import { clientIp, writeAudit } from "@/lib/db/audit";
 import { findOverlappingVersions } from "@/lib/emissions/resolve-factor";
 import { calculateEmission } from "@/lib/emissions/calculate";
-import { factorSchema, factorVersionSchema } from "@/schemas/factor";
-import { getVersionLineage } from "@/lib/db/factors";
+import { NEW_CATEGORY, factorSchema, factorVersionSchema, type FactorInput } from "@/schemas/factor";
+import { getVersionLineage, listFactorCategories } from "@/lib/db/factors";
+import type { CurrentUser } from "@/lib/db/users";
 
 export async function getFactorHistory(factorId: string) {
   await getCurrentUser();
   return getVersionLineage(factorId);
+}
+
+export async function getFactorCategories() {
+  await getCurrentUser();
+  return listFactorCategories();
+}
+
+async function resolveCategoryId(
+  input: FactorInput,
+  user: CurrentUser,
+): Promise<{ id: string } | { error: string }> {
+  if (input.categoryId !== NEW_CATEGORY) {
+    const found = await prisma.factorCategory.findUnique({
+      where: { id: input.categoryId },
+      select: { id: true },
+    });
+    return found ?? { error: "Wybrana kategoria nie istnieje." };
+  }
+
+  const name = input.newCategory!;
+  const existing = await prisma.factorCategory.findFirst({
+    where: { name: { equals: name, mode: "insensitive" } },
+    select: { id: true },
+  });
+  if (existing) return existing;
+
+  const created = await prisma.factorCategory.create({ data: { name }, select: { id: true } });
+  await writeAudit({
+    userId: user.id,
+    userName: user.name || user.email,
+    action: "CREATE",
+    entity: "FactorCategory",
+    entityId: created.id,
+    details: JSON.stringify({ name }),
+    ipAddress: await clientIp(),
+  });
+  return created;
 }
 
 export interface FactorResult {
@@ -46,10 +84,13 @@ export async function createFactor(formData: FormData): Promise<FactorResult> {
     return { ok: false, errors: ["Data początku nie może być późniejsza niż data końca."] };
   }
 
+  const category = await resolveCategoryId(input, user);
+  if ("error" in category) return { ok: false, errors: [category.error] };
+
   const factor = await prisma.emissionFactor.create({
     data: {
       name: input.name,
-      category: input.category,
+      categoryId: category.id,
       value: new Prisma.Decimal(input.value.replace(",", ".")),
       unit: input.unit,
       source: input.source,
@@ -129,7 +170,7 @@ export async function createFactorVersion(formData: FormData): Promise<FactorRes
     return tx.emissionFactor.create({
       data: {
         name: input.name?.trim() || base.name,
-        category: base.category,
+        categoryId: base.categoryId,
         value: new Prisma.Decimal(input.value.replace(",", ".")),
         unit: base.unit,
         source: base.source,
@@ -192,11 +233,14 @@ export async function updateFactor(
     };
   }
 
+  const category = await resolveCategoryId(input, user);
+  if ("error" in category) return { ok: false, errors: [category.error] };
+
   await prisma.emissionFactor.update({
     where: { id },
     data: {
       name: input.name,
-      category: input.category,
+      categoryId: category.id,
       value: new Prisma.Decimal(input.value.replace(",", ".")),
       unit: input.unit,
       source: input.source,

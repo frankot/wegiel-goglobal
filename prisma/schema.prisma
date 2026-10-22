@@ -77,18 +77,27 @@ model EmissionSource {
   updatedAt DateTime @updatedAt
 }
 
-model EmissionFactor {
-  id        String        @id @default(cuid())
-  name      String
-  category  String
-  value     Decimal       @db.Decimal(12, 6)
-  unit      String
-  source    FactorSource
-  scope     EmissionScope
-  validFrom DateTime
-  validTo   DateTime
-  parentId  String?
+model FactorCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
 
+  factors EmissionFactor[]
+}
+
+model EmissionFactor {
+  id         String        @id @default(cuid())
+  name       String
+  categoryId String
+  value      Decimal       @db.Decimal(12, 6)
+  unit       String
+  source     FactorSource
+  scope      EmissionScope
+  validFrom  DateTime
+  validTo    DateTime
+  parentId   String?
+
+  category FactorCategory   @relation(fields: [categoryId], references: [id])
   parent   EmissionFactor?  @relation("VersionHistory", fields: [parentId], references: [id])
   versions EmissionFactor[] @relation("VersionHistory")
 
@@ -97,6 +106,8 @@ model EmissionFactor {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
 }
 
 model Invoice {

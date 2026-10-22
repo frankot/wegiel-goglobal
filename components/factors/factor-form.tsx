@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -14,8 +14,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { createFactor, updateFactor, recalculateDrafts } from "@/lib/factors/actions";
-import type { FactorDTO } from "@/lib/db/factors";
+import {
+  createFactor,
+  getFactorCategories,
+  recalculateDrafts,
+  updateFactor,
+} from "@/lib/factors/actions";
+import { NEW_CATEGORY } from "@/schemas/factor";
+import type { FactorCategoryDTO, FactorDTO } from "@/lib/db/factors";
 
 interface Props {
   factor?: FactorDTO;
@@ -48,6 +54,25 @@ export function FactorFormDialog({ factor, open, onOpenChange, defaults, onCreat
   const [errors, setErrors] = useState<string[]>([]);
   const [pendingRecalc, setPendingRecalc] = useState<number | null>(null);
   const [saving, startSaving] = useTransition();
+  const [categories, setCategories] = useState<FactorCategoryDTO[] | null>(null);
+  const [categoryId, setCategoryId] = useState(factor?.categoryId ?? "");
+
+  useEffect(() => {
+    let cancelled = false;
+    getFactorCategories().then((rows) => {
+      if (cancelled) return;
+      setCategories(rows);
+      if (rows.length === 0) setCategoryId(NEW_CATEGORY);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const categoryItems = [
+    ...(categories ?? []).map((c) => ({ value: c.id, label: c.name })),
+    { value: NEW_CATEGORY, label: "+ Nowa kategoria…" },
+  ];
 
   function onSubmit(formData: FormData) {
     setErrors([]);
@@ -138,14 +163,29 @@ export function FactorFormDialog({ factor, open, onOpenChange, defaults, onCreat
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1">
-              <Label htmlFor="category">Kategoria</Label>
-              <Input
-                id="category"
-                name="category"
-                defaultValue={factor?.category}
-                placeholder="np. Energia elektryczna"
+              <Label htmlFor="categoryId">Kategoria</Label>
+              <Select
+                id="categoryId"
+                name="categoryId"
+                items={categoryItems}
+                value={categoryId}
+                onValueChange={setCategoryId}
+                placeholder={categories === null ? "Wczytywanie…" : "Wybierz kategorię…"}
+                disabled={categories === null}
+                className="w-full"
                 required
               />
+              {categoryId === NEW_CATEGORY && (
+                <Input
+                  name="newCategory"
+                  aria-label="Nazwa nowej kategorii"
+                  placeholder="Nazwa nowej kategorii, np. Paliwa ciekłe"
+                  autoFocus={!!categories?.length}
+                  required
+                  minLength={2}
+                  maxLength={100}
+                />
+              )}
             </div>
             <div className="space-y-1">
               <Label htmlFor="unit">Jednostka</Label>

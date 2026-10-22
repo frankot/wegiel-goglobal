@@ -29,10 +29,11 @@ Okresy kolejnych wersji tego samego wskaźnika **nie mogą się nakładać** —
 **Tylko Manager** — np. dla nowego paliwa.
 
 1. Kliknij **Dodaj wskaźnik** na górnym pasku.
-2. Podaj **nazwę**, **kategorię**, **jednostkę** (np. „kg CO₂e/kWh") i **wartość**.
-3. Wybierz **źródło** (KOBIZE, GHG Protocol, Własny) i **zakres**.
-4. Ustaw daty **Ważny od** i **Ważny do**.
-5. Zapisz.
+2. Podaj **nazwę**, **jednostkę** (np. „kg CO₂e/kWh") i **wartość**.
+3. Wybierz **kategorię** z listy. Jeśli żadna nie pasuje, wybierz **+ Nowa kategoria…** i wpisz jej nazwę — zostanie zapisana i będzie dostępna przy kolejnych wskaźnikach.
+4. Wybierz **źródło** (KOBIZE, GHG Protocol, Własny) i **zakres**.
+5. Ustaw daty **Ważny od** i **Ważny do**.
+6. Zapisz.
 
 ## Coroczna aktualizacja — nowa wersja
 

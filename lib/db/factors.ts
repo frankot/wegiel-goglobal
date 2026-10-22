@@ -5,6 +5,7 @@ import type { FactorCandidate } from "@/lib/emissions/resolve-factor";
 export interface FactorDTO {
   id: string;
   name: string;
+  categoryId: string;
   category: string;
   value: string;
   unit: string;
@@ -15,10 +16,18 @@ export interface FactorDTO {
   parentId: string | null;
 }
 
+export interface FactorCategoryDTO {
+  id: string;
+  name: string;
+}
+
+const withCategory = { category: { select: { name: true } } } as const;
+
 const toDTO = (f: {
   id: string;
   name: string;
-  category: string;
+  categoryId: string;
+  category: { name: string };
   value: { toString(): string };
   unit: string;
   source: string;
@@ -29,7 +38,8 @@ const toDTO = (f: {
 }): FactorDTO => ({
   id: f.id,
   name: f.name,
-  category: f.category,
+  categoryId: f.categoryId,
+  category: f.category.name,
   value: f.value.toString(),
   unit: f.unit,
   source: f.source as FactorDTO["source"],
@@ -41,22 +51,31 @@ const toDTO = (f: {
 
 export async function listFactors(): Promise<FactorDTO[]> {
   const rows = await prisma.emissionFactor.findMany({
-    orderBy: [{ category: "asc" }, { name: "asc" }, { validFrom: "desc" }],
+    include: withCategory,
+    orderBy: [{ category: { name: "asc" } }, { name: "asc" }, { validFrom: "desc" }],
   });
   return rows.map(toDTO);
+}
+
+export async function listFactorCategories(): Promise<FactorCategoryDTO[]> {
+  return prisma.factorCategory.findMany({
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
 }
 
 export async function getFactorCandidates(
   category?: string,
 ): Promise<FactorCandidate[]> {
   const rows = await prisma.emissionFactor.findMany({
-    where: category ? { category } : undefined,
+    where: category ? { category: { name: category } } : undefined,
+    include: withCategory,
     orderBy: { validFrom: "desc" },
   });
   return rows.map((f) => ({
     id: f.id,
     name: f.name,
-    category: f.category,
+    category: f.category.name,
     value: f.value.toString(),
     unit: f.unit,
     scope: f.scope as FactorCandidate["scope"],
@@ -67,7 +86,7 @@ export async function getFactorCandidates(
 }
 
 export async function getFactorById(id: string): Promise<FactorDTO | null> {
-  const f = await prisma.emissionFactor.findUnique({ where: { id } });
+  const f = await prisma.emissionFactor.findUnique({ where: { id }, include: withCategory });
   return f ? toDTO(f) : null;
 }
 
@@ -78,6 +97,7 @@ export async function getVersionLineage(factorId: string): Promise<FactorDTO[]> 
 
   const rows = await prisma.emissionFactor.findMany({
     where: { OR: [{ id: rootId }, { parentId: rootId }] },
+    include: withCategory,
     orderBy: { validFrom: "desc" },
   });
   return rows.map(toDTO);
