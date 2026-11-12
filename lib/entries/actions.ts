@@ -9,9 +9,17 @@ import { clientIp, writeAuditTx, writeAudit } from "@/lib/db/audit";
 import { rememberPpeForSource } from "@/lib/db/sources";
 import { getInvoiceDetail, getInvoiceEntries } from "@/lib/db/invoices";
 import { calculateEmission } from "@/lib/emissions/calculate";
-import { parseFile, isAttachmentFile, MAX_FILES_PER_BATCH, MAX_BATCH_BYTES } from "@/lib/import/registry";
+import {
+  parseFile,
+  isAttachmentFile,
+  MAX_FILES_PER_BATCH,
+  MAX_BATCH_BYTES,
+  MAX_INVOICES_PER_BATCH,
+} from "@/lib/import/registry";
+import { isSpreadsheetFile } from "@/lib/import/limits";
 import { enrichInvoices } from "@/lib/import/enrich";
 import { identityKeys } from "@/lib/import/dedupe";
+import { sameSupplierName } from "@/lib/import/supplier-name";
 import { deleteInvoiceFiles, storeInvoiceFile } from "@/lib/import/storage";
 import { InvoiceParseError, type EnrichedInvoice, type ParsedInvoice } from "@/lib/import/types";
 import {
@@ -58,14 +66,17 @@ export async function parseInvoiceBatch(formData: FormData): Promise<ParseBatchR
   for (const file of files) {
     const content = Buffer.from(await file.arrayBuffer());
     try {
-      const invoice = parseFile({ name: file.name, content });
-      parsed.push(invoice);
+      parsed.push(...parseFile({ name: file.name, content }));
     } catch (e) {
       const message = e instanceof InvoiceParseError ? e.message : (e as Error).message;
       parsed.push({
         clientId: randomUUID(),
         fileName: file.name,
-        format: isAttachmentFile(file.name) ? "MANUAL" : "KSEF_XML",
+        format: isAttachmentFile(file.name)
+          ? "MANUAL"
+          : isSpreadsheetFile(file.name)
+            ? "WAPRO_XLSX"
+            : "KSEF_XML",
         lines: [],
         warnings: [],
         errors: [message],
@@ -73,6 +84,15 @@ export async function parseInvoiceBatch(formData: FormData): Promise<ParseBatchR
       });
       errors.push(`${file.name}: ${message}`);
     }
+  }
+
+  if (parsed.length > MAX_INVOICES_PER_BATCH) {
+    return {
+      ok: false,
+      errors: [
+        `Pliki zawierają ${parsed.length} dokumentów — maksymalnie ${MAX_INVOICES_PER_BATCH} na paczkę. Podziel zestawienie na mniejsze pliki.`,
+      ],
+    };
   }
 
   const invoices = await enrichInvoices(parsed);
@@ -212,7 +232,15 @@ async function saveSingleInvoice(
   });
 
   const entryDate = input.periodEnd ?? input.issueDate ?? new Date().toISOString();
-  const rawPayload = await readSourceXml(input.clientId, ctx.formData);
+  const rawPayload =
+    input.sourceFormat === "WAPRO_XLSX"
+      ? {
+          format: "WAPRO_XLSX" as const,
+          fileName: input.fileName,
+          document: input.sourceRef,
+          rows: (input.sourceRows ?? []) as Prisma.InputJsonArray,
+        }
+      : await readSourceXml(input.clientId, ctx.formData);
 
   const invoiceId = await prisma.$transaction(async (tx) => {
     const invoice = await tx.invoice.create({
@@ -299,11 +327,22 @@ async function findExistingInvoice(input: InvoiceSaveInput) {
       invoiceNumber: input.invoiceNumber!.trim(),
     });
   }
-  if (or.length === 0) return null;
-  return prisma.invoice.findFirst({
-    where: { OR: or },
-    select: { invoiceNumber: true, ksefNumber: true },
+  if (or.length > 0) {
+    const hit = await prisma.invoice.findFirst({
+      where: { OR: or },
+      select: { invoiceNumber: true, ksefNumber: true },
+    });
+    if (hit) return hit;
+  }
+  if (!keys.named) return null;
+  const sameNumber = await prisma.invoice.findMany({
+    where: { invoiceNumber: input.invoiceNumber!.trim() },
+    select: { invoiceNumber: true, ksefNumber: true, supplierName: true, supplierNip: true },
   });
+  return (
+    sameNumber.find((i) => !i.supplierNip && sameSupplierName(i.supplierName, input.supplierName)) ??
+    null
+  );
 }
 
 async function readSourceXml(

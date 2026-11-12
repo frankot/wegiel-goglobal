@@ -71,10 +71,11 @@ export function BatchPreview({ sources, factors, canVerify, canManage }: Props) 
       }
 
       const nextFiles: Record<string, File> = {};
-      res.invoices.forEach((inv, i) => {
-        const file = files[i];
+      for (const inv of res.invoices) {
+        if (inv.format !== "KSEF_XML") continue;
+        const file = files.find((f) => f.name === inv.fileName);
         if (file) nextFiles[inv.clientId] = file;
-      });
+      }
 
       setCards((prev) => sortByStatus([...prev, ...res.invoices!.map(toCardState)]));
       setFilesByCard((prev) => ({ ...prev, ...nextFiles }));

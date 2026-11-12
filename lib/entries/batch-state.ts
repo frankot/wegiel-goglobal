@@ -52,7 +52,9 @@ export interface LineState {
 export interface CardState {
   clientId: string;
   fileName: string;
-  format: "KSEF_XML" | "MANUAL";
+  format: "KSEF_XML" | "WAPRO_XLSX" | "MANUAL";
+  sourceRef?: string;
+  sourceRows?: Record<string, unknown>[];
   original: {
     invoiceNumber: string;
     issueDate: string;
@@ -83,6 +85,9 @@ export function toCardState(inv: EnrichedInvoice): CardState {
     clientId: inv.clientId,
     fileName: inv.fileName,
     format: inv.format,
+    sourceRef: inv.sourceRef,
+    sourceRows:
+      inv.format === "WAPRO_XLSX" ? ((inv.raw as { rows?: Record<string, unknown>[] })?.rows ?? []) : undefined,
     original: {
       invoiceNumber: inv.invoiceNumber ?? "",
       issueDate: dateOnly(inv.issueDate),
@@ -245,6 +250,7 @@ function cardKeys(card: CardState) {
   return identityKeys({
     ksefNumber: card.ksefNumber,
     supplierNip: card.supplierNip,
+    supplierName: card.supplierName,
     invoiceNumber: card.format === "MANUAL" ? card.invoiceNumber : card.original.invoiceNumber,
   });
 }
@@ -258,7 +264,11 @@ export function removeCard(cards: CardState[], clientId: string): CardState[] {
   const twin = rest.find((c) => {
     if (c.duplicateOf?.where !== "BATCH") return false;
     const ck = cardKeys(c);
-    return (!!k.ksef && ck.ksef === k.ksef) || (!!k.pair && ck.pair === k.pair);
+    return (
+      (!!k.ksef && ck.ksef === k.ksef) ||
+      (!!k.pair && ck.pair === k.pair) ||
+      (!!k.named && ck.named === k.named)
+    );
   });
   return rest.map((c) => (c === twin ? { ...c, duplicateOf: undefined } : c));
 }
@@ -317,6 +327,8 @@ export function buildSavePayload(
       clientId: card.clientId,
       fileName: card.fileName,
       sourceFormat: card.format,
+      sourceRef: card.sourceRef,
+      sourceRows: card.sourceRows,
       invoiceNumber: card.invoiceNumber.trim() || undefined,
       ksefNumber: card.ksefNumber || undefined,
       issueDate: card.issueDate || undefined,

@@ -178,7 +178,9 @@ export function InvoiceCard({
         <div className="space-y-4 border-t p-3">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <HeaderField
-              label={manual ? "Numer faktury *" : "Numer faktury"}
+              label={
+                manual ? "Numer faktury *" : card.format === "WAPRO_XLSX" ? "Numer dokumentu" : "Numer faktury"
+              }
               value={card.invoiceNumber}
               original={original?.invoiceNumber}
               onChange={(v) => onChange({ invoiceNumber: v })}

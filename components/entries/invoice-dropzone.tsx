@@ -3,7 +3,7 @@
 import { useRef, useState, type DragEvent } from "react";
 import { Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { MAX_FILES_PER_BATCH, MAX_BATCH_BYTES } from "@/lib/import/limits";
+import { MAX_FILES_PER_BATCH, MAX_BATCH_BYTES, isSpreadsheetFile } from "@/lib/import/limits";
 
 interface Props {
   onFiles: (files: File[]) => void;
@@ -22,7 +22,7 @@ export function InvoiceDropzone({ onFiles, busy }: Props) {
     const files = Array.from(fileList);
     const rejected: string[] = [];
     const accepted = files.filter((f) => {
-      const ok = /\.(xml|pdf)$/i.test(f.name);
+      const ok = /\.(xml|pdf)$/i.test(f.name) || isSpreadsheetFile(f.name);
       if (!ok) rejected.push(f.name);
       return ok;
     });
@@ -46,7 +46,7 @@ export function InvoiceDropzone({ onFiles, busy }: Props) {
 
     if (accepted.length === 0) {
       setError(
-        `Nie wybrano pliku XML. Odrzucono: ${rejected.join(", ")}.`,
+        `Nie wybrano pliku XML ani arkusza (XLSX, XLS, ODS). Odrzucono: ${rejected.join(", ")}.`,
       );
       return;
     }
@@ -82,7 +82,7 @@ export function InvoiceDropzone({ onFiles, busy }: Props) {
           ref={inputRef}
           type="file"
           multiple
-          accept=".xml,.pdf,application/xml,text/xml,application/pdf"
+          accept=".xml,.pdf,.xlsx,.xls,application/xml,text/xml,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,.ods,application/vnd.oasis.opendocument.spreadsheet"
           className="sr-only"
           onChange={(e) => {
             accept(e.target.files);
@@ -102,10 +102,11 @@ export function InvoiceDropzone({ onFiles, busy }: Props) {
               aria-hidden="true"
             />
             <p className="text-sm font-medium">
-              Przeciągnij pliki XML z KSeF (do {MAX_FILES_PER_BATCH})
+              Przeciągnij pliki XML z KSeF lub zestawienia z WAPRO MAG — XLSX, XLS, ODS (do {MAX_FILES_PER_BATCH})
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Każdy plik to jedna faktura. PDF otworzy pusty formularz do ręcznego
+              Plik XML to jedna faktura. Zestawienie przyjęć z WAPRO MAG (XLSX, XLS lub ODS) tworzy osobną
+              kartę dla każdego dokumentu magazynowego. PDF otworzy pusty formularz do ręcznego
               wypełnienia — zostanie dołączony jako załącznik.
             </p>
             <Button

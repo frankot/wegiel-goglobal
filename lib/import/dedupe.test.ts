@@ -89,6 +89,31 @@ describe("deduplikacja", () => {
     assert.deepEqual(identityKeys({ supplierNip: "111" }), {
       ksef: null,
       pair: null,
+      named: null,
     });
+  });
+
+  test("bez NIP duplikat rozpoznawany po nazwie dostawcy i numerze", () => {
+    const wapro = {
+      clientId: "w2",
+      fileName: "energia.xlsx",
+      format: "WAPRO_XLSX" as const,
+      invoiceNumber: "PZ /ŚW/001/0826",
+      supplierName: "UNIMOT ENERGIA I GAZ SPÓŁKA Z OGRANICZONĄ ODPOWIED",
+      lines: [],
+      warnings: [],
+      errors: [],
+      raw: null,
+    };
+    const dups = findDuplicates([wapro], [
+      {
+        id: "db1",
+        ksefNumber: null,
+        supplierNip: null,
+        supplierName: "UNIMOT ENERGIA i GAZ Sp. z o. o.",
+        invoiceNumber: "PZ /ŚW/001/0826",
+      },
+    ]);
+    assert.equal(dups.get("w2")?.where, "DB");
   });
 });

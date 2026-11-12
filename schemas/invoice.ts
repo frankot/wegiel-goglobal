@@ -44,7 +44,9 @@ export const invoiceSaveSchema = z
   .object({
     clientId: z.string().min(1),
     fileName: z.string().optional(),
-    sourceFormat: z.enum(["KSEF_XML", "MANUAL"]),
+    sourceFormat: z.enum(["KSEF_XML", "WAPRO_XLSX", "MANUAL"]),
+    sourceRef: z.string().max(200).optional(),
+    sourceRows: z.array(z.record(z.string(), z.unknown())).max(500).optional(),
     invoiceNumber: z.string().max(200).optional(),
     ksefNumber: z.string().max(200).optional(),
     issueDate: isoDate,

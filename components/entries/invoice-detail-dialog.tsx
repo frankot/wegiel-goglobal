@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { FORMAT_LABELS } from "@/lib/import/types";
 import { EntryStatusBadge } from "./status-badge";
 import { getInvoiceDetailAction } from "@/lib/entries/actions";
 import {
@@ -88,7 +89,7 @@ function Detail({ detail: d }: { detail: InvoiceDetail }) {
       <DialogHeader>
         <DialogTitle className="flex flex-wrap items-center gap-2">
           {d.invoiceNumber ?? "Faktura bez numeru"}
-          <Badge variant="outline">{d.sourceFormat === "KSEF_XML" ? "KSeF XML" : "Ręczna"}</Badge>
+          <Badge variant="outline">{FORMAT_LABELS[d.sourceFormat] ?? d.sourceFormat}</Badge>
         </DialogTitle>
         <DialogDescription>
           Dodana {formatDate(d.createdAt)}
@@ -203,10 +204,16 @@ function Detail({ detail: d }: { detail: InvoiceDetail }) {
         )}
       </Section>
 
-      {(doc || pdfs.length > 0) && (
+      {doc && !doc.downloadable && (
+        <p className="text-xs text-muted-foreground">
+          Zaimportowano z zestawienia WAPRO MAG: {doc.fileName}
+        </p>
+      )}
+
+      {(doc?.downloadable || pdfs.length > 0) && (
         <Section title="Pliki">
           <div className="flex flex-wrap gap-2">
-            {doc && (
+            {doc?.downloadable && (
               <a
                 href={`/api/invoices/${d.id}/xml`}
                 className={buttonVariants({ variant: "outline", size: "sm" })}

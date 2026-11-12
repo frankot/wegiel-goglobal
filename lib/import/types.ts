@@ -1,7 +1,13 @@
 import type { SourceMatch } from "@/lib/emissions/match-source";
 import type { FactorResolution } from "@/lib/emissions/resolve-factor";
 
-export type InvoiceFormat = "KSEF_XML" | "MANUAL";
+export type InvoiceFormat = "KSEF_XML" | "WAPRO_XLSX" | "MANUAL";
+
+export const FORMAT_LABELS: Record<string, string> = {
+  KSEF_XML: "KSeF XML",
+  WAPRO_XLSX: "WAPRO MAG",
+  MANUAL: "Ręczna",
+};
 
 export type ParsedInvoiceStatus = "OK" | "NEEDS_ATTENTION" | "ERROR";
 
@@ -36,6 +42,7 @@ export interface ParsedInvoice {
   clientId: string;
   fileName: string;
   format: InvoiceFormat;
+  sourceRef?: string;
   invoiceNumber?: string;
   ksefNumber?: string;
   issueDate?: string;

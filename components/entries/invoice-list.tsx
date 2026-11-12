@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Paperclip, Loader2 } from "lucide-react";
 import { EntryStatusBadge } from "./status-badge";
+import { FORMAT_LABELS } from "@/lib/import/types";
 import { InvoiceDetailDialog } from "./invoice-detail-dialog";
 import {
   formatTon,
@@ -134,7 +135,7 @@ export function InvoiceList({ invoices, loadEntries }: Props) {
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline">
-                    {inv.sourceFormat === "KSEF_XML" ? "KSeF XML" : "Ręczna"}
+                    {FORMAT_LABELS[inv.sourceFormat] ?? inv.sourceFormat}
                   </Badge>
                 </TableCell>
               </TableRow>

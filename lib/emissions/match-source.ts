@@ -1,4 +1,5 @@
 /** Source matching cascade */
+import { lookupUnit } from "./unit-table";
 
 export type MatchConfidence = "EXACT" | "LIKELY" | "GUESS" | "NONE";
 
@@ -52,8 +53,10 @@ export function matchSource(params: {
   meterNumber?: string | null;
   supplierNip?: string | null;
   description?: string;
+  previousSourceId?: string | null;
+  unit?: string;
 }): SourceMatch {
-  const { ppeNumber, meterNumber, supplierNip, description } = params;
+  const { ppeNumber, meterNumber, supplierNip, description, previousSourceId, unit } = params;
   const sources = params.sources.filter((s) => s.active);
 
   // 1. PPE
@@ -82,7 +85,20 @@ export function matchSource(params: {
 
   const unknownPpe = ppeNumber ?? undefined;
 
-  // 3. Supplier NIP
+  // 3. Supplier history
+  if (previousSourceId) {
+    const hit = sources.find((s) => s.id === previousSourceId);
+    if (hit) {
+      return {
+        sourceId: hit.id,
+        confidence: "LIKELY",
+        reason: "dopasowano po wcześniejszych fakturach tego dostawcy",
+        unknownPpe,
+      };
+    }
+  }
+
+  // 4. Supplier NIP
   if (supplierNip) {
     const hits = sources.filter((s) => s.supplierNip === supplierNip);
     if (hits.length === 1) {
@@ -95,7 +111,7 @@ export function matchSource(params: {
     }
   }
 
-  // 4. Keywords
+  // 5. Keywords
   if (description) {
     const type = inferSourceType(description);
     if (type) {
@@ -108,6 +124,20 @@ export function matchSource(params: {
           unknownPpe,
         };
       }
+    }
+  }
+
+  // 6. Unit
+  const canonical = unit ? lookupUnit(unit)?.canonical : undefined;
+  if (canonical) {
+    const hits = sources.filter((s) => lookupUnit(s.unit)?.canonical === canonical);
+    if (hits.length === 1) {
+      return {
+        sourceId: hits[0]!.id,
+        confidence: "GUESS",
+        reason: `jedyne aktywne źródło rozliczane w ${unit}`,
+        unknownPpe,
+      };
     }
   }
 
