@@ -324,7 +324,7 @@ function historyPayload(fileName: string) {
 
 async function seedDemoHistory() {
   const author = await prisma.user.findFirst({
-    where: { role: "MANAGER", active: true },
+    where: { role: "ADMIN", active: true },
     orderBy: { createdAt: "asc" },
   });
   if (!author) {

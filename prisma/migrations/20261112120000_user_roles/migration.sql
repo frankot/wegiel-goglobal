@@ -1,0 +1,13 @@
+-- Replace roles: MANAGER -> ADMIN, EMPLOYEE -> USER
+ALTER TYPE "UserRole" RENAME TO "UserRole_old";
+
+CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'ANALYST', 'USER');
+
+ALTER TABLE "User" ALTER COLUMN "role" DROP DEFAULT;
+
+ALTER TABLE "User" ALTER COLUMN "role" TYPE "UserRole"
+  USING (CASE "role"::text WHEN 'MANAGER' THEN 'ADMIN' ELSE 'USER' END)::"UserRole";
+
+ALTER TABLE "User" ALTER COLUMN "role" SET DEFAULT 'USER';
+
+DROP TYPE "UserRole_old";

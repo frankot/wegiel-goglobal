@@ -2,7 +2,7 @@
 
 ## Dlaczego moja faktura nie jest widoczna na dashboardzie?
 
-Dashboard pokazuje tylko wpisy **zweryfikowane i skorygowane**. Faktury zapisane jako szkice czekają na weryfikację przez Managera — w sekcji [Faktury i wpisy](#faktury-i-wpisy) po rozwinięciu faktury (przycisk **Zweryfikuj** lub **Zweryfikuj szkice**). Szkice możesz zobaczyć w [Raportach](#raporty), włączając status **Szkic** w filtrach.
+Dashboard pokazuje tylko wpisy **zweryfikowane i skorygowane**. Faktury zapisane jako szkice czekają na weryfikację przez Analityka — w sekcji [Faktury i wpisy](#faktury-i-wpisy) po rozwinięciu faktury (przycisk **Zweryfikuj** lub **Zweryfikuj szkice**). Szkice możesz zobaczyć w [Raportach](#raporty), włączając status **Szkic** w filtrach.
 
 ## Nie mogę zapisać faktury — „Podaj okres rozliczeniowy (od–do)"
 
@@ -18,7 +18,7 @@ Obsługiwane jest zestawienie przyjęć z WAPRO MAG z nagłówkami: Nazwa dostaw
 
 ## Pomyliłem się w ilości po zapisaniu faktury
 
-Rozwiń fakturę na liście i kliknij ikonę ołówka przy wpisie. Pracownik może poprawić własny szkic; wpisy zweryfikowane poprawia Manager — dostaną wtedy status **Skorygowany**.
+Rozwiń fakturę na liście i kliknij ikonę ołówka przy wpisie. Użytkownik może poprawić własny szkic; wpisy zweryfikowane poprawia Analityk — dostaną wtedy status **Skorygowany**.
 
 ## System pominął pozycję, która powinna być liczona
 
@@ -30,7 +30,7 @@ Ta faktura została już wcześniej zapisana. Nie trzeba jej dodawać ponownie �
 
 ## Komunikat „Brak wskaźnika obowiązującego dla daty…"
 
-W systemie nie ma wersji wskaźnika ważnej w okresie, którego dotyczy faktura (np. faktura za 2027 rok, a wskaźnik kończy się w 2026). Manager powinien dodać nową wersję wskaźnika w sekcji [Współczynniki emisji](#wspolczynniki-emisji).
+W systemie nie ma wersji wskaźnika ważnej w okresie, którego dotyczy faktura (np. faktura za 2027 rok, a wskaźnik kończy się w 2026). Analityk powinien dodać nową wersję wskaźnika w sekcji [Współczynniki emisji](#wspolczynniki-emisji).
 
 ## Komunikat „jednostka … nie jest jednostką zużycia"
 
@@ -46,11 +46,11 @@ NIP nabywcy na fakturze różni się od NIP-u w sekcji [O firmie](#o-firmie). Up
 
 ## Nie mogę dezaktywować źródła emisji
 
-Do źródła są przypisane wpisy w statusie **Szkic**. Najpierw muszą zostać zweryfikowane — Manager zrobi to w sekcji [Faktury i wpisy](#faktury-i-wpisy) przyciskiem **Zweryfikuj** przy wpisie albo **Zweryfikuj szkice** dla całej faktury.
+Do źródła są przypisane wpisy w statusie **Szkic**. Najpierw muszą zostać zweryfikowane — Analityk zrobi to w sekcji [Faktury i wpisy](#faktury-i-wpisy) przyciskiem **Zweryfikuj** przy wpisie albo **Zweryfikuj szkice** dla całej faktury.
 
 ## Nie widzę przycisku „Zapisz i zweryfikuj" ani „+ nowe"
 
-Te funkcje są dostępne tylko dla roli **Manager**. Jako Pracownik zapisujesz faktury jako szkice.
+Te funkcje są dostępne tylko dla roli **Analityk**. Jako Użytkownik zapisujesz faktury jako szkice.
 
 ## Czy zmiana wskaźnika zmieni moje stare raporty?
 

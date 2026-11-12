@@ -22,11 +22,11 @@ Strzałka na początku wiersza rozwija listę wpisów z tej faktury: źródło e
 
 Po rozwinięciu faktury strzałką przy każdym wpisie pojawiają się przyciski:
 
-- **Zweryfikuj** — **Tylko Manager**. Zatwierdza wpis w statusie Szkic; od tej chwili jest wliczany do dashboardu i raportów.
-- **Ołówek** — poprawia ilość. Pracownik może poprawiać tylko własne szkice. Manager może poprawić każdy wpis — jeśli wpis był już zweryfikowany, zmieni status na **Skorygowany**, a zmiana trafi do dziennika audytu.
-- **Kosz** — **Tylko Manager**. Usuwa wpis po potwierdzeniu. Jeśli to jedyny wpis faktury, usuwana jest cała faktura.
+- **Zweryfikuj** — **Tylko Analityk**. Zatwierdza wpis w statusie Szkic; od tej chwili jest wliczany do dashboardu i raportów.
+- **Ołówek** — poprawia ilość. Użytkownik może poprawiać tylko własne szkice. Analityk może poprawić każdy wpis — jeśli wpis był już zweryfikowany, zmieni status na **Skorygowany**, a zmiana trafi do dziennika audytu.
+- **Kosz** — **Tylko Analityk**. Usuwa wpis po potwierdzeniu. Jeśli to jedyny wpis faktury, usuwana jest cała faktura.
 
-Nad listą wpisów Manager ma też przyciski dla całej faktury:
+Nad listą wpisów Analityk ma też przyciski dla całej faktury:
 
 - **Zweryfikuj szkice (N)** — zatwierdza naraz wszystkie szkice tej faktury.
 - **Usuń fakturę** — usuwa fakturę razem z wpisami i załącznikami, po potwierdzeniu.
@@ -137,7 +137,7 @@ Jednostki przeliczają się same: jeśli faktura jest w MWh, a wskaźnik w kWh, 
 
 ### Tworzenie źródła lub wskaźnika w trakcie importu
 
-**Tylko Manager** — przy polach **Źródło emisji** i **Wskaźnik emisji** jest przycisk **+ nowe**. Otwiera on formularz nowego źródła lub wskaźnika, wstępnie wypełniony danymi z faktury (typ, jednostka, numer PPE, NIP dostawcy, rok). Po zapisaniu nowe źródło lub wskaźnik od razu zostaje przypisane do pozycji.
+**Tylko Analityk** — przy polach **Źródło emisji** i **Wskaźnik emisji** jest przycisk **+ nowe**. Otwiera on formularz nowego źródła lub wskaźnika, wstępnie wypełniony danymi z faktury (typ, jednostka, numer PPE, NIP dostawcy, rok). Po zapisaniu nowe źródło lub wskaźnik od razu zostaje przypisane do pozycji.
 
 ## Kontrole wykonywane przez system
 
@@ -151,8 +151,8 @@ Jednostki przeliczają się same: jeśli faktura jest w MWh, a wskaźnik w kWh, 
 
 Na dole strony widać, ile faktur jest gotowych do zapisu i jaka jest łączna emisja paczki. Dostępne są dwa przyciski:
 
-- **Zapisz jako szkice** — faktury trafiają do systemu ze statusem **Szkic**. Tak zapisuje Pracownik.
-- **Zapisz i zweryfikuj** — **Tylko Manager**. Faktury zapisują się od razu jako **Zweryfikowane** i są wliczane do dashboardu i raportów.
+- **Zapisz jako szkice** — faktury trafiają do systemu ze statusem **Szkic**. Tak zapisuje Użytkownik.
+- **Zapisz i zweryfikuj** — **Tylko Analityk**. Faktury zapisują się od razu jako **Zweryfikowane** i są wliczane do dashboardu i raportów.
 
 Każda faktura zapisuje się **osobno**. Jeśli 1 z 10 faktur ma błąd, pozostałe 9 i tak zostanie zapisanych — zobaczysz komunikat „Zapisano 9 z 10". Faktury, których nie udało się zapisać, zostają w podglądzie razem z opisem błędu — popraw je i zapisz ponownie.
 

@@ -33,7 +33,7 @@ Każdy wpis emisyjny ma jeden z trzech statusów:
 | Status | Znaczenie |
 |---|---|
 | **Szkic** | Wpis roboczy, jeszcze niesprawdzony. Nie jest wliczany do dashboardu ani (domyślnie) do raportów. |
-| **Zweryfikowany** | Wpis sprawdzony i zatwierdzony przez Managera. Wliczany do dashboardu i raportów. |
+| **Zweryfikowany** | Wpis sprawdzony i zatwierdzony przez Analityka. Wliczany do dashboardu i raportów. |
 | **Skorygowany** | Wpis zatwierdzony, który został później poprawiony. Również wliczany do raportów. |
 
 Każdy wpis **zapamiętuje wartość wskaźnika z chwili zapisu**. Gdy wskaźnik zmieni się w przyszłości (np. KOBIZE opublikuje nową wartość), zapisane wcześniej wyniki pozostaną bez zmian. To ważne dla audytora — raport za dany rok zawsze da się odtworzyć.
@@ -42,7 +42,7 @@ Każdy wpis **zapamiętuje wartość wskaźnika z chwili zapisu**. Gdy wskaźnik
 
 | Rola | Co może |
 |---|---|
-| **Pracownik** | Przegląda dashboard, raporty, faktury, źródła i wskaźniki. Dodaje faktury — zapisują się jako **szkice**. |
-| **Manager** | Wszystko, co Pracownik, a dodatkowo: zatwierdza faktury („Zapisz i zweryfikuj"), zarządza źródłami emisji, wskaźnikami i danymi firmy. |
+| **Użytkownik** | Przegląda dashboard, faktury, źródła i wskaźniki, pobiera raporty. Dodaje faktury — zapisują się jako **szkice** — i może poprawiać własne szkice, dopóki nie zostaną zweryfikowane. |
+| **Analityk** | Wszystko, co Użytkownik, a dodatkowo: weryfikuje, koryguje i usuwa wpisy, zarządza źródłami emisji, wskaźnikami i danymi firmy oraz zaprasza nowe osoby i zarządza ich kontami w sekcji **Administracja**. |
 
-W tej instrukcji czynności dostępne tylko dla Managera są oznaczone etykietą **Tylko Manager**.
+W tej instrukcji czynności dostępne tylko dla Analityka są oznaczone etykietą **Tylko Analityk**.

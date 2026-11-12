@@ -17,14 +17,15 @@ Aplikacja do obliczania, monitorowania i raportowania śladu węglowego przedsi�
 | **Współczynniki emisji** | Centralny katalog wskaźników KOBIZE i GHG Protocol z wersjonowaniem datami |
 | **Faktury i wpisy** | Ręczne wprowadzanie, import CSV/XLSX/XML (KSeF, WF-MAG), auto-przeliczanie CO₂e |
 | **Raporty** | Generowanie PDF/XLSX/CSV zgodnych z ESRS E1, archiwum raportów |
-| **Administracja** | Zarządzanie użytkownikami (Manager/Pracownik), dziennik audytu |
+| **Administracja** | Zaproszenia e-mail (Resend), role Analityk/Użytkownik, dezaktywacja kont |
 
 ## Role użytkowników
 
 | Rola | Uprawnienia |
 |------|-------------|
-| **Manager** | Pełny dostęp: zarządzanie źródłami, wskaźnikami, fakturami, raportami, użytkownikami |
-| **Pracownik** | Wprowadzanie odczytów i faktur, edycja własnych wpisów w statusie "Szkic", podgląd dashboardu i raportów |
+| **Administrator** | Konto techniczne (deweloper) — wszystko, co Analityk, oraz zarządzanie kontami administratorów; niewidoczne dla klienta |
+| **Analityk** | Pełny dostęp do danych: źródła, wskaźniki, faktury, weryfikacja i korekta wpisów, raporty; zapraszanie i zarządzanie użytkownikami |
+| **Użytkownik** | Podgląd danych, pobieranie raportów, dodawanie faktur jako szkice i poprawianie własnych szkiców |
 
 ## Dokumentacja
 

@@ -2,14 +2,14 @@
 
 ## Aktywacja konta
 
-Konta zakłada administrator systemu — nie ma samodzielnej rejestracji.
+Konta zakłada Analityk w sekcji **Administracja** — nie ma samodzielnej rejestracji.
 
-1. Otrzymasz e-mail z zaproszeniem. Kliknij link aktywacyjny.
+1. Otrzymasz e-mail z zaproszeniem. Kliknij **Aktywuj konto** (link jest ważny 7 dni).
 2. Wpisz swoje **imię i nazwisko**.
 3. Ustaw **hasło**: co najmniej 8 znaków, w tym 1 wielka litera i 1 cyfra.
 4. Kliknij **Aktywuj konto**. Zostaniesz automatycznie zalogowany.
 
-Jeśli zobaczysz komunikat „Nieprawidłowy link", link wygasł albo został już użyty — poproś administratora o nowe zaproszenie.
+Jeśli zobaczysz komunikat „Nieprawidłowy link", link wygasł albo został już użyty — poproś Analityka o ponowne wysłanie zaproszenia.
 
 ## Logowanie
 
@@ -34,6 +34,7 @@ Kilka ważnych zasad:
 | **Źródła emisji** | Liczniki, instalacje i pojazdy firmy. |
 | **Współczynniki** | Katalog wskaźników emisji. |
 | **O firmie** | Dane firmy (nazwa, NIP, adres). |
+| **Administracja** | Zapraszanie użytkowników i zarządzanie kontami — widoczna tylko dla Analityka. |
 
 Przydatne skróty:
 

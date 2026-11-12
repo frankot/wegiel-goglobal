@@ -5,7 +5,7 @@ import { sessionSecretKey } from "@/lib/env";
 
 export interface SessionPayload {
   userId: string;
-  role: "MANAGER" | "EMPLOYEE";
+  role: "ADMIN" | "ANALYST" | "USER";
 }
 
 export async function createSession(payload: SessionPayload): Promise<string> {

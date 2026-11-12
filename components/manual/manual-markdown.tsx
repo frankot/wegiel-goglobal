@@ -4,7 +4,7 @@ import remarkGfm from "remark-gfm";
 import { Badge } from "@/components/ui/badge";
 import { headingId } from "@/lib/manual/load";
 
-const MANAGER_TAG = "Tylko Manager";
+const MANAGER_TAG = "Tylko Analityk";
 
 function textOf(node: React.ReactNode): string {
   if (typeof node === "string" || typeof node === "number") return String(node);

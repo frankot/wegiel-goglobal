@@ -22,7 +22,7 @@ Jeśli nad tabelą widzisz żółtą informację, że źródła energii nie maj�
 
 ## Dodawanie źródła
 
-**Tylko Manager**
+**Tylko Analityk**
 
 1. Kliknij **Dodaj źródło** na górnym pasku.
 2. Podaj **nazwę**, np. „Licznik główny — hala A".
@@ -40,10 +40,10 @@ Jeśli zobaczysz komunikat „Brak aktywnego wskaźnika…", najpierw dodaj odpo
 
 ## Edycja źródła
 
-**Tylko Manager** — kliknij ikonę ołówka w wierszu źródła, zmień dane i kliknij **Zapisz zmiany**.
+**Tylko Analityk** — kliknij ikonę ołówka w wierszu źródła, zmień dane i kliknij **Zapisz zmiany**.
 
 ## Dezaktywacja źródła
 
-**Tylko Manager** — źródeł się **nie usuwa**, tylko dezaktywuje (historia emisji musi zostać zachowana). Kliknij ikonę zasilania w wierszu źródła. Tą samą ikoną źródło można ponownie aktywować.
+**Tylko Analityk** — źródeł się **nie usuwa**, tylko dezaktywuje (historia emisji musi zostać zachowana). Kliknij ikonę zasilania w wierszu źródła. Tą samą ikoną źródło można ponownie aktywować.
 
 Źródła nie da się dezaktywować, dopóki są do niego przypisane wpisy w statusie **Szkic**.

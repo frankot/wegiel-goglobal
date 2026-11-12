@@ -26,7 +26,7 @@ Okresy kolejnych wersji tego samego wskaźnika **nie mogą się nakładać** —
 
 ## Dodawanie nowego wskaźnika
 
-**Tylko Manager** — np. dla nowego paliwa.
+**Tylko Analityk** — np. dla nowego paliwa.
 
 1. Kliknij **Dodaj wskaźnik** na górnym pasku.
 2. Podaj **nazwę**, **jednostkę** (np. „kg CO₂e/kWh") i **wartość**.
@@ -37,7 +37,7 @@ Okresy kolejnych wersji tego samego wskaźnika **nie mogą się nakładać** —
 
 ## Coroczna aktualizacja — nowa wersja
 
-**Tylko Manager** — gdy np. KOBIZE opublikuje nową wartość na kolejny rok.
+**Tylko Analityk** — gdy np. KOBIZE opublikuje nową wartość na kolejny rok.
 
 1. W wierszu wskaźnika kliknij ikonę **+** („Dodaj nową wersję").
 2. Wpisz **nową wartość**. Daty **Obowiązuje od / do** są podpowiadane na kolejny rok kalendarzowy — zmień je w razie potrzeby.
@@ -48,7 +48,7 @@ System **sam zamknie poprzednią wersję** dzień przed datą „od". Wpisy z wc
 
 ## Poprawianie wskaźnika
 
-**Tylko Manager** — np. gdy wpisano wartość z literówką.
+**Tylko Analityk** — np. gdy wpisano wartość z literówką.
 
 1. Kliknij ikonę ołówka w wierszu wskaźnika.
 2. Popraw dane i zapisz.

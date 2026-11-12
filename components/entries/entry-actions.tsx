@@ -4,14 +4,7 @@ import { useState, useTransition } from "react";
 import { Check, CheckCheck, Loader2, Pencil, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   deleteEntry,
   deleteInvoice,
@@ -21,6 +14,7 @@ import {
   type ActionResult,
 } from "@/lib/entries/actions";
 import { formatQuantity } from "@/lib/emissions/format";
+import { isManagerRole } from "@/lib/auth/permissions";
 import type { InvoiceEntryItem } from "@/lib/db/invoices";
 
 export interface Viewer {
@@ -28,43 +22,7 @@ export interface Viewer {
   role: string;
 }
 
-const isManager = (v: Viewer) => v.role === "MANAGER";
-
-function ConfirmDialog({
-  title,
-  description,
-  confirmLabel,
-  pending,
-  onConfirm,
-  onCancel,
-}: {
-  title: string;
-  description: React.ReactNode;
-  confirmLabel: string;
-  pending: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
-}) {
-  return (
-    <Dialog open onOpenChange={(o) => !o && onCancel()}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={onCancel}>
-            Anuluj
-          </Button>
-          <Button variant="destructive" disabled={pending} onClick={onConfirm}>
-            {pending && <Loader2 className="animate-spin" aria-hidden="true" />}
-            {confirmLabel}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
+const isManager = (v: Viewer) => isManagerRole(v.role);
 
 function useAction(onDone: () => void) {
   const [pending, start] = useTransition();

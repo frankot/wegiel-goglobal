@@ -1,2 +1,22 @@
+import { redirect } from "next/navigation";
+import { getCurrentUser, listUsers } from "@/lib/db/users";
+import { assignableRoles, canManage } from "@/lib/auth/permissions";
 import { PageHeader } from "@/components/layout/page-header";
-export default async function AdminPage() { return <div className="space-y-4"><PageHeader description="Zarządzanie użytkownikami — Faza 3." /></div>; }
+import { InviteForm } from "@/components/admin/invite-form";
+import { UserTable } from "@/components/admin/user-table";
+
+export default async function AdminPage() {
+  const user = await getCurrentUser();
+  if (!canManage(user)) redirect("/dashboard");
+
+  const users = await listUsers(user.role === "ADMIN");
+  const roles = assignableRoles(user);
+
+  return (
+    <div className="space-y-4">
+      <PageHeader description="Zapraszanie osób do systemu i zarządzanie ich dostępem." />
+      <InviteForm roles={roles} />
+      <UserTable users={users} viewer={{ id: user.id, role: user.role }} roles={roles} />
+    </div>
+  );
+}

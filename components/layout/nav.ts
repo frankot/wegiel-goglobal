@@ -24,7 +24,8 @@ export interface NavGroup {
 
 export const SIDEBAR_COOKIE = "sidebar";
 
-const ALL = ["MANAGER", "EMPLOYEE"];
+const ALL = ["ADMIN", "ANALYST", "USER"];
+const STAFF = ["ADMIN", "ANALYST"];
 
 export const NAV_GROUPS: NavGroup[] = [
   {
@@ -46,7 +47,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "System",
     items: [
       { href: "/company", label: "O firmie", title: "Dane firmy", icon: Building2, roles: ALL },
-      { href: "/admin", label: "Administracja", icon: Settings, roles: ["MANAGER"] },
+      { href: "/admin", label: "Administracja", icon: Settings, roles: STAFF },
     ],
   },
 ];
@@ -83,9 +84,7 @@ export function pageTitleFor(pathname: string): PageTitle | null {
     : { title: sectionTitle };
 }
 
-export function roleLabel(role: string) {
-  return role === "MANAGER" ? "Manager" : "Pracownik";
-}
+export { roleLabel } from "@/lib/auth/permissions";
 
 export function initials(name: string) {
   const parts = name.split(/[\s@.]+/).filter(Boolean);

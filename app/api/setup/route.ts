@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       async (tx) => {
         if ((await tx.user.count()) > 0) throw new SetupDoneError();
         return tx.user.create({
-          data: { email, name, passwordHash, role: "MANAGER", active: true },
+          data: { email, name, passwordHash, role: "ADMIN", active: true },
         });
       },
       { isolationLevel: "Serializable" },

@@ -10,7 +10,7 @@ Sekcja zawiera dane firmy, dla której liczony jest ślad węglowy.
 
 ## Edycja danych
 
-**Tylko Manager**
+**Tylko Analityk**
 
 1. Przejdź do **O firmie** (albo kliknij nazwę firmy w panelu bocznym).
 2. Uzupełnij lub popraw pola:
@@ -18,4 +18,4 @@ Sekcja zawiera dane firmy, dla której liczony jest ślad węglowy.
    - **Adres**: Ulica i numer, Kod pocztowy, Miejscowość, Kraj.
 3. Kliknij **Zapisz**. Pojawi się komunikat „Zapisano dane firmy".
 
-Pracownik widzi dane firmy tylko do odczytu. Jeśli nie zostały jeszcze uzupełnione, poproś Managera o ich dodanie.
+Użytkownik widzi dane firmy tylko do odczytu. Jeśli nie zostały jeszcze uzupełnione, poproś Analityka o ich dodanie.

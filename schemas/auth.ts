@@ -28,8 +28,11 @@ export type SignupInput = z.infer<typeof signupSchema>;
 export const inviteSchema = z.object({
   email: z
     .string()
+    .trim()
+    .toLowerCase()
     .min(1, "Adres e-mail jest wymagany")
     .email("Nieprawidłowy format adresu e-mail"),
+  role: z.enum(["ADMIN", "ANALYST", "USER"], { message: "Wybierz rolę" }),
 });
 
 export type InviteInput = z.infer<typeof inviteSchema>;

@@ -19,3 +19,48 @@ export const getCurrentUser = cache(async () => {
 });
 
 export type CurrentUser = Awaited<ReturnType<typeof getCurrentUser>>;
+
+export type UserStatus = "ACTIVE" | "INACTIVE" | "INVITED" | "EXPIRED";
+
+export interface UserRow {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  status: UserStatus;
+  invitationExpires: string | null;
+  createdAt: string;
+}
+
+export async function listUsers(includeAdmins: boolean): Promise<UserRow[]> {
+  const rows = await prisma.user.findMany({
+    where: includeAdmins ? undefined : { role: { not: "ADMIN" } },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      active: true,
+      passwordHash: true,
+      invitationExpires: true,
+      createdAt: true,
+    },
+    orderBy: [{ active: "desc" }, { createdAt: "asc" }],
+  });
+  const now = new Date();
+  return rows.map((u) => ({
+    id: u.id,
+    email: u.email,
+    name: u.name,
+    role: u.role,
+    status: !u.active
+      ? "INACTIVE"
+      : u.passwordHash
+        ? "ACTIVE"
+        : u.invitationExpires && u.invitationExpires > now
+          ? "INVITED"
+          : "EXPIRED",
+    invitationExpires: u.invitationExpires?.toISOString() ?? null,
+    createdAt: u.createdAt.toISOString(),
+  }));
+}

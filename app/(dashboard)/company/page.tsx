@@ -59,7 +59,7 @@ export default async function CompanyPage() {
         description={
           manage
             ? "Dane firmy, dla której liczony jest ślad węglowy. NIP służy do sprawdzania, czy importowana faktura jest wystawiona na firmę, a dane trafią do nagłówka raportów."
-            : "Dane firmy, dla której liczony jest ślad węglowy. Zmienić je może Manager."
+            : "Dane firmy, dla której liczony jest ślad węglowy. Zmienić je może Analityk."
         }
       />
 
@@ -70,7 +70,7 @@ export default async function CompanyPage() {
       ) : (
         <Card className="p-4">
           <p className="text-sm text-muted-foreground">
-            Dane firmy nie zostały jeszcze uzupełnione — poproś Managera o ich dodanie.
+            Dane firmy nie zostały jeszcze uzupełnione — poproś Analityka o ich dodanie.
           </p>
         </Card>
       )}

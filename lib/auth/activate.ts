@@ -34,6 +34,7 @@ export async function activateAccount(
     where: {
       invitationToken: hashToken(token),
       invitationExpires: { gte: new Date() },
+      active: true,
     },
   });
 
@@ -59,7 +60,7 @@ export async function activateAccount(
 
   await createSession({
     userId: user.id,
-    role: user.role as "MANAGER" | "EMPLOYEE",
+    role: user.role,
   });
 
   redirect("/dashboard");
