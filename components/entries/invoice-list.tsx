@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -12,9 +13,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Paperclip, Loader2 } from "lucide-react";
+import { FORMAT_LABELS } from "@/lib/import/types";
 import { EntryStatusBadge } from "./status-badge";
 import { FORMAT_LABELS } from "@/lib/import/types";
 import { InvoiceDetailDialog } from "./invoice-detail-dialog";
+import { EntryRowActions, InvoiceActions, type Viewer } from "./entry-actions";
 import {
   formatTon,
   formatQuantity,
@@ -26,9 +29,11 @@ import type { InvoiceListItem, InvoiceEntryItem } from "@/lib/db/invoices";
 interface Props {
   invoices: InvoiceListItem[];
   loadEntries: (invoiceId: string) => Promise<InvoiceEntryItem[]>;
+  viewer: Viewer;
 }
 
-export function InvoiceList({ invoices, loadEntries }: Props) {
+export function InvoiceList({ invoices, loadEntries, viewer }: Props) {
+  const router = useRouter();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [entries, setEntries] = useState<Record<string, InvoiceEntryItem[]>>(
     {},
@@ -48,6 +53,25 @@ export function InvoiceList({ invoices, loadEntries }: Props) {
       setEntries((prev) => ({ ...prev, [id]: rows }));
       setLoading(null);
     }
+  }
+
+  async function reload(id: string) {
+    const rows = await loadEntries(id);
+    if (rows.length === 0) removed(id);
+    else {
+      setEntries((prev) => ({ ...prev, [id]: rows }));
+      router.refresh();
+    }
+  }
+
+  function removed(id: string) {
+    setExpanded(null);
+    setEntries((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+    router.refresh();
   }
 
   if (invoices.length === 0) {
@@ -150,6 +174,14 @@ export function InvoiceList({ invoices, loadEntries }: Props) {
                       </p>
                     ) : (
                       <div className="space-y-1 py-1">
+                        <InvoiceActions
+                          invoiceId={inv.id}
+                          invoiceNumber={inv.invoiceNumber}
+                          entries={entries[inv.id] ?? []}
+                          viewer={viewer}
+                          onDone={() => reload(inv.id)}
+                          onDeleted={() => removed(inv.id)}
+                        />
                         {(entries[inv.id] ?? []).map((e) => (
                           <div
                             key={e.id}
@@ -178,6 +210,12 @@ export function InvoiceList({ invoices, loadEntries }: Props) {
                             <span className="text-xs text-muted-foreground">
                               {e.authorName}
                             </span>
+                            <EntryRowActions
+                              entry={e}
+                              viewer={viewer}
+                              onlyEntry={(entries[inv.id] ?? []).length === 1}
+                              onDone={() => reload(inv.id)}
+                            />
                           </div>
                         ))}
                       </div>

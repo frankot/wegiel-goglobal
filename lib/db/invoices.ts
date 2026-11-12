@@ -36,6 +36,7 @@ export interface InvoiceEntryItem {
   co2eTon: string;
   status: string;
   note: string | null;
+  authorId: string;
   authorName: string;
   entryDate: string;
 }
@@ -136,6 +137,7 @@ export async function getInvoiceEntries(
     co2eTon: e.co2eTon.toString(),
     status: e.status,
     note: e.note,
+    authorId: e.authorId,
     authorName: e.author.name || e.author.email,
     entryDate: e.entryDate.toISOString(),
   }));
@@ -170,6 +172,7 @@ export interface InvoiceDetail {
   attachments: Array<{ id: string; kind: string; fileName: string }>;
   document: {
     fileName: string;
+    downloadable: boolean;
     currency: string | null;
     netTotal: string | null;
     downloadable: boolean;
@@ -190,7 +193,37 @@ export function storedXml(raw: unknown): { fileName: string; xml: string } | nul
     : null;
 }
 
+function readWaproDocument(raw: unknown): InvoiceDetail["document"] {
+  const r = raw as { format?: unknown; fileName?: unknown; rows?: unknown };
+  if (r?.format !== "WAPRO_XLSX" || !Array.isArray(r.rows) || r.rows.length === 0) return null;
+  const fileName = typeof r.fileName === "string" ? r.fileName : "zestawienie.xlsx";
+  const [parsed] = groupWaproRows(r.rows as WaproRow[], fileName);
+  if (!parsed) return null;
+  return {
+    fileName,
+    downloadable: false,
+    currency: "PLN",
+    netTotal: null,
+    grossTotal: null,
+    ppeNumber: null,
+    meterNumber: null,
+    tariffGroup: null,
+    lines: parsed.lines.map((l) => ({
+      lineNo: l.lineNo,
+      description: l.description,
+      quantity: l.quantity,
+      unit: l.unit,
+      netValue: l.netValue ?? null,
+      emissionRelevant: l.emissionRelevant,
+      skipReason: l.skipReason ?? null,
+    })),
+    warnings: [],
+  };
+}
+
 function readDocument(raw: unknown): InvoiceDetail["document"] {
+  const wapro = readWaproDocument(raw);
+  if (wapro) return wapro;
   const stored = storedXml(raw);
 function readWaproDocument(raw: unknown): InvoiceDetail["document"] {
   const r = raw as { format?: unknown; fileName?: unknown; rows?: unknown };
@@ -233,6 +266,7 @@ function readWaproDocument(raw: unknown): InvoiceDetail["document"] {
     const energy = parsed.lines.find((l) => l.emissionRelevant);
     return {
       fileName: stored.fileName,
+      downloadable: true,
       currency: cleanText(fa.KodWaluty) || null,
       netTotal: cleanText(fa.P_13_1) || null,
       downloadable: true,

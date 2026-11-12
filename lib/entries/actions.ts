@@ -422,6 +422,7 @@ export async function verifyEntry(id: string): Promise<ActionResult> {
 
   const entry = await prisma.emissionEntry.findUnique({ where: { id } });
   if (!entry) return { ok: false, error: "Wpis nie istnieje" };
+  if (entry.status !== "DRAFT") return { ok: false, error: "Wpis jest już zweryfikowany" };
 
   await prisma.emissionEntry.update({
     where: { id },
@@ -438,9 +439,45 @@ export async function verifyEntry(id: string): Promise<ActionResult> {
     ipAddress: await clientIp(),
   });
 
+  revalidateEntries();
+  return { ok: true };
+}
+
+export async function verifyInvoiceDrafts(invoiceId: string): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!canVerifyEntry(user)) return { ok: false, error: "Brak uprawnień" };
+
+  const drafts = await prisma.emissionEntry.findMany({
+    where: { invoiceId, status: "DRAFT" },
+    select: { id: true },
+  });
+  if (drafts.length === 0) return { ok: false, error: "Faktura nie ma szkiców do weryfikacji" };
+
+  const ip = await clientIp();
+  await prisma.$transaction(async (tx) => {
+    await tx.emissionEntry.updateMany({
+      where: { id: { in: drafts.map((d) => d.id) } },
+      data: { status: "VERIFIED", verifierId: user.id },
+    });
+    await writeAuditTx(tx, {
+      userId: user.id,
+      userName: user.name || user.email,
+      action: "VERIFY",
+      entity: "Invoice",
+      entityId: invoiceId,
+      details: JSON.stringify({ entries: drafts.map((d) => d.id), to: "VERIFIED" }),
+      ipAddress: ip,
+    });
+  });
+
+  revalidateEntries();
+  return { ok: true };
+}
+
+function revalidateEntries() {
   revalidatePath("/entries");
   revalidatePath("/dashboard");
-  return { ok: true };
+  revalidatePath("/reports");
 }
 
 export async function correctEntry(id: string): Promise<ActionResult> {
@@ -465,7 +502,7 @@ export async function correctEntry(id: string): Promise<ActionResult> {
     ipAddress: await clientIp(),
   });
 
-  revalidatePath("/entries");
+  revalidateEntries();
   return { ok: true };
 }
 
@@ -475,6 +512,11 @@ export async function deleteEntry(id: string): Promise<ActionResult> {
 
   const entry = await prisma.emissionEntry.findUnique({ where: { id } });
   if (!entry) return { ok: false, error: "Wpis nie istnieje" };
+
+  if (entry.invoiceId) {
+    const siblings = await prisma.emissionEntry.count({ where: { invoiceId: entry.invoiceId } });
+    if (siblings === 1) return deleteInvoice(entry.invoiceId);
+  }
 
   await prisma.emissionEntry.delete({ where: { id } });
 
@@ -488,8 +530,7 @@ export async function deleteEntry(id: string): Promise<ActionResult> {
     ipAddress: await clientIp(),
   });
 
-  revalidatePath("/entries");
-  revalidatePath("/dashboard");
+  revalidateEntries();
   return { ok: true };
 }
 
@@ -527,8 +568,7 @@ export async function deleteInvoice(id: string): Promise<ActionResult> {
 
   await deleteInvoiceFiles(invoice.attachments.map((a) => a.blobUrl));
 
-  revalidatePath("/entries");
-  revalidatePath("/dashboard");
+  revalidateEntries();
   return { ok: true };
 }
 
@@ -560,9 +600,12 @@ export async function updateEntryQuantity(
     factorUnit: entry.factorSnapshotUnit,
   });
 
+  const status = entry.status === "DRAFT" ? "DRAFT" : "CORRECTED";
+
   await prisma.emissionEntry.update({
     where: { id },
     data: {
+      status,
       originalQuantity: new Prisma.Decimal(normalized),
       quantity: new Prisma.Decimal(r.quantity.toString()),
       co2eKg: new Prisma.Decimal(r.co2eKg.toString()),
@@ -573,17 +616,17 @@ export async function updateEntryQuantity(
   await writeAudit({
     userId: user.id,
     userName: user.name || user.email,
-    action: "UPDATE",
+    action: status === "CORRECTED" ? "CORRECT" : "UPDATE",
     entity: "EmissionEntry",
     entityId: id,
     details: JSON.stringify({
+      status: { from: entry.status, to: status },
       quantity: { from: entry.quantity.toString(), to: r.quantity.toString() },
       co2eKg: { from: entry.co2eKg.toString(), to: r.co2eKg.toString() },
     }),
     ipAddress: await clientIp(),
   });
 
-  revalidatePath("/entries");
-  revalidatePath("/dashboard");
+  revalidateEntries();
   return { ok: true };
 }

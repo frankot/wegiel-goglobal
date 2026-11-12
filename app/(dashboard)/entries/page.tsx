@@ -12,7 +12,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { TopbarActions } from "@/components/layout/topbar-actions";
 
 export default async function EntriesPage() {
-  await getCurrentUser();
+  const user = await getCurrentUser();
   const invoices = await listInvoices();
 
   const totalTon =
@@ -35,7 +35,11 @@ export default async function EntriesPage() {
       </TopbarActions>
 
       <Card className="overflow-x-auto p-0">
-        <InvoiceList invoices={invoices} loadEntries={getEntriesForInvoice} />
+        <InvoiceList
+          invoices={invoices}
+          loadEntries={getEntriesForInvoice}
+          viewer={{ id: user.id, role: user.role }}
+        />
       </Card>
     </div>
   );
