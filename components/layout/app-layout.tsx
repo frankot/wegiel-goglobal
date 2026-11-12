@@ -38,6 +38,7 @@ export function AppLayout({
       return next;
     });
   }, []);
+  
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
