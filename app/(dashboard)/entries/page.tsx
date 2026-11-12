@@ -11,8 +11,9 @@ import { sumDecimals, divideByPowerOfTen } from "@/lib/emissions/decimal-lite";
 import { PageHeader } from "@/components/layout/page-header";
 import { TopbarActions } from "@/components/layout/topbar-actions";
 
-export default async function EntriesPage() {
+export default async function EntriesPage({ searchParams }: PageProps<"/entries">) {
   const user = await getCurrentUser();
+  const { faktura } = await searchParams;
   const invoices = await listInvoices();
 
   const totalTon =
@@ -39,6 +40,7 @@ export default async function EntriesPage() {
           invoices={invoices}
           loadEntries={getEntriesForInvoice}
           viewer={{ id: user.id, role: user.role }}
+          openInvoiceId={typeof faktura === "string" ? faktura : undefined}
         />
       </Card>
     </div>

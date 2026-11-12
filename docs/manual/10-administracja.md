@@ -31,3 +31,14 @@ Dostępne czynności:
 - **Dezaktywuj / Aktywuj** — blokuje lub przywraca logowanie. Kont się nie usuwa: wpisy i faktury dodane przez daną osobę zostają w historii.
 
 Nie możesz zmienić roli ani dezaktywować własnego konta.
+
+## Dziennik zdarzeń
+
+Zakładka **Dziennik zdarzeń** pokazuje historię operacji w systemie: kto, kiedy i co zrobił — logowania, zapis i usuwanie faktur, weryfikacje i korekty wpisów, zmiany źródeł, wskaźników i danych firmy, wygenerowane raporty oraz zaproszenia i zmiany kont.
+
+- Każde zdarzenie jest opisane jednym zdaniem. Kliknij je, aby zobaczyć szczegóły — przy zmianach widać wartość poprzednią i nową (np. „Zweryfikowany → Skorygowany”).
+- **Przejdź do obiektu** otwiera fakturę, źródło, wskaźnik lub raport, którego dotyczy zdarzenie — o ile nadal istnieje.
+- Listę zawęzisz filtrami: **Użytkownik**, **Obiekt**, **Akcja** oraz zakresem dat **Od / Do**. Zdarzenia są wyświetlane po 50, od najnowszych.
+- **Eksport CSV** na górnym pasku pobiera wszystkie zdarzenia pasujące do filtrów (np. dla audytora). Sam eksport też trafia do dziennika.
+
+Czynności wykonane przez konto techniczne dostawcy systemu są widoczne jako **Administrator systemu**.

@@ -29,16 +29,19 @@ interface Props {
   invoices: InvoiceListItem[];
   loadEntries: (invoiceId: string) => Promise<InvoiceEntryItem[]>;
   viewer: Viewer;
+  openInvoiceId?: string;
 }
 
-export function InvoiceList({ invoices, loadEntries, viewer }: Props) {
+export function InvoiceList({ invoices, loadEntries, viewer, openInvoiceId }: Props) {
   const router = useRouter();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [entries, setEntries] = useState<Record<string, InvoiceEntryItem[]>>(
     {},
   );
   const [loading, setLoading] = useState<string | null>(null);
-  const [detailId, setDetailId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(
+    openInvoiceId && invoices.some((i) => i.id === openInvoiceId) ? openInvoiceId : null,
+  );
 
   async function toggle(id: string) {
     if (expanded === id) {

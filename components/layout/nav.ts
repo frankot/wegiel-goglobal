@@ -54,6 +54,7 @@ export const NAV_GROUPS: NavGroup[] = [
 
 const SUBPAGES: Record<string, string> = {
   "/entries/new": "Dodaj faktury",
+  "/admin/audit": "Dziennik zdarzeń",
 };
 
 export const MANUAL_HREF = "/manual";
