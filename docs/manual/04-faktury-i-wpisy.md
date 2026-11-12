@@ -14,9 +14,24 @@ Tabela pokazuje wszystkie faktury w systemie, a nad nią łączną liczbę faktu
 | **Poz.** | Liczba wpisów emisyjnych z tej faktury. |
 | **CO₂e [t]** | Łączna emisja z faktury w tonach. |
 | **Status** | Statusy wpisów: Szkic, Zweryfikowany, Skorygowany. |
-| **Źródło** | „KSeF XML" — faktura wgrana z pliku, „Ręczna" — wpisana ręcznie. |
+| **Źródło** | „KSeF XML" — faktura wgrana z pliku XML, „WAPRO MAG" — dokument z zestawienia XLSX, „Ręczna" — wpisana ręcznie. |
 
 Strzałka na początku wiersza rozwija listę wpisów z tej faktury: źródło emisji, zużycie, użyty wskaźnik, wynik, status i autora wpisu. Jeśli jednostka na fakturze była inna niż we wskaźniku (np. MWh zamiast kWh), zobaczysz też oryginalną wartość „z faktury".
+
+## Weryfikacja, korekta i usuwanie wpisów
+
+Po rozwinięciu faktury strzałką przy każdym wpisie pojawiają się przyciski:
+
+- **Zweryfikuj** — **Tylko Manager**. Zatwierdza wpis w statusie Szkic; od tej chwili jest wliczany do dashboardu i raportów.
+- **Ołówek** — poprawia ilość. Pracownik może poprawiać tylko własne szkice. Manager może poprawić każdy wpis — jeśli wpis był już zweryfikowany, zmieni status na **Skorygowany**, a zmiana trafi do dziennika audytu.
+- **Kosz** — **Tylko Manager**. Usuwa wpis po potwierdzeniu. Jeśli to jedyny wpis faktury, usuwana jest cała faktura.
+
+Nad listą wpisów Manager ma też przyciski dla całej faktury:
+
+- **Zweryfikuj szkice (N)** — zatwierdza naraz wszystkie szkice tej faktury.
+- **Usuń fakturę** — usuwa fakturę razem z wpisami i załącznikami, po potwierdzeniu.
+
+Emisja jest zawsze przeliczana według wskaźnika zapisanego przy wpisie — korekta ilości nie zmienia użytego wskaźnika.
 
 ## Szczegóły faktury
 
@@ -29,7 +44,7 @@ Po kliknięciu numeru faktury otwiera się okno ze wszystkimi informacjami:
 
 ## Dodawanie faktur
 
-Kliknij **Dodaj faktury** na górnym pasku. Faktury możesz dodać na trzy sposoby.
+Kliknij **Dodaj faktury** na górnym pasku. Faktury możesz dodać na cztery sposoby.
 
 ### 1. Import plików XML z KSeF (zalecane)
 
@@ -39,11 +54,22 @@ Kliknij **Dodaj faktury** na górnym pasku. Faktury możesz dodać na trzy sposo
 
 Ograniczenia: **do 20 plików naraz** i **do 10 MB łącznie**. Większą liczbę faktur podziel na kilka paczek. Każdy plik XML to jedna faktura.
 
-### 2. Faktura PDF
+### 2. Zestawienie z WAPRO MAG (XLSX, XLS, ODS)
+
+Możesz wgrać arkusz (Excel .xlsx/.xls lub OpenDocument .ods) z zestawieniem przyjęć wyeksportowanym z **WAPRO MAG** (kolumny: Nazwa dostawcy, Dok. magazynowy, Dok. handlowy, Data, Cena netto, Ilość pierwotna z dostawy, J.M). Jeden plik może zawierać wiele dostaw:
+
+- każdy **dokument magazynowy** (np. „PZ /ŚW/001/0826") staje się osobną kartą faktury,
+- jako numer używany jest numer dokumentu handlowego, a gdy go brak — numer dokumentu magazynowego,
+- **data** z zestawienia trafia do daty wystawienia; **okres rozliczeniowy** nie występuje w pliku — uzupełnij „Okres od / do", jeśli go znasz,
+- zestawienie nie zawiera NIP-u ani numeru PPE, więc system rozpoznaje dostawcę po **nazwie** i uzupełnia NIP oraz źródło emisji na podstawie wcześniejszych faktur tego dostawcy — sprawdź przypisanie przed zapisem.
+
+Jedna paczka może zawierać maksymalnie **100 dokumentów** łącznie ze wszystkich plików.
+
+### 3. Faktura PDF
 
 Pliku PDF system nie odczytuje automatycznie. Gdy go wgrasz, otworzy się **pusty formularz** do ręcznego wypełnienia, a PDF zostanie dołączony do faktury jako dowód (np. dla audytora).
 
-### 3. Wpis ręczny bez pliku
+### 4. Wpis ręczny bez pliku
 
 Kliknij **Dodaj fakturę ręcznie** pod polem importu. Wypełnij:
 
@@ -82,7 +108,9 @@ System próbuje sam dopasować pozycję do źródła emisji, w tej kolejności:
 | Numeru PPE (punktu poboru energii) | ✓ dopasowano automatycznie |
 | Numeru licznika | ✓ dopasowano automatycznie |
 | NIP dostawcy | ⚠ prawdopodobne |
+| Wcześniejszych faktur tego samego dostawcy (zestawienia WAPRO MAG) | ⚠ prawdopodobne |
 | Słów w opisie pozycji (np. „olej napędowy") | ⚠ zgadywane |
+| Jedynego aktywnego źródła w danej jednostce (zestawienia WAPRO MAG) | ⚠ zgadywane |
 | Nic nie pasuje | ✗ brak dopasowania — wybierz źródło ręcznie |
 
 Pod polem źródła zawsze widać, na jakiej podstawie dokonano dopasowania. Gdy jest ono niepewne, sprawdź je i w razie potrzeby zmień.
@@ -108,6 +136,7 @@ Jednostki przeliczają się same: jeśli faktura jest w MWh, a wskaźnik w kWh, 
 ## Kontrole wykonywane przez system
 
 - **Duplikaty** — system sprawdza, czy taka faktura nie jest już zapisana oraz czy ten sam plik nie został wybrany dwa razy w jednej paczce. Duplikatu nie da się zapisać.
+- **Możliwy duplikat z innego źródła** — jeśli inna faktura tego samego dostawcy z tego samego dnia ma identyczną ilość (np. ta sama dostawa wgrana raz z KSeF, a raz z WAPRO MAG), pojawi się żółte ostrzeżenie. Zapis nie jest blokowany — sprawdź, czy to nie ta sama dostawa, i w razie potrzeby usuń kartę z paczki.
 - **Nabywca** — jeśli NIP nabywcy na fakturze różni się od NIP-u Twojej firmy, pojawi się ostrzeżenie. Sprawdź, czy faktura na pewno dotyczy Twojej firmy.
 - **Odczyty licznika** — jeśli tabela odczytów na fakturze pokazuje inne zużycie niż pozycja, pojawi się żółte ostrzeżenie. Nie blokuje ono zapisu — decyzja należy do Ciebie.
 - **Ważność wskaźnika** — system dobiera wersję wskaźnika obowiązującą w okresie, którego dotyczy faktura. Przy okresie na przełomie lat decyduje **koniec okresu**.

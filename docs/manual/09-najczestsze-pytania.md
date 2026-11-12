@@ -2,7 +2,19 @@
 
 ## Dlaczego moja faktura nie jest widoczna na dashboardzie?
 
-Dashboard pokazuje tylko wpisy **zweryfikowane i skorygowane**. Faktury zapisane jako szkice czekają na weryfikację przez Managera. Szkice możesz zobaczyć w [Raportach](#raporty), włączając status **Szkic** w filtrach.
+Dashboard pokazuje tylko wpisy **zweryfikowane i skorygowane**. Faktury zapisane jako szkice czekają na weryfikację przez Managera — w sekcji [Faktury i wpisy](#faktury-i-wpisy) po rozwinięciu faktury (przycisk **Zweryfikuj** lub **Zweryfikuj szkice**). Szkice możesz zobaczyć w [Raportach](#raporty), włączając status **Szkic** w filtrach.
+
+## Ostrzeżenie „Możliwy duplikat: faktura … ma tę samą ilość"
+
+Ta sama dostawa mogła zostać wgrana dwa razy z różnych źródeł — np. jako XML z KSeF i jako wiersz zestawienia WAPRO MAG. Numery dokumentów się różnią, więc system tylko ostrzega. Jeśli to ta sama dostawa, usuń kartę z paczki przed zapisem.
+
+## Arkusz (XLSX, XLS, ODS) nie jest rozpoznawany
+
+Obsługiwane jest zestawienie przyjęć z WAPRO MAG z nagłówkami: Nazwa dostawcy, Dok. magazynowy, Data, Ilość pierwotna z dostawy, J.M. Sprawdź, czy plik nie ma zmienionych nazw kolumn.
+
+## Pomyliłem się w ilości po zapisaniu faktury
+
+Rozwiń fakturę na liście i kliknij ikonę ołówka przy wpisie. Pracownik może poprawić własny szkic; wpisy zweryfikowane poprawia Manager — dostaną wtedy status **Skorygowany**.
 
 ## System pominął pozycję, która powinna być liczona
 
@@ -30,7 +42,7 @@ NIP nabywcy na fakturze różni się od NIP-u w sekcji [O firmie](#o-firmie). Up
 
 ## Nie mogę dezaktywować źródła emisji
 
-Do źródła są przypisane wpisy w statusie **Szkic**. Najpierw muszą zostać zweryfikowane.
+Do źródła są przypisane wpisy w statusie **Szkic**. Najpierw muszą zostać zweryfikowane — Manager zrobi to w sekcji [Faktury i wpisy](#faktury-i-wpisy) przyciskiem **Zweryfikuj** przy wpisie albo **Zweryfikuj szkice** dla całej faktury.
 
 ## Nie widzę przycisku „Zapisz i zweryfikuj" ani „+ nowe"
 
