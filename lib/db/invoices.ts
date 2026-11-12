@@ -175,7 +175,6 @@ export interface InvoiceDetail {
     downloadable: boolean;
     currency: string | null;
     netTotal: string | null;
-    downloadable: boolean;
     grossTotal: string | null;
     ppeNumber: string | null;
     meterNumber: string | null;
@@ -225,37 +224,7 @@ function readDocument(raw: unknown): InvoiceDetail["document"] {
   const wapro = readWaproDocument(raw);
   if (wapro) return wapro;
   const stored = storedXml(raw);
-function readWaproDocument(raw: unknown): InvoiceDetail["document"] {
-  const r = raw as { format?: unknown; fileName?: unknown; rows?: unknown };
-  if (r?.format !== "WAPRO_XLSX" || !Array.isArray(r.rows) || r.rows.length === 0) return null;
-  const fileName = typeof r.fileName === "string" ? r.fileName : "zestawienie.xlsx";
-  const [parsed] = groupWaproRows(r.rows as WaproRow[], fileName);
-  if (!parsed) return null;
-  return {
-    fileName,
-    downloadable: false,
-    currency: "PLN",
-    netTotal: null,
-    grossTotal: null,
-    ppeNumber: null,
-    meterNumber: null,
-    tariffGroup: null,
-    lines: parsed.lines.map((l) => ({
-      lineNo: l.lineNo,
-      description: l.description,
-      quantity: l.quantity,
-      unit: l.unit,
-      netValue: l.netValue ?? null,
-      emissionRelevant: l.emissionRelevant,
-      skipReason: l.skipReason ?? null,
-    })),
-    warnings: [],
-  };
-}
-
   if (!stored) return null;
-  const wapro = readWaproDocument(raw);
-  if (wapro) return wapro;
   try {
     const parsed = ksefXmlParser.parse({
       name: stored.fileName,
@@ -269,7 +238,6 @@ function readWaproDocument(raw: unknown): InvoiceDetail["document"] {
       downloadable: true,
       currency: cleanText(fa.KodWaluty) || null,
       netTotal: cleanText(fa.P_13_1) || null,
-      downloadable: true,
       grossTotal: cleanText(fa.P_15) || null,
       ppeNumber: energy?.ppeNumber ?? null,
       meterNumber: energy?.meterNumber ?? null,
