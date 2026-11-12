@@ -15,6 +15,7 @@ import { EntryLineRow } from "./entry-line-row";
 import { formatTon } from "@/lib/emissions/format";
 import {
   cardIssues,
+  cardSoftWarnings,
   cardStatus,
   cardTotalKg,
   type CardState,
@@ -42,12 +43,16 @@ function HeaderField({
   original,
   onChange,
   type = "text",
+  hint,
+  placeholder,
 }: {
   label: string;
   value: string;
   original?: string;
   onChange: (v: string) => void;
   type?: string;
+  hint?: string;
+  placeholder?: string;
 }) {
   const changed = original !== undefined && value !== original;
   return (
@@ -58,6 +63,8 @@ function HeaderField({
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          aria-label={label}
           className="flex-1"
         />
         {changed && (
@@ -74,6 +81,7 @@ function HeaderField({
           </Button>
         )}
       </div>
+      {hint && <p className="text-[0.6875rem] text-amber-700 dark:text-amber-400">{hint}</p>}
     </div>
   );
 }
@@ -94,6 +102,7 @@ export function InvoiceCard({
   const status = cardStatus(card);
   const [open, setOpen] = useState(status !== "OK");
   const issues = cardIssues(card);
+  const soft = cardSoftWarnings(card);
   const totalKg = cardTotalKg(card, factors);
   const totalTon = divideByPowerOfTen(totalKg, 3) ?? "0";
   const includedCount = card.lines.filter((l) => l.include).length;
@@ -193,14 +202,14 @@ export function InvoiceCard({
               onChange={(v) => onChange({ issueDate: v })}
             />
             <HeaderField
-              label="Okres od"
+              label="Okres od *"
               type="date"
               value={card.periodStart}
               original={original?.periodStart}
               onChange={(v) => onChange({ periodStart: v })}
             />
             <HeaderField
-              label="Okres do"
+              label="Okres do *"
               type="date"
               value={card.periodEnd}
               original={original?.periodEnd}
@@ -208,36 +217,47 @@ export function InvoiceCard({
             />
           </div>
 
-          {manual && (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="sm:col-span-1 lg:col-span-2">
-                <HeaderField
-                  label="Dostawca"
-                  value={card.supplierName}
-                  onChange={(v) => onChange({ supplierName: v })}
-                />
-              </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="sm:col-span-2">
               <HeaderField
-                label="NIP dostawcy"
-                value={card.supplierNip}
-                onChange={(v) => onChange({ supplierNip: v })}
+                label="Dostawca"
+                value={card.supplierName}
+                original={original?.supplierName}
+                onChange={(v) => onChange({ supplierName: v })}
               />
-              {card.attachmentName && (
-                <p className="flex items-end gap-1.5 pb-2 text-xs text-muted-foreground">
-                  <Paperclip className="h-3 w-3 shrink-0" aria-hidden="true" />
-                  <span className="truncate">{card.attachmentName}</span>
-                </p>
-              )}
             </div>
-          )}
-
-          {!manual && (card.supplierNip || card.ksefNumber) && (
-            <p className="text-xs text-muted-foreground">
-              {card.supplierNip && <>Dostawca NIP: {card.supplierNip}</>}
-              {card.ksefNumber && <> · Nr KSeF: {card.ksefNumber}</>}
-              {card.fileName && <> · plik: {card.fileName}</>}
-            </p>
-          )}
+            <HeaderField
+              label="NIP dostawcy"
+              value={card.supplierNip}
+              original={original?.supplierNip}
+              placeholder="0000000000"
+              hint={soft.supplierNip}
+              onChange={(v) => onChange({ supplierNip: v })}
+            />
+            <HeaderField
+              label="NIP odbiorcy"
+              value={card.buyerNip}
+              original={original?.buyerNip}
+              placeholder="0000000000"
+              hint={soft.buyerNip}
+              onChange={(v) => onChange({ buyerNip: v })}
+            />
+            <div className="sm:col-span-2">
+              <HeaderField
+                label="Numer KSeF"
+                value={card.ksefNumber}
+                original={original?.ksefNumber}
+                hint={soft.ksefNumber}
+                onChange={(v) => onChange({ ksefNumber: v })}
+              />
+            </div>
+            {(card.attachmentName || (!manual && card.fileName)) && (
+              <p className="flex items-end gap-1.5 pb-2 text-xs text-muted-foreground sm:col-span-2">
+                <Paperclip className="h-3 w-3 shrink-0" aria-hidden="true" />
+                <span className="truncate">{card.attachmentName ?? card.fileName}</span>
+              </p>
+            )}
+          </div>
 
           <div className="space-y-2">
             {card.lines.map((line) => (

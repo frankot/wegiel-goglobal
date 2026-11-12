@@ -60,7 +60,7 @@ Możesz wgrać arkusz (Excel .xlsx/.xls lub OpenDocument .ods) z zestawieniem pr
 
 - każdy **dokument magazynowy** (np. „PZ /ŚW/001/0826") staje się osobną kartą faktury,
 - jako numer używany jest numer dokumentu handlowego, a gdy go brak — numer dokumentu magazynowego,
-- **data** z zestawienia trafia do daty wystawienia; **okres rozliczeniowy** nie występuje w pliku — uzupełnij „Okres od / do", jeśli go znasz,
+- **data** z zestawienia trafia do daty wystawienia; **okres rozliczeniowy** nie występuje w pliku — trzeba go uzupełnić („Okres od / do") przed zapisem,
 - zestawienie nie zawiera NIP-u ani numeru PPE, więc system rozpoznaje dostawcę po **nazwie** i uzupełnia NIP oraz źródło emisji na podstawie wcześniejszych faktur tego dostawcy — sprawdź przypisanie przed zapisem.
 
 Jedna paczka może zawierać maksymalnie **100 dokumentów** łącznie ze wszystkich plików.
@@ -73,9 +73,8 @@ Pliku PDF system nie odczytuje automatycznie. Gdy go wgrasz, otworzy się **pust
 
 Kliknij **Dodaj fakturę ręcznie** pod polem importu. Wypełnij:
 
-- **Numer faktury** i **Datę wystawienia** (pola obowiązkowe),
-- okres rozliczeniowy (**Okres od / Okres do**),
-- **Dostawcę** i **NIP dostawcy**,
+- **Numer faktury**, **Datę wystawienia** i okres rozliczeniowy (**Okres od / Okres do**) — pola obowiązkowe,
+- **Dostawcę**, **NIP dostawcy**, **NIP odbiorcy** i **Numer KSeF** — pola opcjonalne,
 - pozycje — dla każdej opis, źródło emisji, wskaźnik i ilość. Kolejne pozycje dodasz przyciskiem **Dodaj pozycję**, a zbędne usuniesz ikoną kosza.
 
 Po wybraniu źródła emisji system sam podpowie jednostkę i domyślny wskaźnik.
@@ -122,6 +121,13 @@ Jeśli faktura ma numer PPE, którego system jeszcze nie zna, po ręcznym wybran
 ### Pozycje pominięte
 
 Pozycje, które nie są zużyciem (np. „opłata handlowa 1 mc" czy abonament), system **pomija** i wyświetla je na szaro z podanym powodem. Jeśli uważasz, że pozycję trzeba policzyć, kliknij **Użyj mimo to**. Taką pozycję można później ponownie wyłączyć przyciskiem **Pomiń**.
+
+### Dane faktury
+
+Na każdej karcie — niezależnie od tego, czy faktura pochodzi z XML, z WAPRO MAG czy jest wpisywana ręcznie — można edytować:
+
+- **Okres od / Okres do** — **obowiązkowe**. Bez okresu rozliczeniowego faktury nie da się zapisać.
+- **Dostawca**, **NIP dostawcy**, **NIP odbiorcy**, **Numer KSeF** — opcjonalne. Gdy pole jest puste (albo NIP nie ma 10 cyfr), pod nim pojawi się pomarańczowa podpowiedź, ale zapis jest możliwy.
 
 ### Poprawianie wartości
 

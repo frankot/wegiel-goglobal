@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 export function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
-    <div className="relative w-full overflow-x-auto">
+    <div className="@container relative w-full overflow-x-auto">
       <table className={cn("w-full text-[0.8125rem]", className)} {...props} />
     </div>
   );

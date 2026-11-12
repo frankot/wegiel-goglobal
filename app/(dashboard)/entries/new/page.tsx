@@ -15,8 +15,8 @@ export default async function NewEntriesPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        description="Wrzuć jeden lub więcej plików XML z KSeF — system odczyta dane i wypełni
-          formularz dla każdej faktury. Fakturę bez pliku XML możesz wpisać ręcznie."
+        description="Wrzuć pliki XML z KSeF lub zestawienie przyjęć z WAPRO MAG — system odczyta dane
+          i wypełni formularz dla każdej faktury. Fakturę bez pliku możesz wpisać ręcznie."
       />
 
       {sources.length === 0 && !manage ? (

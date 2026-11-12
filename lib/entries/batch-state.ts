@@ -60,6 +60,10 @@ export interface CardState {
     issueDate: string;
     periodStart: string;
     periodEnd: string;
+    supplierName: string;
+    supplierNip: string;
+    buyerNip: string;
+    ksefNumber: string;
   };
   invoiceNumber: string;
   ksefNumber: string;
@@ -93,6 +97,10 @@ export function toCardState(inv: EnrichedInvoice): CardState {
       issueDate: dateOnly(inv.issueDate),
       periodStart: dateOnly(inv.periodStart),
       periodEnd: dateOnly(inv.periodEnd),
+      supplierName: inv.supplierName ?? "",
+      supplierNip: inv.supplierNip ?? "",
+      buyerNip: inv.buyerNip ?? "",
+      ksefNumber: inv.ksefNumber ?? "",
     },
     invoiceNumber: inv.invoiceNumber ?? "",
     ksefNumber: inv.ksefNumber ?? "",
@@ -154,7 +162,16 @@ export function emptyManualCard(clientId: string, attachmentName?: string): Card
     clientId,
     fileName: attachmentName ?? "",
     format: "MANUAL",
-    original: { invoiceNumber: "", issueDate: "", periodStart: "", periodEnd: "" },
+    original: {
+      invoiceNumber: "",
+      issueDate: "",
+      periodStart: "",
+      periodEnd: "",
+      supplierName: "",
+      supplierNip: "",
+      buyerNip: "",
+      ksefNumber: "",
+    },
     invoiceNumber: "",
     ksefNumber: "",
     issueDate: "",
@@ -219,6 +236,11 @@ export function cardIssues(card: CardState): string[] {
     if (!card.invoiceNumber.trim()) issues.push("Podaj numer faktury.");
     if (!card.issueDate) issues.push("Podaj datę wystawienia.");
   }
+  if (!card.periodStart || !card.periodEnd) {
+    issues.push("Podaj okres rozliczeniowy (od–do).");
+  } else if (card.periodStart > card.periodEnd) {
+    issues.push("Początek okresu rozliczeniowego jest późniejszy niż koniec.");
+  }
   if (card.duplicateOf) {
     issues.push(
       card.duplicateOf.where === "DB"
@@ -235,6 +257,21 @@ export function cardIssues(card: CardState): string[] {
     if (issue) issues.push(issue);
   }
   return issues;
+}
+
+const isPlNip = (v: string) => /^(PL)?\d{10}$/i.test(v.replace(/[\s-]/g, ""));
+
+export type SoftField = "supplierNip" | "buyerNip" | "ksefNumber";
+
+export function cardSoftWarnings(card: CardState): Partial<Record<SoftField, string>> {
+  const out: Partial<Record<SoftField, string>> = {};
+  for (const field of ["supplierNip", "buyerNip"] as const) {
+    const value = card[field].trim();
+    if (!value) out[field] = "Puste pole — możesz zapisać bez niego.";
+    else if (!isPlNip(value)) out[field] = "Nie wygląda na polski NIP (10 cyfr).";
+  }
+  if (!card.ksefNumber.trim()) out.ksefNumber = "Puste pole — możesz zapisać bez niego.";
+  return out;
 }
 
 export function cardStatus(card: CardState): ParsedInvoiceStatus {

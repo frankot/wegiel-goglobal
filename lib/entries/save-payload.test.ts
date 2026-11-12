@@ -12,6 +12,7 @@ import {
   buildSavePayload,
   cardIssues,
   emptyManualCard,
+  cardSoftWarnings,
   isSavable,
   toCardState,
   type CardState,
@@ -135,7 +136,13 @@ describe("REGRESJA: jedna zła faktura nie unieważnia paczki (D4)", () => {
   });
 
   test("faktura bez pozycji przechodzi schemat, ale łapie ją validateInvoiceForSave", () => {
-    const empty = { clientId: "x", sourceFormat: "KSEF_XML" as const, lines: [] };
+    const empty = {
+      clientId: "x",
+      sourceFormat: "KSEF_XML" as const,
+      periodStart: "2026-07-01",
+      periodEnd: "2026-07-31",
+      lines: [],
+    };
     const parsed = invoiceSaveSchema.safeParse(empty);
     assert.equal(parsed.success, true);
     const check = validateInvoiceForSave(parsed.data!);
@@ -155,6 +162,8 @@ describe("Faktura wprowadzana ręcznie", () => {
       ...card,
       invoiceNumber: " FV/1/2026 ",
       issueDate: "2026-03-31",
+      periodStart: "2026-03-01",
+      periodEnd: "2026-03-31",
       lines: [
         {
           ...card.lines[0]!,
@@ -176,6 +185,7 @@ describe("Faktura wprowadzana ręcznie", () => {
     const issues = cardIssues(card);
     assert.ok(issues.includes("Podaj numer faktury."));
     assert.ok(issues.includes("Podaj datę wystawienia."));
+    assert.ok(issues.includes("Podaj okres rozliczeniowy (od–do)."));
     assert.ok(issues.some((i) => i.includes("wpisz opis")));
   });
 
@@ -212,5 +222,28 @@ describe("Faktura wprowadzana ręcznie", () => {
       issueDate: undefined,
     });
     assert.equal(res.success, true);
+  });
+
+  test("brak okresu rozliczeniowego blokuje kartę i schemat", () => {
+    const card = { ...filledManualCard(), periodStart: "", periodEnd: "" };
+    assert.ok(cardIssues(card).includes("Podaj okres rozliczeniowy (od–do)."));
+    assert.equal(isSavable(card), false);
+    const inv = buildSavePayload([filledManualCard()], "DRAFT").invoices[0]!;
+    const res = invoiceSaveSchema.safeParse({ ...inv, sourceFormat: "WAPRO_XLSX", periodStart: undefined });
+    assert.equal(res.success, false);
+  });
+
+  test("odwrócony okres jest błędem", () => {
+    const card = { ...filledManualCard(), periodStart: "2026-04-01", periodEnd: "2026-03-01" };
+    assert.ok(cardIssues(card).some((i) => i.includes("późniejszy niż koniec")));
+  });
+
+  test("puste NIP-y i numer KSeF dają miękkie ostrzeżenia, ale nie blokują zapisu", () => {
+    const card = filledManualCard();
+    const soft = cardSoftWarnings(card);
+    assert.ok(soft.supplierNip && soft.buyerNip && soft.ksefNumber);
+    assert.equal(isSavable(card), true);
+    assert.equal(cardSoftWarnings({ ...card, supplierNip: "123" }).supplierNip, "Nie wygląda na polski NIP (10 cyfr).");
+    assert.equal(cardSoftWarnings({ ...card, supplierNip: "PL 973-042-14-40" }).supplierNip, undefined);
   });
 });

@@ -58,6 +58,15 @@ export const invoiceSaveSchema = z
     lines: z.array(lineSaveSchema),
   })
   .superRefine((inv, ctx) => {
+    if (!inv.periodStart || !inv.periodEnd) {
+      ctx.addIssue({ code: "custom", path: ["periodStart"], message: "Podaj okres rozliczeniowy (od–do)" });
+    } else if (inv.periodStart.slice(0, 10) > inv.periodEnd.slice(0, 10)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["periodEnd"],
+        message: "Początek okresu rozliczeniowego jest późniejszy niż koniec",
+      });
+    }
     if (inv.sourceFormat !== "MANUAL") return;
     if (!inv.invoiceNumber?.trim()) {
       ctx.addIssue({ code: "custom", path: ["invoiceNumber"], message: "Podaj numer faktury" });

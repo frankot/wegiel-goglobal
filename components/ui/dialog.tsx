@@ -58,7 +58,7 @@ export function DialogContent({
       onClick={onClick}
       onClose={onClose}
       className={cn(
-        "m-auto w-full max-w-[calc(100%-2rem)] bg-transparent p-0 text-foreground",
+        "m-auto w-full max-w-[calc(100%-2rem)] bg-transparent p-0 text-left font-normal whitespace-normal text-foreground",
         size === "wide" ? "sm:max-w-3xl" : "sm:max-w-lg",
       )}
     >

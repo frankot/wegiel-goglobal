@@ -88,8 +88,7 @@ export function InvoiceList({ invoices, loadEntries, viewer }: Props) {
           <TableRow>
             <TableHead className="w-8" />
             <TableHead>Numer</TableHead>
-            <TableHead>Data</TableHead>
-            <TableHead>Okres</TableHead>
+            <TableHead>Data / okres</TableHead>
             <TableHead>Dostawca</TableHead>
             <TableHead className="text-right">Poz.</TableHead>
             <TableHead className="text-right">CO₂e [t]</TableHead>
@@ -134,13 +133,15 @@ export function InvoiceList({ invoices, loadEntries, viewer }: Props) {
                     />
                   )}
                 </TableCell>
-                <TableCell>{formatDate(inv.issueDate)}</TableCell>
-                <TableCell className="text-xs text-muted-foreground">
-                  {inv.periodStart
-                    ? `${formatDate(inv.periodStart)} – ${formatDate(inv.periodEnd)}`
-                    : "—"}
+                <TableCell>
+                  {formatDate(inv.issueDate)}
+                  <span className="block text-xs text-muted-foreground">
+                    {inv.periodStart
+                      ? `${formatDate(inv.periodStart)} – ${formatDate(inv.periodEnd)}`
+                      : "brak okresu"}
+                  </span>
                 </TableCell>
-                <TableCell className="max-w-48 truncate">
+                <TableCell className="max-w-40 truncate">
                   {inv.supplierName ?? inv.supplierNip ?? "—"}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
@@ -165,14 +166,14 @@ export function InvoiceList({ invoices, loadEntries, viewer }: Props) {
 
               {expanded === inv.id && (
                 <TableRow>
-                  <TableCell colSpan={9} className="bg-muted/30">
+                  <TableCell colSpan={8} className="bg-muted/30 whitespace-normal">
                     {loading === inv.id ? (
                       <p className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Wczytywanie pozycji…
                       </p>
                     ) : (
-                      <div className="space-y-1 py-1">
+                      <div className="sticky left-5 w-[calc(100cqw-2.5rem)] space-y-1 py-1">
                         <InvoiceActions
                           invoiceId={inv.id}
                           invoiceNumber={inv.invoiceNumber}

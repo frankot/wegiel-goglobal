@@ -4,6 +4,10 @@
 
 Dashboard pokazuje tylko wpisy **zweryfikowane i skorygowane**. Faktury zapisane jako szkice czekają na weryfikację przez Managera — w sekcji [Faktury i wpisy](#faktury-i-wpisy) po rozwinięciu faktury (przycisk **Zweryfikuj** lub **Zweryfikuj szkice**). Szkice możesz zobaczyć w [Raportach](#raporty), włączając status **Szkic** w filtrach.
 
+## Nie mogę zapisać faktury — „Podaj okres rozliczeniowy (od–do)"
+
+Każda faktura musi mieć okres, którego dotyczy zużycie. Uzupełnij pola **Okres od** i **Okres do** na karcie faktury — w zestawieniach WAPRO MAG zawsze trzeba je wpisać ręcznie.
+
 ## Ostrzeżenie „Możliwy duplikat: faktura … ma tę samą ilość"
 
 Ta sama dostawa mogła zostać wgrana dwa razy z różnych źródeł — np. jako XML z KSeF i jako wiersz zestawienia WAPRO MAG. Numery dokumentów się różnią, więc system tylko ostrzega. Jeśli to ta sama dostawa, usuń kartę z paczki przed zapisem.
