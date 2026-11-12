@@ -6,7 +6,7 @@ Sekcja Raporty pokazuje szczegółowy podgląd śladu węglowego za wybrany okre
 
 | Filtr | Działanie |
 |---|---|
-| **Okres** | Gotowe zakresy: Bieżący rok, Poprzedni rok, Bieżący miesiąc, Poprzedni miesiąc, Ostatnie 12 miesięcy — albo własne daty **Od / Do**. |
+| **Okres** | Gotowe zakresy: Bieżący rok, Poprzedni rok, Bieżący kwartał, Poprzedni kwartał, Bieżący miesiąc, Poprzedni miesiąc, Ostatnie 12 miesięcy — albo własne daty **Od / Do**. Zakresy „bieżące” liczą się od początku okresu do dziś, „poprzednie” obejmują pełny okres. |
 | **Zakres** | Zakres 1, Zakres 2 albo oba. |
 | **Kategoria** | Typy źródeł: energia elektryczna, pojazdy, instalacje itd. |
 | **Źródła** | Wybór konkretnych źródeł emisji z listy (także nieaktywnych). |

@@ -24,6 +24,19 @@ import {
   formatFactor,
 } from "@/lib/emissions/format";
 import type { InvoiceListItem, InvoiceEntryItem } from "@/lib/db/invoices";
+import { SortableHead, useSortedRows } from "@/components/ui/sortable";
+
+const STATUS_ORDER: Record<string, number> = { DRAFT: 0, CORRECTED: 1, VERIFIED: 2 };
+
+const SORT = {
+  number: (i: InvoiceListItem) => i.invoiceNumber,
+  date: (i: InvoiceListItem) => i.issueDate,
+  supplier: (i: InvoiceListItem) => i.supplierName ?? i.supplierNip,
+  entries: (i: InvoiceListItem) => i.entryCount,
+  co2e: (i: InvoiceListItem) => Number(i.totalCo2eTon),
+  status: (i: InvoiceListItem) => Math.min(...i.statuses.map((s) => STATUS_ORDER[s] ?? 9)),
+  format: (i: InvoiceListItem) => FORMAT_LABELS[i.sourceFormat] ?? i.sourceFormat,
+};
 
 interface Props {
   invoices: InvoiceListItem[];
@@ -34,6 +47,12 @@ interface Props {
 
 export function InvoiceList({ invoices, loadEntries, viewer, openInvoiceId }: Props) {
   const router = useRouter();
+  const { sorted, sort, toggle: toggleSort } = useSortedRows(invoices, SORT, {
+    date: "desc",
+    entries: "desc",
+    co2e: "desc",
+  });
+  const head = { sort, onSort: toggleSort };
   const [expanded, setExpanded] = useState<string | null>(null);
   const [entries, setEntries] = useState<Record<string, InvoiceEntryItem[]>>(
     {},
@@ -90,17 +109,17 @@ export function InvoiceList({ invoices, loadEntries, viewer, openInvoiceId }: Pr
         <TableHeader>
           <TableRow>
             <TableHead className="w-8" />
-            <TableHead>Numer</TableHead>
-            <TableHead>Data / okres</TableHead>
-            <TableHead>Dostawca</TableHead>
-            <TableHead className="text-right">Poz.</TableHead>
-            <TableHead className="text-right">CO₂e [t]</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Źródło</TableHead>
+            <SortableHead label="Numer" sortKey="number" {...head} />
+            <SortableHead label="Data / okres" sortKey="date" {...head} />
+            <SortableHead label="Dostawca" sortKey="supplier" {...head} />
+            <SortableHead label="Poz." sortKey="entries" align="right" {...head} />
+            <SortableHead label="CO₂e [t]" sortKey="co2e" align="right" {...head} />
+            <SortableHead label="Status" sortKey="status" {...head} />
+            <SortableHead label="Źródło" sortKey="format" {...head} />
           </TableRow>
         </TableHeader>
         <TableBody>
-          {invoices.map((inv) => (
+          {sorted.map((inv) => (
             <Fragment key={inv.id}>
               <TableRow>
                 <TableCell>

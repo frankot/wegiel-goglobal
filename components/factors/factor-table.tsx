@@ -19,6 +19,7 @@ import { FactorVersionDialog } from "./factor-version-dialog";
 import { FactorHistoryDialog } from "./factor-history-dialog";
 import { formatFactor, formatDate } from "@/lib/emissions/format";
 import type { FactorDTO } from "@/lib/db/factors";
+import { SortableHead, sortRows, useSort } from "@/components/ui/sortable";
 
 interface Props {
   factors: FactorDTO[];
@@ -39,7 +40,22 @@ const SOURCE_LABEL: Record<string, string> = {
   CUSTOM: "Własny",
 };
 
+const STATUS_ORDER: Record<Status, number> = { ACTIVE: 0, FUTURE: 1, ARCHIVED: 2 };
+
+const SORT = {
+  name: (f: FactorDTO) => f.name,
+  value: (f: FactorDTO) => Number(f.value),
+  unit: (f: FactorDTO) => f.unit,
+  source: (f: FactorDTO) => SOURCE_LABEL[f.source] ?? f.source,
+  scope: (f: FactorDTO) => f.scope,
+  validFrom: (f: FactorDTO) => f.validFrom,
+  validTo: (f: FactorDTO) => f.validTo,
+  status: (f: FactorDTO) => STATUS_ORDER[statusOf(f)],
+};
+
 export function FactorTable({ factors, canManage }: Props) {
+  const { sort, toggle } = useSort<keyof typeof SORT>({ value: "desc", validFrom: "desc", validTo: "desc" });
+  const head = { sort, onSort: toggle };
   const [showArchived, setShowArchived] = useState(false);
   const [editing, setEditing] = useState<FactorDTO | null>(null);
   const [versioning, setVersioning] = useState<FactorDTO | null>(null);
@@ -72,26 +88,26 @@ export function FactorTable({ factors, canManage }: Props) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nazwa</TableHead>
-                <TableHead className="text-right">Wartość</TableHead>
-                <TableHead>Jednostka</TableHead>
-                <TableHead>Źródło</TableHead>
-                <TableHead>Zakres</TableHead>
-                <TableHead>Ważny od</TableHead>
-                <TableHead>Ważny do</TableHead>
-                <TableHead>Status</TableHead>
+                <SortableHead label="Nazwa" sortKey="name" {...head} />
+                <SortableHead label="Wartość" sortKey="value" align="right" {...head} />
+                <SortableHead label="Jednostka" sortKey="unit" {...head} />
+                <SortableHead label="Źródło" sortKey="source" {...head} />
+                <SortableHead label="Zakres" sortKey="scope" {...head} />
+                <SortableHead label="Ważny od" sortKey="validFrom" {...head} />
+                <SortableHead label="Ważny do" sortKey="validTo" {...head} />
+                <SortableHead label="Status" sortKey="status" {...head} />
                 {canManage && <TableHead className="text-right">Akcje</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map((f) => {
+              {sortRows(rows, sort, SORT).map((f) => {
                 const status = statusOf(f);
                 return (
                   <TableRow
                     key={f.id}
                     className={status === "ARCHIVED" ? "text-muted-foreground" : ""}
                   >
-                    <TableCell className="max-w-64 font-medium">{f.name}</TableCell>
+                    <TableCell className="max-w-56 font-medium whitespace-normal">{f.name}</TableCell>
                     <TableCell className="text-right font-medium tabular-nums">
                       {formatFactor(f.value)}
                     </TableCell>
@@ -127,7 +143,7 @@ export function FactorTable({ factors, canManage }: Props) {
                         <div className="flex justify-end gap-1">
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon-sm"
                             onClick={() => setVersioning(f)}
                             title="Dodaj nową wersję"
                           >
@@ -136,7 +152,7 @@ export function FactorTable({ factors, canManage }: Props) {
                           </Button>
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon-sm"
                             onClick={() => setEditing(f)}
                             title="Edytuj"
                           >
@@ -145,7 +161,7 @@ export function FactorTable({ factors, canManage }: Props) {
                           </Button>
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon-sm"
                             onClick={() => setHistory(f)}
                             title="Historia wersji"
                           >

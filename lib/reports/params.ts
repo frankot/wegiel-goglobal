@@ -6,6 +6,8 @@ export type EntryStatus = "DRAFT" | "VERIFIED" | "CORRECTED";
 export type PresetId =
   | "currentYear"
   | "previousYear"
+  | "currentQuarter"
+  | "previousQuarter"
   | "currentMonth"
   | "previousMonth"
   | "last12Months";
@@ -13,6 +15,8 @@ export type PresetId =
 export const PRESETS: { id: PresetId; label: string }[] = [
   { id: "currentYear", label: "Bieżący rok" },
   { id: "previousYear", label: "Poprzedni rok" },
+  { id: "currentQuarter", label: "Bieżący kwartał" },
+  { id: "previousQuarter", label: "Poprzedni kwartał" },
   { id: "currentMonth", label: "Bieżący miesiąc" },
   { id: "previousMonth", label: "Poprzedni miesiąc" },
   { id: "last12Months", label: "Ostatnie 12 miesięcy" },
@@ -72,11 +76,16 @@ function endOfMonth(y: number, m: number): Date {
 export function presetRange(preset: PresetId, today: Date): { from: string; to: string } {
   const y = today.getUTCFullYear();
   const m = today.getUTCMonth();
+  const q = m - (m % 3);
   switch (preset) {
     case "currentYear":
       return { from: toIsoDate(utc(y, 0, 1)), to: toIsoDate(today) };
     case "previousYear":
       return { from: toIsoDate(utc(y - 1, 0, 1)), to: toIsoDate(utc(y - 1, 11, 31)) };
+    case "currentQuarter":
+      return { from: toIsoDate(utc(y, q, 1)), to: toIsoDate(today) };
+    case "previousQuarter":
+      return { from: toIsoDate(utc(y, q - 3, 1)), to: toIsoDate(endOfMonth(y, q - 1)) };
     case "currentMonth":
       return { from: toIsoDate(utc(y, m, 1)), to: toIsoDate(today) };
     case "previousMonth":

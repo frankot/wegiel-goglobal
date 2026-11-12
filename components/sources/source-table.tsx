@@ -22,6 +22,16 @@ import { setSourceActive } from "@/lib/sources/actions";
 import { SOURCE_TYPE_LABELS, type SourceType } from "@/lib/emissions/source-types";
 import type { SourceRow } from "@/lib/db/sources";
 import type { FactorDTO } from "@/lib/db/factors";
+import { SortableHead, useSortedRows } from "@/components/ui/sortable";
+
+const SORT = {
+  name: (s: SourceRow) => s.name,
+  type: (s: SourceRow) => SOURCE_TYPE_LABELS[s.type],
+  factor: (s: SourceRow) => s.defaultFactorName,
+  ids: (s: SourceRow) => s.ppeNumber ?? s.meterNumber ?? s.registrationNumber,
+  entries: (s: SourceRow) => s.entryCount,
+  status: (s: SourceRow) => (s.active ? 0 : 1),
+};
 
 interface Props {
   sources: SourceRow[];
@@ -59,6 +69,8 @@ export function SourceTable({ sources, factors, canManage }: Props) {
       (typeFilter === "ALL" || s.type === typeFilter) &&
       (scopeFilter === "ALL" || s.scope === scopeFilter),
   );
+  const { sorted, sort, toggle } = useSortedRows(visible, SORT, { entries: "desc" });
+  const head = { sort, onSort: toggle };
 
   function toggleActive(source: SourceRow) {
     setError(null);
@@ -100,21 +112,19 @@ export function SourceTable({ sources, factors, canManage }: Props) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nazwa</TableHead>
-              <TableHead>Typ</TableHead>
-              <TableHead>Zakres</TableHead>
-              <TableHead>Domyślny wskaźnik</TableHead>
-              <TableHead>Jedn.</TableHead>
-              <TableHead>Identyfikatory</TableHead>
-              <TableHead className="text-right">Wpisy</TableHead>
-              <TableHead>Status</TableHead>
+              <SortableHead label="Nazwa" sortKey="name" {...head} />
+              <SortableHead label="Typ / zakres" sortKey="type" {...head} />
+              <SortableHead label="Domyślny wskaźnik" sortKey="factor" {...head} />
+              <SortableHead label="Identyfikatory" sortKey="ids" {...head} />
+              <SortableHead label="Wpisy" sortKey="entries" align="right" {...head} />
+              <SortableHead label="Status" sortKey="status" {...head} />
               {canManage && <TableHead className="text-right">Akcje</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {visible.map((s) => (
+            {sorted.map((s) => (
               <TableRow key={s.id} className={s.active ? "" : "text-muted-foreground"}>
-                <TableCell className="max-w-56 font-medium">
+                <TableCell className="max-w-48 font-medium whitespace-normal">
                   {s.name}
                   {s.location && (
                     <span className="block truncate text-xs font-normal text-muted-foreground">
@@ -122,16 +132,21 @@ export function SourceTable({ sources, factors, canManage }: Props) {
                     </span>
                   )}
                 </TableCell>
-                <TableCell className="text-xs">{SOURCE_TYPE_LABELS[s.type]}</TableCell>
                 <TableCell className="text-xs">
-                  {s.scope === "SCOPE_1" ? "Zakres 1" : "Zakres 2"}
+                  {SOURCE_TYPE_LABELS[s.type]}
+                  <span className="block text-muted-foreground">
+                    {s.scope === "SCOPE_1" ? "Zakres 1" : "Zakres 2"} · {s.unit}
+                  </span>
                 </TableCell>
-                <TableCell className="max-w-56 truncate text-xs">
-                  {s.defaultFactorName ?? (
+                <TableCell className="max-w-44 text-xs whitespace-normal">
+                  {s.defaultFactorName ? (
+                    <span className="line-clamp-2" title={s.defaultFactorName}>
+                      {s.defaultFactorName}
+                    </span>
+                  ) : (
                     <span className="text-destructive">brak</span>
                   )}
                 </TableCell>
-                <TableCell className="text-xs">{s.unit}</TableCell>
                 <TableCell className="text-xs">
                   {s.ppeNumber ? (
                     <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
@@ -171,7 +186,7 @@ export function SourceTable({ sources, factors, canManage }: Props) {
                     <div className="flex justify-end gap-1">
                       <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon-sm"
                         onClick={() => setEditing(s)}
                         title="Edytuj"
                       >
@@ -180,7 +195,7 @@ export function SourceTable({ sources, factors, canManage }: Props) {
                       </Button>
                       <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon-sm"
                         disabled={pending}
                         onClick={() => toggleActive(s)}
                         title={s.active ? "Dezaktywuj" : "Aktywuj"}

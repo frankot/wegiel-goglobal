@@ -20,6 +20,7 @@ import {
 import { canManageUser, ROLE_LABELS, roleLabel, type Role } from "@/lib/auth/permissions";
 import { formatDate } from "@/lib/emissions/format";
 import type { UserRow, UserStatus } from "@/lib/db/users";
+import { SortableHead, useSortedRows } from "@/components/ui/sortable";
 
 const STATUS: Record<UserStatus, { label: string; tone: Tone }> = {
   ACTIVE: { label: "Aktywne", tone: "green" },
@@ -29,6 +30,14 @@ const STATUS: Record<UserStatus, { label: string; tone: Tone }> = {
 };
 
 type Confirm = { kind: "cancel" | "deactivate"; user: UserRow };
+
+const STATUS_ORDER: Record<UserStatus, number> = { ACTIVE: 0, INVITED: 1, EXPIRED: 2, INACTIVE: 3 };
+
+const SORT = {
+  name: (u: UserRow) => u.name || u.email,
+  role: (u: UserRow) => roleLabel(u.role),
+  status: (u: UserRow) => STATUS_ORDER[u.status],
+};
 
 export function UserTable({
   users,
@@ -60,6 +69,8 @@ export function UserTable({
   }
 
   const roleItems = roles.map((r) => ({ value: r, label: ROLE_LABELS[r] }));
+  const { sorted, sort, toggle } = useSortedRows(users, SORT);
+  const head = { sort, onSort: toggle };
 
   return (
     <Card className="p-0 pt-4">
@@ -93,14 +104,14 @@ export function UserTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Użytkownik</TableHead>
-            <TableHead>Rola</TableHead>
-            <TableHead>Status</TableHead>
+            <SortableHead label="Użytkownik" sortKey="name" {...head} />
+            <SortableHead label="Rola" sortKey="role" {...head} />
+            <SortableHead label="Status" sortKey="status" {...head} />
             <TableHead className="text-right">Akcje</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.map((u) => {
+          {sorted.map((u) => {
             const manageable = canManageUser(viewer, u);
             const busy = pending && busyId === u.id;
             const pendingInvite = u.status === "INVITED" || u.status === "EXPIRED";

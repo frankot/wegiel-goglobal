@@ -24,6 +24,14 @@ describe("Presety dat", () => {
     assert.deepEqual(presetRange("last12Months", TODAY), { from: "2025-11-01", to: "2026-10-11" });
   });
 
+  test("kwartały: bieżący od początku kwartału, poprzedni pełny", () => {
+    assert.deepEqual(presetRange("currentQuarter", TODAY), { from: "2026-10-01", to: "2026-10-11" });
+    assert.deepEqual(presetRange("previousQuarter", TODAY), { from: "2026-07-01", to: "2026-09-30" });
+    const feb = new Date("2026-02-20T00:00:00Z");
+    assert.deepEqual(presetRange("currentQuarter", feb), { from: "2026-01-01", to: "2026-02-20" });
+    assert.deepEqual(presetRange("previousQuarter", feb), { from: "2025-10-01", to: "2025-12-31" });
+  });
+
   test("poprzedni miesiąc w styczniu to grudzień poprzedniego roku", () => {
     const jan = new Date("2026-01-15T00:00:00Z");
     assert.deepEqual(presetRange("previousMonth", jan), { from: "2025-12-01", to: "2025-12-31" });

@@ -42,6 +42,7 @@ Przydatne skróty:
 - Na telefonie panel otwiera się ikoną menu (☰) w lewym górnym rogu.
 - Kliknięcie nazwy firmy w panelu bocznym przenosi do jej danych.
 - Ikona **?** w prawym górnym rogu otwiera tę instrukcję.
+- Tabele (faktury, źródła, wskaźniki, raporty, użytkownicy) można **sortować**: kliknij nagłówek kolumny — raz rosnąco lub malejąco, drugi raz odwrotnie, trzeci raz przywraca domyślną kolejność.
 
 Przyciski głównych czynności danej strony (np. **Dodaj faktury**, **Dodaj źródło**, **Generuj PDF**) znajdują się zawsze na **górnym pasku**, po prawej stronie.
 
