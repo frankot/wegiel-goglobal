@@ -26,7 +26,7 @@ export const RECOMMENDATION_CATALOG: Record<SourceType, string[]> = {
   ],
   STATIONARY_INSTALLATION: [
     "Wymiana kotła na pompę ciepła lub kocioł kondensacyjny.",
-    "Zmiana paliwa na mniej emisyjne (np. węgiel → gaz ziemny, gaz → biometan lub elektryfikacja).",
+    "Zmiana paliwa na mniej emisyjne (np. z węgla na gaz ziemny, z gazu na biometan lub elektryfikację).",
     "Przegląd i regulacja palników, izolacja rurociągów i zasobników.",
   ],
   COMPANY_VEHICLE: [

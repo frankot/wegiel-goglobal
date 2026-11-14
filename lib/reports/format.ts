@@ -1,5 +1,6 @@
 import { SOURCE_TYPE_LABELS, type SourceType } from "@/lib/emissions/source-types";
 import { formatRange } from "./params";
+import { TEMPLATES } from "./templates";
 import { STATUS_LABELS, type ReportParams } from "./params";
 
 const nf = (min: number, max: number) =>
@@ -59,7 +60,8 @@ export function filtersSummary(
 }
 
 export function reportFileName(p: ReportParams, ext: string): string {
-  return `raport-slad-weglowy_${p.from}_${p.to}.${ext}`;
+  const slug = ext === "pdf" ? TEMPLATES[p.template].fileSlug : TEMPLATES.full.fileSlug;
+  return `${slug}_${p.from}_${p.to}.${ext}`;
 }
 
 export { formatRange };

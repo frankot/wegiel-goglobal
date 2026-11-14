@@ -8,6 +8,7 @@ import { ReportView } from "@/components/reports/report-view";
 import { parseReportParams, periodTitle, reportParamsToSearch } from "@/lib/reports/params";
 import { getReport, getReportFilterOptions } from "@/lib/reports/query";
 import { canManage } from "@/lib/auth/permissions";
+import { TEMPLATES } from "@/lib/reports/templates";
 import { includesDrafts } from "@/lib/reports/params";
 import { ReportTabs } from "@/components/reports/report-tabs";
 import { SaveToArchiveButton } from "@/components/reports/save-to-archive";
@@ -27,7 +28,7 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
         {canManage(user) && (
           <SaveToArchiveButton
             query={query}
-            defaultTitle={`Raport ${periodTitle(params)}`}
+            defaultTitle={`${params.template === "full" ? "Raport" : TEMPLATES[params.template].label} — ${periodTitle(params)}`}
             period={periodTitle(params)}
             draftCount={includesDrafts(params) ? data.quality.byStatus.DRAFT.count : 0}
             disabled={data.entryCount === 0}
@@ -43,7 +44,7 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
         </a>
         <a href={`/api/reports/pdf?${query}`} download className={buttonVariants({ size: "sm" })}>
           <FileDown aria-hidden="true" />
-          Generuj PDF
+          {params.template === "full" ? "Generuj PDF" : `PDF: ${TEMPLATES[params.template].label}`}
         </a>
       </TopbarActions>
 

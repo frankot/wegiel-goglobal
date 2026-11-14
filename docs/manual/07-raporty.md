@@ -2,6 +2,23 @@
 
 Sekcja Raporty pokazuje szczegółowy podgląd śladu węglowego za wybrany okres i pozwala pobrać go jako plik. **Pobrany plik zawiera dokładnie te dane, które widzisz na ekranie**, z tymi samymi filtrami.
 
+## Szablony raportów
+
+W pierwszym wierszu filtrów wybierasz **szablon** — określa on układ pliku PDF i ustawia domyślny okres. Widok na ekranie oraz pliki XLSX i CSV są takie same dla wszystkich szablonów.
+
+| Szablon | Domyślny okres | Zawartość PDF |
+|---|---|---|
+| **Pełny raport** | bez zmiany | Wszystkie sekcje: zakresy i porównania, wykres miesięczny, kategorie, źródła, wskaźniki, jakość danych, metodologia, faktury. |
+| **Podsumowanie miesięczne** | poprzedni miesiąc | Jedna strona: wyniki, Top 5 źródeł, kategorie, jakość danych. |
+| **Raport kwartalny** | poprzedni kwartał | Wyniki, porównanie z poprzednim kwartałem i rokiem, wykres miesięczny, Top 10, rekomendacje, kategorie, jakość danych. |
+| **Roczny ESRS E1-6** | poprzedni rok | Tabela ujawnienia ESRS E1-6, porównanie rok do roku, źródła, wskaźniki, jakość danych, metodologia, faktury. |
+
+Po wybraniu szablonu możesz zmienić okres i pozostałe filtry — szablon zostaje. Przycisk na górnym pasku pokazuje nazwę szablonu (np. „PDF: Raport kwartalny”), a plik ma nazwę zgodną z szablonem.
+
+**Roczny ESRS E1-6** — tabela zawiera emisje brutto Zakresu 1, Zakresu 2 metodą lokalizacyjną i emisje całkowite, wraz z porównaniem do tego samego okresu rok wcześniej. Pozycje, których system nie oblicza (Zakres 2 metodą rynkową, Zakres 3), są oznaczone jako „nie obliczono” z wyjaśnieniem w przypisie. Jeśli wpiszesz **Przychody netto** (pole pojawia się przy tym szablonie), raport policzy **intensywność emisji** w t CO₂e na 1 mln PLN przychodu.
+
+Wersję wygenerowaną z szablonu możesz zachować przyciskiem **Zapisz w archiwum** — nazwa podpowie się razem z nazwą szablonu.
+
 ## Filtry
 
 | Filtr | Działanie |

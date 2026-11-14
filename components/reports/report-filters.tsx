@@ -18,6 +18,7 @@ import {
   type ReportParams,
 } from "@/lib/reports/params";
 import { SCOPE_COLORS } from "@/lib/reports/colors";
+import { TEMPLATES, TEMPLATE_IDS, parseRevenue, type TemplateId } from "@/lib/reports/templates";
 
 interface SourceOption {
   id: string;
@@ -96,6 +97,7 @@ export function ReportFilters({ params, sources }: Props) {
     (s) => (allScopes || p.scopes.includes(s.scope)) && (p.types.length === 0 || p.types.includes(s.type)),
   );
   const isDefault =
+    p.template === "full" &&
     p.preset === "currentYear" &&
     !p.scopes.length &&
     !p.types.length &&
@@ -103,8 +105,51 @@ export function ReportFilters({ params, sources }: Props) {
     p.statuses.length === DEFAULT_STATUSES.length &&
     DEFAULT_STATUSES.every((s) => p.statuses.includes(s));
 
+  function chooseTemplate(id: TemplateId) {
+    const preset = TEMPLATES[id].preset;
+    apply({
+      ...p,
+      template: id,
+      revenue: id === "esrs" ? p.revenue : null,
+      ...(preset ? { preset, ...presetRange(preset, new Date()) } : {}),
+    });
+  }
+
   return (
     <div className="space-y-3 rounded-sm bg-card px-5 py-4">
+      <div className="space-y-1.5 border-b border-border pb-3">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <Group label="Szablon">
+            {TEMPLATE_IDS.map((id) => (
+              <Chip key={id} pressed={p.template === id} onClick={() => chooseTemplate(id)}>
+                {TEMPLATES[id].label}
+              </Chip>
+            ))}
+          </Group>
+          {p.template === "esrs" && (
+            <label className="flex items-center gap-1.5 text-xs">
+              <span className="font-semibold text-foreground">Przychody netto</span>
+              <Input
+                key={p.revenue ?? "empty"}
+                inputMode="decimal"
+                defaultValue={p.revenue ?? ""}
+                placeholder="np. 12 500 000"
+                aria-label="Przychody netto w PLN"
+                className="h-7 w-36 text-xs"
+                onBlur={(e) => {
+                  const revenue = parseRevenue(e.target.value);
+                  if (revenue !== p.revenue) apply({ ...p, revenue });
+                }}
+                onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+              />
+              <span className="text-muted-foreground">PLN</span>
+            </label>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {TEMPLATES[p.template].description} Szablon określa układ pliku PDF.
+        </p>
+      </div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <Group label="Okres">
           {PRESETS.map((preset) => (
@@ -153,6 +198,8 @@ export function ReportFilters({ params, sources }: Props) {
                   types: [],
                   sourceIds: [],
                   statuses: DEFAULT_STATUSES,
+                  template: "full",
+                  revenue: null,
                 })
               }
             >

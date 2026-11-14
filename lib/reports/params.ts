@@ -1,4 +1,5 @@
 /** Report params */
+import { isTemplateId, parseRevenue, type TemplateId } from "./templates";
 import { SOURCE_TYPE_LABELS, type Scope, type SourceType } from "@/lib/emissions/source-types";
 
 export type EntryStatus = "DRAFT" | "VERIFIED" | "CORRECTED";
@@ -42,6 +43,8 @@ export interface ReportParams {
   types: SourceType[];
   sourceIds: string[];
   statuses: EntryStatus[];
+  template: TemplateId;
+  revenue: string | null;
 }
 
 /* Dates */
@@ -189,6 +192,8 @@ export function parseReportParams(raw: RawParams, today = new Date()): ReportPar
   const statuses = getAll(raw, "status").filter((s): s is EntryStatus =>
     ALL_STATUSES.includes(s as EntryStatus),
   );
+  const templateRaw = getOne(raw, "szablon");
+  const template: TemplateId = isTemplateId(templateRaw) ? templateRaw : "full";
 
   return {
     from,
@@ -198,6 +203,8 @@ export function parseReportParams(raw: RawParams, today = new Date()): ReportPar
     types: getAll(raw, "type").filter((t): t is SourceType => ALL_TYPES.includes(t as SourceType)),
     sourceIds: getAll(raw, "source").filter((s) => /^[\w-]{1,64}$/.test(s)),
     statuses: statuses.length > 0 ? [...new Set(statuses)] : DEFAULT_STATUSES,
+    template,
+    revenue: template === "esrs" ? parseRevenue(getOne(raw, "przychody")) : null,
   };
 }
 
@@ -216,6 +223,8 @@ export function reportParamsToSearch(p: ReportParams): URLSearchParams {
     p.statuses.length === DEFAULT_STATUSES.length &&
     DEFAULT_STATUSES.every((st) => p.statuses.includes(st));
   if (!defaultStatuses) s.set("status", p.statuses.join(","));
+  if (p.template !== "full") s.set("szablon", p.template);
+  if (p.template === "esrs" && p.revenue) s.set("przychody", p.revenue);
   return s;
 }
 

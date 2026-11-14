@@ -4,7 +4,9 @@ import { join } from "node:path";
 import { jsPDF } from "jspdf";
 import { autoTable, type CellInput, type RowInput, type UserOptions } from "jspdf-autotable";
 import { companyHeaderLines, type CompanyDTO } from "@/lib/db/company";
-import type { ReportData } from "./aggregate";
+import { changePct, type ReportData } from "./aggregate";
+import { TEMPLATES, ghgIntensity } from "./templates";
+import { buildRecommendations } from "./recommendations";
 import { formatRange, includesDrafts, monthLabel, periodTitle } from "./params";
 import {
   ORIGIN_LABELS,
@@ -337,8 +339,15 @@ function cover(pdf: Pdf, data: ReportData, ctx: PdfContext) {
   const bandH = 34;
   pdf.fill(C.navy);
   pdf.doc.rect(0, 0, PAGE_W, bandH, "F");
-  pdf.text("Raport śladu węglowego", M, 16, { size: 20, bold: true, color: C.white });
-  pdf.text("Emisje gazów cieplarnianych — Zakres 1 i 2 wg GHG Protocol (ESRS E1-6)", M, 24, {
+  const title =
+    data.params.template === "esrs"
+      ? "Ujawnienie ESRS E1-6"
+      : data.params.template === "full"
+        ? "Raport śladu węglowego"
+        : TEMPLATES[data.params.template].label;
+  pdf.text(title, M, 16, { size: 20, bold: true, color: C.white });
+  const esrsTagged = data.params.template === "full" || data.params.template === "esrs";
+  pdf.text(`Emisje gazów cieplarnianych — Zakres 1 i 2 wg GHG Protocol${esrsTagged ? " (ESRS E1-6)" : ""}`, M, 24, {
     size: 9,
     color: [214, 225, 240],
   });
@@ -519,7 +528,7 @@ function monthlySection(pdf: Pdf, data: ReportData) {
   pdf.y += h + 4;
 }
 
-function breakdowns(pdf: Pdf, data: ReportData) {
+function categoriesSection(pdf: Pdf, data: ReportData) {
   pdf.heading("Emisja według kategorii źródeł");
   horizontalBars(
     pdf,
@@ -539,7 +548,9 @@ function breakdowns(pdf: Pdf, data: ReportData) {
     body: data.byType.map((t) => [t.label, scopeLabel(t.scope), fmtUsage(t.usage), String(t.entryCount), fmtTon(t.kg)]),
     columnStyles: { 3: { halign: "right" }, 4: { halign: "right" } },
   });
+}
 
+function sourcesSection(pdf: Pdf, data: ReportData) {
   pdf.heading("Emisja według źródeł", "Ilość w jednostce wskaźnika emisji, po przeliczeniu jednostek z faktur.");
   const body: RowInput[] = [];
   for (const scope of ["SCOPE_1", "SCOPE_2"] as const) {
@@ -579,7 +590,7 @@ function breakdowns(pdf: Pdf, data: ReportData) {
   });
 }
 
-function factorsAndQuality(pdf: Pdf, data: ReportData) {
+function factorsSection(pdf: Pdf, data: ReportData) {
   pdf.heading("Zastosowane wskaźniki emisji", "Wartości z chwili zapisu wpisu (migawka) — późniejsze zmiany wskaźników nie zmieniają raportu.");
   pdf.table({
     head: [["Wskaźnik", "Pochodzenie", "Zakres", "Wartość", "Wpisy"]],
@@ -592,7 +603,9 @@ function factorsAndQuality(pdf: Pdf, data: ReportData) {
     ]),
     columnStyles: { 3: { halign: "right" }, 4: { halign: "right" } },
   });
+}
 
+function qualitySection(pdf: Pdf, data: ReportData) {
   pdf.heading("Jakość danych");
   const q = data.quality;
   pdf.table({
@@ -618,6 +631,105 @@ function factorsAndQuality(pdf: Pdf, data: ReportData) {
     pdf.text(`•  ${f}`, M, pdf.y, { size: 8.5, maxWidth: CONTENT_W });
     pdf.y += 5;
   });
+}
+
+function topSourcesSection(pdf: Pdf, data: ReportData, limit: number) {
+  const top = data.bySource.slice(0, limit);
+  if (!top.length) return;
+  pdf.heading(`Top ${limit} źródeł emisji`, "Zmiana liczona rok do roku (ten sam okres rok wcześniej).");
+  pdf.table({
+    head: [["#", "Źródło", "Kategoria", "CO₂e", "Udział", "Zmiana r/r"]],
+    body: top.map((s, i) => [
+      String(i + 1),
+      s.name,
+      SOURCE_TYPE_LABELS[s.type],
+      fmtTon(s.kg),
+      fmtPct(s.sharePct),
+      fmtChange(s.changePct),
+    ]),
+    columnStyles: {
+      0: { halign: "right", cellWidth: 8 },
+      3: { halign: "right" },
+      4: { halign: "right" },
+      5: { halign: "right" },
+    },
+  });
+}
+
+function recommendationsSection(pdf: Pdf, data: ReportData) {
+  const groups = buildRecommendations(data.bySource);
+  if (!groups.length) return;
+  pdf.heading(
+    "Rekomendacje redukcji emisji",
+    "Kierunki działań dla źródeł dających ok. 80% emisji oraz rosnących ≥10% r/r. Wymagają oceny technicznej i kosztowej.",
+  );
+  for (const g of groups) {
+    const sources = g.sources
+      .map((s) => `${s.name} (${fmtTon(s.kg)}${s.reasons.includes("growth") ? `, ${fmtChange(s.changePct)} r/r` : ""})`)
+      .join(", ");
+    const srcLines = pdf.split(sources, CONTENT_W, 8);
+    const actionLines = g.actions.map((a) => pdf.split(`•  ${a}`, CONTENT_W - 3, 8.5));
+    pdf.ensure(8 + srcLines.length * 3.8 + actionLines.flat().length * 4);
+    pdf.text(`${g.label} — ${fmtPct(g.sharePct)} emisji`, M, pdf.y, { size: 9.5, bold: true });
+    pdf.y += 4.6;
+    pdf.text(srcLines, M, pdf.y, { size: 8, color: C.muted });
+    pdf.y += srcLines.length * 3.8 + 1.5;
+    for (const lines of actionLines) {
+      pdf.text(lines, M + 1.5, pdf.y, { size: 8.5 });
+      pdf.y += lines.length * 4;
+    }
+    pdf.y += 3;
+  }
+}
+
+function esrsSection(pdf: Pdf, data: ReportData) {
+  const ly = data.lastYear;
+  const lyLabel = formatRange(ly.from, ly.to);
+  const change = (cur: string, prev: string) => fmtChange(changePct(cur, prev));
+  const notCalc = "nie obliczono";
+  const intensity = ghgIntensity(data.totalKg, data.params.revenue);
+  const nf = new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 3 });
+
+  pdf.heading("ESRS E1-6 — emisje gazów cieplarnianych brutto", `Okres raportowy: ${formatRange(data.params.from, data.params.to)} · porównanie: ${lyLabel}`);
+  pdf.table({
+    head: [["Pozycja", "Okres raportowy", "Okres porównawczy", "Zmiana"]],
+    body: [
+      ["Emisje brutto Zakresu 1", fmtTon(data.scope1Kg), fmtTon(ly.scope1Kg), change(data.scope1Kg, ly.scope1Kg)],
+      ["Emisje brutto Zakresu 2 — metoda lokalizacyjna", fmtTon(data.scope2Kg), fmtTon(ly.scope2Kg), change(data.scope2Kg, ly.scope2Kg)],
+      ["Emisje brutto Zakresu 2 — metoda rynkowa ¹", notCalc, notCalc, "—"],
+      ["Emisje brutto Zakresu 3 ²", notCalc, notCalc, "—"],
+      [
+        { content: "Emisje całkowite — metoda lokalizacyjna", styles: { fontStyle: "bold" } },
+        { content: fmtTon(data.totalKg), styles: { fontStyle: "bold" } },
+        fmtTon(ly.totalKg),
+        change(data.totalKg, ly.totalKg),
+      ],
+      ["Emisje całkowite — metoda rynkowa ¹", notCalc, notCalc, "—"],
+      [
+        "Intensywność emisji (metoda lokalizacyjna) ³",
+        intensity === null ? "nie podano" : `${nf.format(intensity)} t CO₂e / mln PLN`,
+        "—",
+        "—",
+      ],
+    ],
+    columnStyles: { 0: { cellWidth: 78 }, 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "right" } },
+  });
+
+  const notes = [
+    "¹ Metoda rynkowa nie została obliczona — system nie przechowuje danych o umowach zakupu energii (gwarancje pochodzenia, umowy PPA).",
+    "² Zakres 3 (łańcuch wartości) jest poza zakresem obecnej wersji systemu.",
+    data.params.revenue
+      ? `³ Emisje całkowite (metoda lokalizacyjna) podzielone przez przychody netto: ${new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 2 }).format(Number(data.params.revenue))} PLN.`
+      : "³ Przychody netto nie zostały podane przy generowaniu raportu.",
+    "Emisje wyrażono w tonach ekwiwalentu CO₂ (t CO₂e). Wszystkie wartości obejmują wpisy o statusach wybranych w filtrach raportu.",
+  ];
+  for (const n of notes) {
+    const lines = pdf.split(n, CONTENT_W, 7.5);
+    pdf.ensure(lines.length * 3.6 + 1);
+    pdf.text(lines, M, pdf.y, { size: 7.5, color: C.muted });
+    pdf.y += lines.length * 3.6 + 1;
+  }
+  pdf.y += 3;
 }
 
 function methodology(pdf: Pdf) {
@@ -674,6 +786,7 @@ function footers(pdf: Pdf, ctx: PdfContext) {
 
 export function renderReportPdf(data: ReportData, ctx: PdfContext): Uint8Array {
   const pdf = new Pdf();
+  const template = data.params.template;
   cover(pdf, data, ctx);
   notices(pdf, data);
   kpis(pdf, data);
@@ -682,13 +795,37 @@ export function renderReportPdf(data: ReportData, ctx: PdfContext): Uint8Array {
     pdf.heading("Brak danych");
     pdf.text("W wybranym okresie i filtrach nie ma wpisów emisyjnych.", M, pdf.y, { size: 9, color: C.muted });
     pdf.y += 8;
+    if (template === "esrs") esrsSection(pdf, data);
     methodology(pdf);
+  } else if (template === "monthly") {
+    topSourcesSection(pdf, data, 5);
+    categoriesSection(pdf, data);
+    qualitySection(pdf, data);
+  } else if (template === "quarterly") {
+    scopeAndComparison(pdf, data);
+    monthlySection(pdf, data);
+    pdf.addPage();
+    topSourcesSection(pdf, data, 10);
+    recommendationsSection(pdf, data);
+    categoriesSection(pdf, data);
+    qualitySection(pdf, data);
+  } else if (template === "esrs") {
+    esrsSection(pdf, data);
+    scopeAndComparison(pdf, data);
+    pdf.addPage();
+    sourcesSection(pdf, data);
+    factorsSection(pdf, data);
+    qualitySection(pdf, data);
+    methodology(pdf);
+    invoicesAppendix(pdf, data);
   } else {
     scopeAndComparison(pdf, data);
     monthlySection(pdf, data);
     pdf.addPage();
-    breakdowns(pdf, data);
-    factorsAndQuality(pdf, data);
+    categoriesSection(pdf, data);
+    sourcesSection(pdf, data);
+    factorsSection(pdf, data);
+    qualitySection(pdf, data);
     methodology(pdf);
     invoicesAppendix(pdf, data);
   }
