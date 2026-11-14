@@ -173,6 +173,15 @@ describe("Agregacja raportu", () => {
     assert.equal(report.byType.length, 2);
   });
 
+  test("zmiana rok do roku dla każdego źródła", () => {
+    const el = report.bySource.find((x) => x.sourceId === "src-el")!;
+    assert.equal(el.lastYearKg, "2837.156");
+    assert.equal(el.changePct, -9.2);
+    const car = report.bySource.find((x) => x.sourceId === "src-car")!;
+    assert.equal(car.lastYearKg, null);
+    assert.equal(car.changePct, null);
+  });
+
   test("jakość danych liczy pominięte szkice", () => {
     assert.equal(report.quality.excludedDrafts, 1);
     assert.equal(report.quality.withoutInvoice, 1);

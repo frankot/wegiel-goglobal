@@ -75,8 +75,12 @@ export function SourcesCard({ data }: { data: ReportData }) {
                   <TableCell className="text-strong">{s.name}</TableCell>
                   <TableCell>{SOURCE_TYPE_LABELS[s.type]}</TableCell>
                   <TableCell className="text-right tabular-nums">{fmtUsage(s.usage)}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {s.factors.map((f) => `${fmtFactor(f.value)} ${f.unit}`).join(", ")}
+                  <TableCell className="text-right text-xs whitespace-normal tabular-nums">
+                    {s.factors.map((f) => (
+                      <span key={`${f.value}|${f.unit}`} className="block whitespace-nowrap">
+                        {fmtFactor(f.value)} {f.unit}
+                      </span>
+                    ))}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{fmtKg(s.kg)}</TableCell>
                   <TableCell className="text-right tabular-nums">{fmtTon(s.kg)}</TableCell>

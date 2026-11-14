@@ -13,6 +13,7 @@ import {
 } from "@/lib/reports/format";
 import { MonthlyChart, ScopeDonut } from "./report-charts";
 import { FactorsCard, InvoicesCard, ScopeSwatch, SourcesCard } from "./report-tables";
+import { RecommendationsCard, TopSourcesCard } from "./top-sources";
 
 function share(part: string, total: string): number {
   return Number(total) ? (Number(part) / Number(total)) * 100 : 0;
@@ -261,6 +262,8 @@ export function ReportView({ data }: { data: ReportData }) {
           <ScopesAndComparison data={data} />
           <MonthlyCard data={data} />
           <CategoryCard data={data} />
+          <TopSourcesCard data={data} />
+          <RecommendationsCard data={data} />
           <SourcesCard data={data} />
           <div className="grid gap-4 lg:grid-cols-2">
             <FactorsCard data={data} />

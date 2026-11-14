@@ -82,6 +82,8 @@ export interface SourceBreakdown {
   usage: UsageTotal[];
   factors: { value: string; unit: string }[];
   entryCount: number;
+  lastYearKg: string | null;
+  changePct: number | null;
 }
 
 export interface FactorUsed {
@@ -207,9 +209,11 @@ export function buildReport(
     })
     .sort(byKgDesc);
 
+  const lyBySource = new Map([...groupBy(lastYear, (r) => r.sourceId)].map(([id, list]) => [id, sum(list)]));
   const bySource: SourceBreakdown[] = [...groupBy(rows, (r) => r.sourceId)]
     .map(([sourceId, list]) => {
       const kg = sum(list);
+      const ly = lyBySource.get(sourceId);
       const factors = [
         ...new Map(list.map((r) => [`${r.factorValue}|${r.factorUnit}`, r])).values(),
       ].map((r) => ({ value: r.factorValue, unit: r.factorUnit }));
@@ -223,6 +227,8 @@ export function buildReport(
         usage: usageTotals(list),
         factors,
         entryCount: list.length,
+        lastYearKg: ly ? ly.toString() : null,
+        changePct: ly && !ly.isZero() ? changePct(kg.toString(), ly.toString()) : null,
       };
     })
     .sort(byKgDesc);

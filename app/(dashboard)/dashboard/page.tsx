@@ -8,6 +8,7 @@ import { CategoryCard, MonthlyCard, ReportKpis } from "@/components/reports/repo
 import { parseReportParams } from "@/lib/reports/params";
 import { getReport } from "@/lib/reports/query";
 import { getReminders } from "@/lib/reminders/query";
+import { TopSourcesCard } from "@/components/reports/top-sources";
 import { canManage } from "@/lib/auth/permissions";
 import { RemindersCard } from "@/components/reminders/reminder-panel";
 
@@ -40,7 +41,15 @@ export default async function DashboardPage() {
       ) : (
         <>
           <MonthlyCard data={data} title={`Emisja miesięczna ${year}`} />
-          <CategoryCard data={data} />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <CategoryCard data={data} />
+            <TopSourcesCard
+              data={data}
+              limit={5}
+              title="Top 5 źródeł emisji"
+              footerLink={{ href: "/reports", label: "Pełny ranking i rekomendacje" }}
+            />
+          </div>
         </>
       )}
 

@@ -22,6 +22,8 @@ Jeśli dołączysz szkice, zobaczysz żółte ostrzeżenie, a raport PDF zostani
 - **Podział na zakresy i porównanie okresów** — wybrany okres zestawiony z **poprzednim okresem** (tej samej długości) i z **tym samym okresem rok wcześniej**.
 - **Emisja miesięczna** — wykres słupkowy, z porównaniem do roku wcześniej.
 - **Emisja według kategorii źródeł** — które rodzaje źródeł emitują najwięcej.
+- **Top 10 źródeł emisji** — ranking źródeł o największej emisji w okresie, z udziałem i **zmianą rok do roku** (wobec tego samego okresu rok wcześniej). Wzrost o 10% i więcej jest wyróżniony na czerwono; „—” oznacza brak danych sprzed roku.
+- **Rekomendacje redukcji emisji** — kierunki działań dla źródeł, które razem dają ok. 80% emisji, oraz dla źródeł rosnących o 10% i więcej rok do roku. Rekomendacje są pogrupowane według typu źródła (np. energia elektryczna: umowa na energię z OZE, fotowoltaika, LED). To ogólne wskazówki — przed decyzją wymagają oceny technicznej i kosztowej.
 - **Emisja według źródeł** — tabela: zużycie, wskaźnik, emisja w kg i tonach oraz udział procentowy każdego źródła.
 - **Zastosowane wskaźniki emisji** — jakie wartości wskaźników zostały użyte (z chwili zapisu wpisów).
 - **Jakość danych** — jaka część emisji pochodzi z wpisów zweryfikowanych oraz ile wpisów ma każdy status i czy jest ujęty w raporcie.

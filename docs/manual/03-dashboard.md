@@ -15,6 +15,7 @@ Dashboard to strona startowa po zalogowaniu. Pokazuje emisje firmy **od początk
 
 - **Emisja miesięczna** — słupki dla każdego miesiąca, z podziałem na Zakres 1 i Zakres 2.
 - **Emisja według kategorii źródeł** — które rodzaje źródeł (prąd, pojazdy, ciepło…) odpowiadają za największą część emisji.
+- **Top 5 źródeł emisji** — pięć źródeł o największej emisji w bieżącym roku, z udziałem i zmianą rok do roku. Link **Pełny ranking i rekomendacje** prowadzi do Raportów.
 
 ## Wskazówki
 
