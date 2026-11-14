@@ -21,3 +21,14 @@ Dashboard to strona startowa po zalogowaniu. Pokazuje emisje firmy **od początk
 - Jeśli w danym roku nie ma jeszcze zweryfikowanych wpisów, zamiast wykresów zobaczysz link **Dodaj faktury**.
 - Pod wykresami pojawia się informacja, ile wpisów **czeka na weryfikację** i nie jest jeszcze ujętych w podsumowaniu.
 - Przycisk **Pełny raport i eksport** przenosi do sekcji [Raporty](#raporty), gdzie można zmienić okres i pobrać plik.
+
+## Wymaga uwagi
+
+Gdy czegoś brakuje, nad kafelkami pojawia się karta **Wymaga uwagi**:
+
+- **Brakujące dane** — źródła, dla których za ostatni zamknięty okres rozliczeniowy nie ma żadnego wpisu (np. „Licznik główny — brak danych za październik 2026”). Okres uznaje się za zamknięty 10 dni po jego końcu, żeby faktury zdążyły dotrzeć. Jak często źródło jest rozliczane, ustawia się w polu **Częstotliwość rozliczeń** źródła.
+- **Wskaźniki emisji** — wskaźnik wygasa w ciągu 30 dni, ma lukę między wersjami albo źródło nie ma ważnego wskaźnika na dziś; w styczniu dodatkowo przypomnienie o nowym wskaźniku KOBiZE.
+
+Szkice też liczą się jako wprowadzone dane. Karta znika, gdy wszystko jest uzupełnione.
+
+**Tylko Analityk** — 10. dnia każdego miesiąca Analitycy dostają e-mail z tym samym podsumowaniem (tylko wtedy, gdy coś wymaga uwagi).

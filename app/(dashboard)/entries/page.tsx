@@ -10,11 +10,13 @@ import { formatTon } from "@/lib/emissions/format";
 import { sumDecimals, divideByPowerOfTen } from "@/lib/emissions/decimal-lite";
 import { PageHeader } from "@/components/layout/page-header";
 import { TopbarActions } from "@/components/layout/topbar-actions";
+import { getReminders } from "@/lib/reminders/query";
+import { MissingDataBanner } from "@/components/reminders/reminder-panel";
 
 export default async function EntriesPage({ searchParams }: PageProps<"/entries">) {
   const user = await getCurrentUser();
   const { faktura } = await searchParams;
-  const invoices = await listInvoices();
+  const [invoices, reminders] = await Promise.all([listInvoices(), getReminders()]);
 
   const totalTon =
     divideByPowerOfTen(sumDecimals(invoices.map((i) => i.totalCo2eKg)), 3) ?? "0";
@@ -28,6 +30,7 @@ export default async function EntriesPage({ searchParams }: PageProps<"/entries"
             : `${invoices.length} faktur · łącznie ${formatTon(totalTon)} t CO₂e`
         }
       />
+      <MissingDataBanner reminders={reminders} />
       <TopbarActions>
         <Link href="/entries/new" className={buttonVariants({ size: "sm" })}>
           <Plus className="h-4 w-4" aria-hidden="true" />

@@ -13,6 +13,13 @@ enum UserRole {
   USER
 }
 
+enum BillingFrequency {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  NONE
+}
+
 enum EmissionScope {
   SCOPE_1
   SCOPE_2
@@ -89,15 +96,16 @@ model ArchivedReportFile {
 }
 
 model EmissionSource {
-  id                 String        @id @default(cuid())
-  name               String        @unique
+  id                 String           @id @default(cuid())
+  name               String           @unique
   type               SourceType
   scope              EmissionScope
   defaultFactorId    String?
   unit               String
-  active             Boolean       @default(true)
+  active             Boolean          @default(true)
   registrationNumber String?
   location           String?
+  billingFrequency   BillingFrequency @default(MONTHLY)
 
   // Matching keys
   ppeNumber   String? @unique

@@ -5,10 +5,12 @@ import { FactorTable } from "@/components/factors/factor-table";
 import { AddFactorButton } from "@/components/factors/add-factor-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { TopbarActions } from "@/components/layout/topbar-actions";
+import { getReminders } from "@/lib/reminders/query";
+import { FactorWarningsBanner } from "@/components/reminders/reminder-panel";
 
 export default async function FactorsPage() {
   const user = await getCurrentUser();
-  const factors = await listFactors();
+  const [factors, reminders] = await Promise.all([listFactors(), getReminders()]);
   const manage = canManage(user);
 
   return (
@@ -23,6 +25,7 @@ export default async function FactorsPage() {
         </TopbarActions>
       )}
 
+      <FactorWarningsBanner reminders={reminders} canManage={manage} />
       <FactorTable factors={factors} canManage={manage} />
     </div>
   );

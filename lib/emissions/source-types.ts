@@ -9,6 +9,15 @@ export type SourceType =
 
 export type Scope = "SCOPE_1" | "SCOPE_2";
 
+export type BillingFrequency = "MONTHLY" | "QUARTERLY" | "YEARLY" | "NONE";
+
+export const BILLING_FREQUENCY_LABELS: Record<BillingFrequency, string> = {
+  MONTHLY: "Miesięcznie",
+  QUARTERLY: "Kwartalnie",
+  YEARLY: "Rocznie",
+  NONE: "Bez przypomnień",
+};
+
 /** Scope by source type */
 const SCOPE_BY_TYPE: Record<SourceType, Scope> = {
   STATIONARY_INSTALLATION: "SCOPE_1",

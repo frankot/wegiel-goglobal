@@ -32,7 +32,8 @@ Jeśli nad tabelą widzisz żółtą informację, że źródła energii nie maj�
    - dla energii (prąd, ciepło, chłodzenie): **numer PPE**, **numer licznika**, **NIP dostawcy** — znajdziesz je na fakturze. Dzięki nim kolejne faktury przypiszą się do źródła automatycznie,
    - dla instalacji i pojazdów: **numer rejestracyjny / identyfikator**.
 6. Opcjonalnie podaj **lokalizację**.
-7. Kliknij **Dodaj źródło**.
+7. Ustaw **częstotliwość rozliczeń**: Miesięcznie, Kwartalnie, Rocznie albo Bez przypomnień. Na tej podstawie system przypomina o brakujących fakturach (np. gaz rozliczany kwartalnie nie będzie zgłaszany co miesiąc).
+8. Kliknij **Dodaj źródło**.
 
 Jeśli zobaczysz komunikat „Brak aktywnego wskaźnika…", najpierw dodaj odpowiedni wskaźnik w sekcji [Współczynniki emisji](#wspolczynniki-emisji).
 

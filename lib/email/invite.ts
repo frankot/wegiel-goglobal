@@ -1,13 +1,10 @@
 import "server-only";
-import { Resend } from "resend";
 import { roleLabel } from "@/lib/auth/permissions";
+import { escapeHtml as escape, sendEmail, type SendResult } from "./send";
 
 /** Invitation e-mail */
 
-export type SendResult = { sent: true } | { sent: false; reason: string };
-
-const escape = (s: string) =>
-  s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+export type { SendResult };
 
 export async function sendInviteEmail(params: {
   to: string;
@@ -17,12 +14,6 @@ export async function sendInviteEmail(params: {
   companyName?: string | null;
   expires: Date;
 }): Promise<SendResult> {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM;
-  if (!apiKey || !from) {
-    return { sent: false, reason: "Wysyłka e-maili nie jest skonfigurowana (RESEND_API_KEY, RESEND_FROM)." };
-  }
-
   const app = params.companyName ? `Ślad węglowy — ${params.companyName}` : "Ślad węglowy";
   const expires = params.expires.toLocaleString("pl-PL", { dateStyle: "long", timeStyle: "short" });
   const role = roleLabel(params.role);
@@ -44,17 +35,5 @@ export async function sendInviteEmail(params: {
 <p style="color:#8c95a5;font-size:12px">Link jest ważny do ${escape(expires)}. Jeśli przycisk nie działa, skopiuj adres:<br>${escape(params.url)}</p>
 </div>`;
 
-  try {
-    const { error } = await new Resend(apiKey).emails.send({
-      from,
-      to: params.to,
-      subject: `Zaproszenie do systemu ${app}`,
-      text,
-      html,
-    });
-    if (error) return { sent: false, reason: error.message };
-    return { sent: true };
-  } catch (e) {
-    return { sent: false, reason: (e as Error).message };
-  }
+  return sendEmail({ to: params.to, subject: `Zaproszenie do systemu ${app}`, text, html });
 }

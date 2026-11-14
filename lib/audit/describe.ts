@@ -16,6 +16,7 @@ export const ENTITY_LABELS: Record<string, string> = {
   Report: "Raport",
   ArchivedReport: "Archiwum raportów",
   AuditLog: "Dziennik zdarzeń",
+  Reminder: "Przypomnienia",
 };
 
 export const ACTION_LABELS: Record<string, string> = {
@@ -28,6 +29,7 @@ export const ACTION_LABELS: Record<string, string> = {
   IMPORT: "Import",
   RECALC: "Przeliczenie",
   DOWNLOAD: "Pobranie",
+  NOTIFY: "Powiadomienie",
 };
 
 const FIELD_LABELS: Record<string, string> = {
@@ -71,6 +73,10 @@ const FIELD_LABELS: Record<string, string> = {
   country: "Kraj",
   filters: "Filtry",
   rows: "Wiersze",
+  recipients: "Odbiorcy",
+  failed: "Nieudane",
+  missing: "Braki danych",
+  factors: "Ostrzeżenia o wskaźnikach",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -191,6 +197,8 @@ function summarize(action: string, entity: string, d: Json): string | null {
       return `Usunięcie raportu z archiwum: „${d.title}”`;
     case "ArchivedReport:DOWNLOAD":
       return `Pobranie ${formatValue("format", d.format)} z archiwum: „${d.title}”`;
+    case "Reminder:NOTIFY":
+      return `Wysłano miesięczne przypomnienie e-mail (odbiorcy: ${d.recipients}, braki danych: ${d.missing}, ostrzeżenia: ${d.factors})`;
     case "AuditLog:DOWNLOAD":
       return `Eksport dziennika zdarzeń do CSV (${d.rows} zdarzeń)`;
     default:

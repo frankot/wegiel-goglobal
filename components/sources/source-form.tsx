@@ -16,6 +16,8 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { createSource, updateSource } from "@/lib/sources/actions";
 import {
+  BILLING_FREQUENCY_LABELS,
+  type BillingFrequency,
   SOURCE_TYPE_HINTS,
   SOURCE_TYPE_LABELS,
   UNITS_BY_TYPE,
@@ -44,6 +46,11 @@ interface Props {
   };
   onCreated?: (source: { id: string; defaultFactorId: string }) => void;
 }
+
+const FREQUENCY_ITEMS = (Object.keys(BILLING_FREQUENCY_LABELS) as BillingFrequency[]).map((f) => ({
+  value: f,
+  label: BILLING_FREQUENCY_LABELS[f],
+}));
 
 const TYPE_ITEMS = (Object.keys(SOURCE_TYPE_LABELS) as SourceType[]).map((t) => ({
   value: t,
@@ -244,14 +251,29 @@ export function SourceFormDialog({
             </div>
           )}
 
-          <div className="space-y-1">
-            <Label htmlFor="location">Lokalizacja</Label>
-            <Input
-              id="location"
-              name="location"
-              defaultValue={source?.location ?? ""}
-              placeholder="np. Boya-Żeleńskiego 11, Rzeszów"
-            />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1">
+              <Label htmlFor="location">Lokalizacja</Label>
+              <Input
+                id="location"
+                name="location"
+                defaultValue={source?.location ?? ""}
+                placeholder="np. Boya-Żeleńskiego 11, Rzeszów"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="billingFrequency">Częstotliwość rozliczeń</Label>
+              <Select
+                id="billingFrequency"
+                name="billingFrequency"
+                items={FREQUENCY_ITEMS}
+                defaultValue={source?.billingFrequency ?? "MONTHLY"}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground">
+                jak często przychodzą faktury — na tej podstawie system przypomina o brakach
+              </p>
+            </div>
           </div>
 
           {errors.length > 0 && (

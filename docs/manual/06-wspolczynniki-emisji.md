@@ -61,3 +61,13 @@ Wpisy **zweryfikowane i skorygowane nigdy nie są zmieniane** — to gwarancja, 
 ## Historia wersji
 
 Ikona zegara w wierszu wskaźnika (**Historia wersji**) pokazuje wszystkie wersje danego wskaźnika: wartości i okresy ważności.
+
+## Ostrzeżenia o ważności
+
+Nad listą wskaźników pojawia się ostrzeżenie, gdy wskaźnik używany przez aktywne źródło:
+
+- **wygasa w ciągu 30 dni**, a nie ma kolejnej wersji,
+- ma **lukę** — dni, w których żadna wersja nie obowiązuje (faktury z tego okresu nie dostaną wskaźnika),
+- **nie ma wersji ważnej na dziś**.
+
+W styczniu system dodatkowo przypomina o sprawdzeniu nowego wskaźnika KOBiZE dla energii elektrycznej. Rozwiązanie to zwykle **nowa wersja** wskaźnika (ikona **+**) albo poprawa dat istniejącej wersji.

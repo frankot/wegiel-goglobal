@@ -7,11 +7,14 @@ import { Card } from "@/components/ui/card";
 import { CategoryCard, MonthlyCard, ReportKpis } from "@/components/reports/report-view";
 import { parseReportParams } from "@/lib/reports/params";
 import { getReport } from "@/lib/reports/query";
+import { getReminders } from "@/lib/reminders/query";
+import { canManage } from "@/lib/auth/permissions";
+import { RemindersCard } from "@/components/reminders/reminder-panel";
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
   const params = parseReportParams({ preset: "currentYear" });
-  const data = await getReport(params);
+  const [data, reminders] = await Promise.all([getReport(params), getReminders()]);
   const year = params.from.slice(0, 4);
 
   return (
@@ -19,6 +22,8 @@ export default async function DashboardPage() {
       <PageHeader
         description={`Witaj, ${user.name || user.email}. Emisje CO₂e w ${year} r. (od początku roku, wpisy zweryfikowane) — Zakres 1 i 2.`}
       />
+
+      <RemindersCard reminders={reminders} canManage={canManage(user)} />
 
       <ReportKpis data={data} />
 

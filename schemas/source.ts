@@ -27,6 +27,7 @@ export const sourceSchema = z.object({
   ppeNumber: optionalText(50),
   meterNumber: optionalText(50),
   supplierNip: optionalText(20),
+  billingFrequency: z.enum(["MONTHLY", "QUARTERLY", "YEARLY", "NONE"]).default("MONTHLY"),
 });
 
 export type SourceInput = z.infer<typeof sourceSchema>;

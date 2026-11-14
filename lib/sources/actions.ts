@@ -13,6 +13,7 @@ import {
   supportsGridIdentifiers,
   type SourceType,
 } from "@/lib/emissions/source-types";
+import type { BillingFrequency } from "@/lib/emissions/source-types";
 import { sourceSchema } from "@/schemas/source";
 
 export interface SourceResult {
@@ -32,6 +33,7 @@ interface Normalized {
   ppeNumber: string | null;
   meterNumber: string | null;
   supplierNip: string | null;
+  billingFrequency: BillingFrequency;
 }
 
 async function normalize(
@@ -118,6 +120,7 @@ async function normalize(
       unit: input.unit,
       registrationNumber: input.registrationNumber,
       location: input.location,
+      billingFrequency: input.billingFrequency,
       ppeNumber,
       meterNumber,
       supplierNip,
@@ -178,6 +181,7 @@ export async function updateSource(
       name: { from: before.name, to: result.data.name },
       unit: { from: before.unit, to: result.data.unit },
       ppeNumber: { from: before.ppeNumber, to: result.data.ppeNumber },
+      billingFrequency: { from: before.billingFrequency, to: result.data.billingFrequency },
     }),
     ipAddress: await clientIp(),
   });

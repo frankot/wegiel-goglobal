@@ -1,4 +1,5 @@
 import "server-only";
+import type { BillingFrequency } from "@/lib/emissions/source-types";
 import { prisma } from "@/lib/prisma";
 import type { SourceCandidate } from "@/lib/emissions/match-source";
 
@@ -15,6 +16,7 @@ export interface SourceDTO {
   defaultFactorId: string | null;
   location: string | null;
   registrationNumber: string | null;
+  billingFrequency: BillingFrequency;
 }
 
 export interface SourceRow extends SourceDTO {
@@ -53,6 +55,7 @@ export async function listSourceRows(): Promise<SourceRow[]> {
     defaultFactorId: s.defaultFactorId,
     location: s.location,
     registrationNumber: s.registrationNumber,
+    billingFrequency: s.billingFrequency,
     defaultFactorName: s.defaultFactor?.name ?? null,
     defaultFactorUnit: s.defaultFactor?.unit ?? null,
     entryCount: s._count.entries,
@@ -78,6 +81,7 @@ export async function listSources(includeInactive = false): Promise<SourceDTO[]>
     defaultFactorId: s.defaultFactorId,
     location: s.location,
     registrationNumber: s.registrationNumber,
+    billingFrequency: s.billingFrequency,
   }));
 }
 
