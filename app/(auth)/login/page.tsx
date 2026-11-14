@@ -1,6 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { Suspense, useActionState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { login } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
@@ -8,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthCard, AuthMessage } from "@/components/layout/auth-card";
 
-export default function LoginPage() {
+function LoginForm() {
   const [state, action, pending] = useActionState(login, null);
+  const passwordChanged = useSearchParams().get("haslo") === "zmienione";
 
   return (
     <AuthCard
@@ -30,7 +33,12 @@ export default function LoginPage() {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="password">Hasło</Label>
+          <div className="flex items-baseline justify-between">
+            <Label htmlFor="password">Hasło</Label>
+            <Link href="/reset-hasla" className="text-xs text-primary underline-offset-4 hover:underline">
+              Nie pamiętasz hasła?
+            </Link>
+          </div>
           <Input
             id="password"
             name="password"
@@ -41,6 +49,10 @@ export default function LoginPage() {
             required
           />
         </div>
+
+        {passwordChanged && !state?.errors && (
+          <AuthMessage tone="success">Hasło zostało zmienione — zaloguj się nowym hasłem.</AuthMessage>
+        )}
 
         {state?.errors && (
           <AuthMessage>
@@ -56,5 +68,13 @@ export default function LoginPage() {
         </Button>
       </form>
     </AuthCard>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

@@ -4,7 +4,7 @@ import { sessionSecretKey } from "@/lib/env";
 
 /** Optimistic session check */
 
-const PUBLIC_PATHS = ["/login", "/zaproszenie"];
+const PUBLIC_PATHS = ["/login", "/zaproszenie", "/reset-hasla", "/nowe-haslo"];
 
 async function hasValidSession(token: string | undefined): Promise<boolean> {
   if (!token) return false;

@@ -10,18 +10,32 @@ export const loginSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 
+const passwordRule = z
+  .string()
+  .min(8, "Hasło musi mieć minimum 8 znaków")
+  .regex(/[A-Z]/, "Hasło musi zawierać co najmniej jedną wielką literę")
+  .regex(/[0-9]/, "Hasło musi zawierać co najmniej jedną cyfrę");
+
 export const signupSchema = z.object({
   name: z
     .string()
     .min(2, "Imię i nazwisko musi mieć minimum 2 znaki")
     .trim(),
-  password: z
-    .string()
-    .min(8, "Hasło musi mieć minimum 8 znaków")
-    .regex(/[A-Z]/, "Hasło musi zawierać co najmniej jedną wielką literę")
-    .regex(/[0-9]/, "Hasło musi zawierać co najmniej jedną cyfrę"),
+  password: passwordRule,
   token: z.string().min(1),
 });
+
+export const resetRequestSchema = z.object({
+  email: z.string().trim().toLowerCase().min(1, "Adres e-mail jest wymagany").email("Nieprawidłowy format adresu e-mail"),
+});
+
+export const newPasswordSchema = z
+  .object({
+    password: passwordRule,
+    confirm: z.string(),
+    token: z.string().min(1),
+  })
+  .refine((v) => v.password === v.confirm, { message: "Hasła nie są takie same", path: ["confirm"] });
 
 export type SignupInput = z.infer<typeof signupSchema>;
 

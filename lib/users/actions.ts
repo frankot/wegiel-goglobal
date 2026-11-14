@@ -9,6 +9,8 @@ import { clientIp, writeAudit } from "@/lib/db/audit";
 import { hashToken } from "@/lib/auth/hash";
 import { assignableRoles, canManage, canManageUser, type Role } from "@/lib/auth/permissions";
 import { sendInviteEmail } from "@/lib/email/invite";
+import { sendPasswordResetEmail } from "@/lib/email/password-reset";
+import { issueResetLink } from "@/lib/auth/reset-token";
 import { inviteSchema } from "@/schemas/auth";
 
 export interface UserActionResult {
@@ -160,4 +162,31 @@ export async function setUserActive(userId: string, active: boolean): Promise<Us
   await audit(actor, "UPDATE", target.id, { email: target.email, active: { from: target.active, to: active } });
   revalidatePath("/admin");
   return { ok: true };
+}
+
+export async function sendPasswordResetLink(userId: string): Promise<UserActionResult> {
+  const actor = await getCurrentUser();
+  const target = await loadTarget(actor, userId);
+  if (!target) return { ok: false, error: "Brak uprawnień" };
+  if (!target.active || !target.passwordHash) {
+    return { ok: false, error: "Link do zmiany hasła można wysłać tylko do aktywnego konta." };
+  }
+
+  const { url, expires } = await issueResetLink(target.id);
+  const company = await getCompany();
+  const mail = await sendPasswordResetEmail({
+    to: target.email,
+    url,
+    expires,
+    companyName: company?.shortName || company?.name,
+  });
+  await audit(actor, "UPDATE", target.id, { email: target.email, passwordResetLink: true, emailSent: mail.sent });
+
+  return mail.sent
+    ? { ok: true, message: `Wysłano link do zmiany hasła na adres ${target.email}.` }
+    : {
+        ok: true,
+        message: `Link utworzony, ale e-mail nie został wysłany: ${mail.reason} Przekaż link użytkownikowi (ważny 1 godzinę).`,
+        inviteUrl: url,
+      };
 }

@@ -28,6 +28,7 @@ Dostępne czynności:
 - **Rola** — zmienisz ją, wybierając inną wartość z listy w wierszu użytkownika. Zmiana działa od następnego odświeżenia strony przez tę osobę.
 - **Wyślij ponownie** — wysyła nowe zaproszenie (poprzedni link przestaje działać).
 - **Anuluj zaproszenie (✕)** — usuwa oczekujące zaproszenie.
+- **Link do zmiany hasła (ikona klucza)** — przy aktywnym koncie wysyła e-mail z linkiem do ustawienia nowego hasła (ważny 1 godzinę). Gdy e-mail nie zostanie wysłany, system pokaże link z przyciskiem **Kopiuj link** do przekazania.
 - **Dezaktywuj / Aktywuj** — blokuje lub przywraca logowanie. Kont się nie usuwa: wpisy i faktury dodane przez daną osobę zostają w historii.
 
 Nie możesz zmienić roli ani dezaktywować własnego konta.

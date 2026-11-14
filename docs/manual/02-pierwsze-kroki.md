@@ -22,6 +22,15 @@ Kilka ważnych zasad:
 - Sesja trwa **7 dni**. Po tym czasie system poprosi o ponowne zalogowanie.
 - Aby się wylogować, kliknij ikonę wyjścia obok swojego imienia na dole panelu bocznego.
 
+## Nie pamiętasz hasła
+
+1. Na stronie logowania kliknij **Nie pamiętasz hasła?** (obok pola „Hasło”).
+2. Wpisz adres e-mail konta i kliknij **Wyślij link**.
+3. Otwórz e-mail i kliknij przycisk z linkiem — link jest ważny **1 godzinę** i działa tylko raz.
+4. Ustaw nowe hasło (min. 8 znaków, 1 wielka litera, 1 cyfra) i zaloguj się nim.
+
+Ze względów bezpieczeństwa system zawsze pokazuje ten sam komunikat, nawet gdy konta z danym adresem nie ma. Nowy link można zamówić najwcześniej po 5 minutach. Jeśli e-mail nie dociera, poproś Analityka o link z sekcji **Administracja**.
+
 ## Poruszanie się po aplikacji
 
 **Panel boczny** (po lewej) zawiera wszystkie sekcje:

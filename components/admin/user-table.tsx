@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Copy, Loader2, Power, Send, X } from "lucide-react";
+import { Check, Copy, KeyRound, Loader2, Power, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import {
   cancelInvite,
   changeUserRole,
   resendInvite,
+  sendPasswordResetLink,
   setUserActive,
   type UserActionResult,
 } from "@/lib/users/actions";
@@ -164,6 +165,18 @@ export function UserTable({
                             <X />
                           </Button>
                         </>
+                      )}
+                      {u.status === "ACTIVE" && (
+                        <Button
+                          size="icon-sm"
+                          variant="ghost"
+                          disabled={busy}
+                          title="Wyślij link do zmiany hasła"
+                          aria-label={`Wyślij link do zmiany hasła: ${u.email}`}
+                          onClick={() => run(u.id, () => sendPasswordResetLink(u.id))}
+                        >
+                          <KeyRound />
+                        </Button>
                       )}
                       {!pendingInvite && (
                         <Button

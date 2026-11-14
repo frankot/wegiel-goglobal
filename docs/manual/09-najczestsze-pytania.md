@@ -58,4 +58,4 @@ Nie. Każdy wpis zapamiętuje wartość wskaźnika z chwili zapisu. Zmiana lub n
 
 ## Nie pamiętam hasła / konto jest zablokowane
 
-Po kilku nieudanych próbach logowanie jest czasowo blokowane — odczekaj podaną liczbę minut. Jeśli nie pamiętasz hasła, skontaktuj się z administratorem systemu.
+Po kilku nieudanych próbach logowanie jest czasowo blokowane — odczekaj podaną liczbę minut. Jeśli nie pamiętasz hasła, kliknij **Nie pamiętasz hasła?** na stronie logowania — dostaniesz e-mailem link do ustawienia nowego (ważny 1 godzinę). Udana zmiana hasła zdejmuje też blokadę logowania. Gdy e-mail nie dociera, poproś Analityka o link z sekcji **Administracja**.
