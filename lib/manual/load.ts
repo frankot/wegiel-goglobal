@@ -2,7 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { cache } from "react";
 
-const MANUAL_DIR = path.join(process.cwd(), "docs", "manual");
+const DOCS_DIR = path.join(process.cwd(), "docs");
 
 export interface ManualHeading {
   id: string;
@@ -42,8 +42,13 @@ function parseChapter(source: string): ManualChapter {
   return { id, title, body, headings };
 }
 
-export const loadManual = cache(async (): Promise<ManualChapter[]> => {
-  const files = (await readdir(MANUAL_DIR)).filter((f) => f.endsWith(".md")).sort();
-  const sources = await Promise.all(files.map((f) => readFile(path.join(MANUAL_DIR, f), "utf8")));
+async function loadChapters(folder: string): Promise<ManualChapter[]> {
+  const dir = path.join(DOCS_DIR, folder);
+  const files = (await readdir(dir)).filter((f) => f.endsWith(".md")).sort();
+  const sources = await Promise.all(files.map((f) => readFile(path.join(dir, f), "utf8")));
   return sources.map(parseChapter);
-});
+}
+
+export const loadManual = cache(() => loadChapters("manual"));
+
+export const loadTechnicalDocs = cache(() => loadChapters("technical"));

@@ -59,9 +59,11 @@ const SUBPAGES: Record<string, string> = {
 };
 
 export const MANUAL_HREF = "/manual";
+export const TECHNICAL_DOCS_HREF = "/manual/techniczna";
 
 const STANDALONE: Record<string, string> = {
   [MANUAL_HREF]: "Instrukcja obsługi",
+  [TECHNICAL_DOCS_HREF]: "Dokumentacja techniczna",
 };
 
 export function isActive(pathname: string, href: string) {

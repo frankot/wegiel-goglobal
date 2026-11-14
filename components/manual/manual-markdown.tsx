@@ -3,6 +3,7 @@ import Markdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Badge } from "@/components/ui/badge";
 import { headingId } from "@/lib/manual/load";
+import { MermaidDiagram } from "./mermaid-diagram";
 
 const MANAGER_TAG = "Tylko Analityk";
 
@@ -61,9 +62,19 @@ function components(chapterId: string): Components {
     th: ({ children }) => <th className="px-3 py-2 font-medium">{children}</th>,
     tr: ({ children }) => <tr className="border-b border-border last:border-0">{children}</tr>,
     td: ({ children }) => <td className="px-3 py-2 align-top">{children}</td>,
-    code: ({ children }) => (
-      <code className="rounded-sm bg-muted px-1 py-0.5 font-mono text-[0.8125rem]">{children}</code>
-    ),
+    pre: ({ children }) => <>{children}</>,
+    code: ({ className, children }) => {
+      const lang = className?.match(/language-(\w+)/)?.[1];
+      if (lang === "mermaid") return <MermaidDiagram chart={textOf(children).trim()} />;
+      if (lang) {
+        return (
+          <pre className="mt-4 overflow-x-auto rounded-sm bg-muted p-4 font-mono text-xs leading-relaxed text-strong">
+            <code>{children}</code>
+          </pre>
+        );
+      }
+      return <code className="rounded-sm bg-muted px-1 py-0.5 font-mono text-[0.8125rem]">{children}</code>;
+    },
   };
 }
 

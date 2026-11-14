@@ -15,7 +15,7 @@ Aplikacja do obliczania, monitorowania i raportowania śladu węglowego przedsi�
 | **Dashboard** | KPI emisyjności: całkowite CO₂e, Scope 1, Scope 2, zmiana YoY, wykresy miesięczne |
 | **Źródła emisji** | Katalog instalacji, pojazdów i punktów poboru energii z przypisanymi wskaźnikami |
 | **Współczynniki emisji** | Centralny katalog wskaźników KOBIZE i GHG Protocol z wersjonowaniem datami |
-| **Faktury i wpisy** | Ręczne wprowadzanie, import CSV/XLSX/XML (KSeF, WF-MAG), auto-przeliczanie CO₂e |
+| **Faktury i wpisy** | Ręczne wprowadzanie, import KSeF XML i WAPRO MAG (XLSX/XLS/ODS), auto-przeliczanie CO₂e |
 | **Raporty** | Generowanie PDF/XLSX/CSV zgodnych z ESRS E1, archiwum raportów |
 | **Administracja** | Zaproszenia e-mail (Resend), role Analityk/Użytkownik, dezaktywacja kont |
 
@@ -29,6 +29,8 @@ Aplikacja do obliczania, monitorowania i raportowania śladu węglowego przedsi�
 
 ## Dokumentacja
 
+- [Dokumentacja techniczna](docs/technical/) — architektura, baza danych, konfiguracja, wdrożenie, bezpieczeństwo, obliczenia, utrzymanie (w aplikacji: `/manual/techniczna`, rola Administrator)
+- [Instrukcja obsługi](docs/manual/) — dla użytkowników (w aplikacji: `/manual`)
 - [Opis systemu (wymagania funkcjonalne)](plan/opis-systemu-slad-weglowy.md)
 - [Specyfikacja implementacyjna](plan/spec-implementacyjna.md)
 - [Brief techniczny GO GLOBAL GROUP](plan/Brief_techniczny_GO_GLOBAL_GROUP%20(1).docx)
@@ -45,8 +47,9 @@ Aplikacja do obliczania, monitorowania i raportowania śladu węglowego przedsi�
 | Autoryzacja | JWT (jose) + bcryptjs |
 | Walidacja | Zod |
 | Wykresy | Recharts |
-| Import plików | SheetJS (XLSX) + PapaParse (CSV) + fast-xml-parser (XML) |
-| Raporty PDF | jsPDF + jspdf-autotable |
+| Import plików | fast-xml-parser (KSeF XML) + SheetJS (WAPRO MAG: XLSX/XLS/ODS) |
+| Raporty | jsPDF + jspdf-autotable (PDF), SheetJS (XLSX), PapaParse (CSV) |
+| Pliki | Vercel Blob (prywatny) |
 | E-mail | Resend |
 | Deployment | Vercel + GitHub CI/CD |
 

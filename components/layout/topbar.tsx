@@ -6,7 +6,7 @@ import { CircleHelp, Menu, PanelLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
-import { MANUAL_HREF, pageTitleFor } from "./nav";
+import { MANUAL_HREF, isActive, pageTitleFor } from "./nav";
 import { TopbarActionsSlot } from "./topbar-actions";
 
 interface TopbarProps {
@@ -24,7 +24,7 @@ const today = new Intl.DateTimeFormat("pl-PL", {
 export function Topbar({ collapsed, onToggleSidebar, onOpenMobile }: TopbarProps) {
   const pathname = usePathname();
   const page = pageTitleFor(pathname);
-  const onManual = pathname === MANUAL_HREF;
+  const onManual = isActive(pathname, MANUAL_HREF);
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/60 px-4 sm:px-6 lg:px-8">

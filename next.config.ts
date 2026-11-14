@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/reports/*": ["./lib/reports/fonts/*.ttf"],
     "/manual": ["./docs/manual/*.md"],
+    "/manual/techniczna": ["./docs/technical/*.md"],
   },
 };
 
