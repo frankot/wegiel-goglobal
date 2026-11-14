@@ -1,21 +1,13 @@
 import { getCurrentUser } from "@/lib/db/users";
 import { getAttachmentForDownload } from "@/lib/db/invoices";
 import { clientIp, writeAudit } from "@/lib/db/audit";
+import { isBlobUrl, readStoredFile } from "@/lib/import/storage";
 
 /** GET /api/attachments/:id */
 const SERVE_AS: Record<string, { type: string; disposition: "inline" | "attachment" }> = {
   EVIDENCE_PDF: { type: "application/pdf", disposition: "inline" },
   SOURCE_XML: { type: "application/xml; charset=utf-8", disposition: "attachment" },
 };
-
-function isBlobUrl(raw: string): boolean {
-  try {
-    const url = new URL(raw);
-    return url.protocol === "https:" && url.hostname.endsWith(".blob.vercel-storage.com");
-  } catch {
-    return false;
-  }
-}
 
 export async function GET(_req: Request, ctx: RouteContext<"/api/attachments/[id]">) {
   const user = await getCurrentUser();
@@ -29,10 +21,8 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/attachments/[id
     return new Response("Nieobsługiwany załącznik", { status: 404 });
   }
 
-  const upstream = await fetch(attachment.blobUrl, { cache: "no-store" });
-  if (!upstream.ok || !upstream.body) {
-    return new Response("Plik jest niedostępny", { status: 502 });
-  }
+  const stream = await readStoredFile(attachment.blobUrl);
+  if (!stream) return new Response("Plik jest niedostępny", { status: 502 });
 
   await writeAudit({
     userId: user.id,
@@ -44,7 +34,7 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/attachments/[id
     ipAddress: await clientIp(),
   });
 
-  return new Response(upstream.body, {
+  return new Response(stream, {
     headers: {
       "Content-Type": serveAs.type,
       "Content-Disposition": `${serveAs.disposition}; filename*=UTF-8''${encodeURIComponent(attachment.fileName)}`,

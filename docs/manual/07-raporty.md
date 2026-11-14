@@ -36,5 +36,29 @@ Przyciski na górnym pasku:
 | **Generuj PDF** | PDF | Gotowy raport do wydruku lub przekazania (np. audytorowi, zarządowi). Zawiera dane firmy w nagłówku. |
 | **XLSX** | Excel | Do dalszej analizy w arkuszu kalkulacyjnym. |
 | **CSV** | tekst | Do importu w innych systemach. |
+| **Zapisz w archiwum** | PDF + XLSX + CSV | Trwała wersja raportu do późniejszego pobrania (patrz niżej). |
 
 Wskazówka: przed eksportem ustaw filtry, a potem pobierz plik — będzie zawierał dokładnie ten sam zakres danych.
+
+## Archiwum raportów
+
+Archiwum przechowuje **niezmienne wersje raportów** — np. tę, która trafiła do audytora lub zarządu. Pliki pokazują dane z chwili zapisu, nawet jeśli wpisy zostaną później poprawione.
+
+**Zapisywanie** — **Tylko Analityk**:
+
+1. Ustaw filtry raportu (okres, zakres, kategorie, źródła, statusy).
+2. Kliknij **Zapisz w archiwum** na górnym pasku.
+3. Podaj **nazwę** (podpowiadana na podstawie okresu) i opcjonalnie **notatkę**, np. „wersja przekazana audytorowi”.
+4. Kliknij **Zapisz w archiwum** — system zapisze naraz pliki **PDF, XLSX i CSV**.
+
+Jeśli raport zawiera szkice, w archiwum zostanie oznaczony jako zawierający dane niezweryfikowane.
+
+**Przeglądanie** — zakładka **Archiwum** w sekcji Raporty (dostępna dla wszystkich):
+
+- przyciski **PDF / XLSX / CSV** pobierają zapisane pliki,
+- **Otwórz z aktualnymi danymi** pokazuje raport z tymi samymi filtrami, ale na dzisiejszych danych — przydatne do porównania,
+- listę można sortować po nazwie, okresie, emisji i dacie zapisu.
+
+**Usuwanie** — **Tylko Analityk**: ikona kosza usuwa wersję razem z plikami, po potwierdzeniu.
+
+Każdy zapis, pobranie i usunięcie trafia do dziennika zdarzeń.

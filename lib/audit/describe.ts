@@ -14,6 +14,7 @@ export const ENTITY_LABELS: Record<string, string> = {
   Company: "Dane firmy",
   User: "Użytkownik",
   Report: "Raport",
+  ArchivedReport: "Archiwum raportów",
   AuditLog: "Dziennik zdarzeń",
 };
 
@@ -60,6 +61,7 @@ const FIELD_LABELS: Record<string, string> = {
   from: "Poprzednio",
   to: "Teraz",
   query: "Filtry raportu",
+  title: "Nazwa",
   nip: "NIP",
   regon: "REGON",
   krs: "KRS",
@@ -183,6 +185,12 @@ function summarize(action: string, entity: string, d: Json): string | null {
       return `Zmiana danych firmy: ${Object.keys(d).map((k) => FIELD_LABELS[k] ?? k).join(", ")}`;
     case "Report:CREATE":
       return `Wygenerowanie raportu ${formatValue("format", d.format)}`;
+    case "ArchivedReport:CREATE":
+      return `Zapis raportu w archiwum: „${d.title}” (${tons(d.totalCo2eKg)} t CO₂e)`;
+    case "ArchivedReport:DELETE":
+      return `Usunięcie raportu z archiwum: „${d.title}”`;
+    case "ArchivedReport:DOWNLOAD":
+      return `Pobranie ${formatValue("format", d.format)} z archiwum: „${d.title}”`;
     case "AuditLog:DOWNLOAD":
       return `Eksport dziennika zdarzeń do CSV (${d.rows} zdarzeń)`;
     default:

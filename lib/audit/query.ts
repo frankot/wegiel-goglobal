@@ -137,6 +137,8 @@ async function buildRows(events: RawEvent[], admins: { ids: Set<string>; emails:
         return "/company";
       case "User":
         return e.action === "LOGIN" ? undefined : "/admin";
+      case "ArchivedReport":
+        return e.action === "DELETE" ? undefined : "/reports/archive";
       case "Report":
         return typeof d.query === "string" ? `/reports${d.query ? `?${d.query}` : ""}` : "/reports";
       default:

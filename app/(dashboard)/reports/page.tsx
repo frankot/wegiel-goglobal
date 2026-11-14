@@ -7,9 +7,13 @@ import { ReportFilters } from "@/components/reports/report-filters";
 import { ReportView } from "@/components/reports/report-view";
 import { parseReportParams, periodTitle, reportParamsToSearch } from "@/lib/reports/params";
 import { getReport, getReportFilterOptions } from "@/lib/reports/query";
+import { canManage } from "@/lib/auth/permissions";
+import { includesDrafts } from "@/lib/reports/params";
+import { ReportTabs } from "@/components/reports/report-tabs";
+import { SaveToArchiveButton } from "@/components/reports/save-to-archive";
 
 export default async function ReportsPage({ searchParams }: PageProps<"/reports">) {
-  await getCurrentUser();
+  const user = await getCurrentUser();
   const params = parseReportParams(await searchParams);
   const [data, options] = await Promise.all([getReport(params), getReportFilterOptions()]);
   const query = reportParamsToSearch(params).toString();
@@ -20,6 +24,15 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
         description={`Podgląd raportu śladu węglowego: ${periodTitle(params)}. Pobrany plik zawiera dokładnie te dane i filtry.`}
       />
       <TopbarActions>
+        {canManage(user) && (
+          <SaveToArchiveButton
+            query={query}
+            defaultTitle={`Raport ${periodTitle(params)}`}
+            period={periodTitle(params)}
+            draftCount={includesDrafts(params) ? data.quality.byStatus.DRAFT.count : 0}
+            disabled={data.entryCount === 0}
+          />
+        )}
         <a href={`/api/reports/csv?${query}`} download className={buttonVariants({ size: "sm", variant: "ghost" })}>
           <FileText aria-hidden="true" />
           CSV
@@ -34,6 +47,7 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
         </a>
       </TopbarActions>
 
+      <ReportTabs />
       <ReportFilters params={params} sources={options.sources} />
       <ReportView data={data} />
     </div>
