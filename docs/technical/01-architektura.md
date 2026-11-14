@@ -55,7 +55,7 @@ flowchart LR
 | `schemas/` | Schematy Zod współdzielone przez formularze i akcje |
 | `prisma/` | `schema.prisma`, migracje SQL, `seed.ts` |
 | `docs/manual/` | Instrukcja użytkownika (wyświetlana w aplikacji pod `/manual`) |
-| `docs/technical/` | Ta dokumentacja (w aplikacji pod `/manual/techniczna`, tylko rola Administrator) |
+| `docs/technical/` | Ta dokumentacja (w aplikacji pod `/manual/techniczna`, role Analityk i Administrator) |
 | `proxy.ts` | Wstępna kontrola sesji dla każdego żądania strony (dawniej `middleware.ts`) |
 | `vercel.json` | Harmonogram zadań cron |
 

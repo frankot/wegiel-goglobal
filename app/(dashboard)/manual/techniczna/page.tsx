@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/db/users";
+import { canManage } from "@/lib/auth/permissions";
 import { loadTechnicalDocs } from "@/lib/manual/load";
 import { ManualView } from "@/components/manual/manual-view";
 
 export default async function TechnicalDocsPage() {
   const user = await getCurrentUser();
-  if (user.role !== "ADMIN") notFound();
+  if (!canManage(user)) notFound();
   const chapters = await loadTechnicalDocs();
 
   return (

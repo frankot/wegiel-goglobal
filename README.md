@@ -29,7 +29,7 @@ Aplikacja do obliczania, monitorowania i raportowania śladu węglowego przedsi�
 
 ## Dokumentacja
 
-- [Dokumentacja techniczna](docs/technical/) — architektura, baza danych, konfiguracja, wdrożenie, bezpieczeństwo, obliczenia, utrzymanie (w aplikacji: `/manual/techniczna`, rola Administrator)
+- [Dokumentacja techniczna](docs/technical/) — architektura, baza danych, konfiguracja, wdrożenie, bezpieczeństwo, obliczenia, utrzymanie (w aplikacji: `/manual/techniczna`, role Analityk i Administrator)
 - [Instrukcja obsługi](docs/manual/) — dla użytkowników (w aplikacji: `/manual`)
 - [Opis systemu (wymagania funkcjonalne)](plan/opis-systemu-slad-weglowy.md)
 - [Specyfikacja implementacyjna](plan/spec-implementacyjna.md)

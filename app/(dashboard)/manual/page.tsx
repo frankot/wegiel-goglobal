@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/db/users";
+import { canManage } from "@/lib/auth/permissions";
 import { loadManual } from "@/lib/manual/load";
 import { ManualView } from "@/components/manual/manual-view";
 import { TECHNICAL_DOCS_HREF } from "@/components/layout/nav";
@@ -14,7 +15,7 @@ export default async function ManualPage() {
       description={
         <>
           Jak korzystać z systemu krok po kroku — od pierwszego logowania po eksport raportu.
-          {user.role === "ADMIN" && (
+          {canManage(user) && (
             <>
               {" "}
               <Link href={TECHNICAL_DOCS_HREF} className="text-primary underline-offset-4 hover:underline">

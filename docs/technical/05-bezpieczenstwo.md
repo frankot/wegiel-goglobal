@@ -44,7 +44,8 @@ Reguły zebrane są w `lib/auth/permissions.ts` i sprawdzane **po stronie serwer
 | Archiwizacja i usuwanie raportów z archiwum | — | ✓ | ✓ |
 | Administracja: zapraszanie, role, dezaktywacja, linki do zmiany hasła | — | ✓ (bez kont Administratora) | ✓ |
 | Dziennik zdarzeń i eksport CSV | — | ✓ | ✓ |
-| Widoczność kont Administratora, dokumentacja techniczna | — | — | ✓ |
+| Dokumentacja techniczna | — | ✓ | ✓ |
+| Widoczność kont Administratora | — | — | ✓ |
 
 **Administrator** to konto techniczne wykonawcy — niewidoczne na liście użytkowników klienta. Nikt nie może zmienić roli ani dezaktywować **własnego** konta.
 

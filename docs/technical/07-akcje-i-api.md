@@ -74,4 +74,4 @@ Route handlery `/api/*` nie przechodzą przez `proxy.ts` — każdy samodzielnie
 | `/company` | Wszyscy (edycja: Analityk) | Dane firmy |
 | `/admin`, `/admin/audit` | Analityk | Użytkownicy, dziennik zdarzeń |
 | `/manual` | Wszyscy | Instrukcja obsługi |
-| `/manual/techniczna` | Administrator | Ta dokumentacja |
+| `/manual/techniczna` | Analityk | Ta dokumentacja |

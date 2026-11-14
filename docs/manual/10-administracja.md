@@ -43,3 +43,7 @@ Zakładka **Dziennik zdarzeń** pokazuje historię operacji w systemie: kto, kie
 - **Eksport CSV** na górnym pasku pobiera wszystkie zdarzenia pasujące do filtrów (np. dla audytora). Sam eksport też trafia do dziennika.
 
 Czynności wykonane przez konto techniczne dostawcy systemu są widoczne jako **Administrator systemu**.
+
+## Dokumentacja techniczna
+
+Na stronie **Instrukcja obsługi** (ikona znaku zapytania na górnym pasku) widoczny jest link **Dokumentacja techniczna**. Zawiera opis budowy systemu, konfiguracji, wdrożenia, bezpieczeństwa i procedur utrzymaniowych — dla działu IT lub firmy utrzymującej system.
