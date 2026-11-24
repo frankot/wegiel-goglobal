@@ -1,8 +1,6 @@
-import { FileDown, FileSpreadsheet, FileText } from "lucide-react";
 import { getCurrentUser } from "@/lib/db/users";
 import { PageHeader } from "@/components/layout/page-header";
 import { TopbarActions } from "@/components/layout/topbar-actions";
-import { buttonVariants } from "@/components/ui/button";
 import { ReportFilters } from "@/components/reports/report-filters";
 import { ReportView } from "@/components/reports/report-view";
 import { parseReportParams, periodTitle, reportParamsToSearch } from "@/lib/reports/params";
@@ -11,7 +9,7 @@ import { canManage } from "@/lib/auth/permissions";
 import { TEMPLATES } from "@/lib/reports/templates";
 import { includesDrafts } from "@/lib/reports/params";
 import { ReportTabs } from "@/components/reports/report-tabs";
-import { SaveToArchiveButton } from "@/components/reports/save-to-archive";
+import { GenerateReportButton } from "@/components/reports/generate-report";
 
 export default async function ReportsPage({ searchParams }: PageProps<"/reports">) {
   const user = await getCurrentUser();
@@ -25,27 +23,15 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
         description={`Podgląd raportu śladu węglowego: ${periodTitle(params)}. Pobrany plik zawiera dokładnie te dane i filtry.`}
       />
       <TopbarActions>
-        {canManage(user) && (
-          <SaveToArchiveButton
-            query={query}
-            defaultTitle={`${params.template === "full" ? "Raport" : TEMPLATES[params.template].label} — ${periodTitle(params)}`}
-            period={periodTitle(params)}
-            draftCount={includesDrafts(params) ? data.quality.byStatus.DRAFT.count : 0}
-            disabled={data.entryCount === 0}
-          />
-        )}
-        <a href={`/api/reports/csv?${query}`} download className={buttonVariants({ size: "sm", variant: "ghost" })}>
-          <FileText aria-hidden="true" />
-          CSV
-        </a>
-        <a href={`/api/reports/xlsx?${query}`} download className={buttonVariants({ size: "sm", variant: "outline" })}>
-          <FileSpreadsheet aria-hidden="true" />
-          XLSX
-        </a>
-        <a href={`/api/reports/pdf?${query}`} download className={buttonVariants({ size: "sm" })}>
-          <FileDown aria-hidden="true" />
-          {params.template === "full" ? "Generuj PDF" : `PDF: ${TEMPLATES[params.template].label}`}
-        </a>
+        <GenerateReportButton
+          query={query}
+          period={periodTitle(params)}
+          templateLabel={TEMPLATES[params.template].label}
+          defaultTitle={`${params.template === "full" ? "Raport" : TEMPLATES[params.template].label} — ${periodTitle(params)}`}
+          entryCount={data.entryCount}
+          draftCount={includesDrafts(params) ? data.quality.byStatus.DRAFT.count : 0}
+          canArchive={canManage(user)}
+        />
       </TopbarActions>
 
       <ReportTabs />

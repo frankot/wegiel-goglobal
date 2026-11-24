@@ -13,11 +13,11 @@ W pierwszym wierszu filtrów wybierasz **szablon** — określa on układ pliku 
 | **Raport kwartalny** | poprzedni kwartał | Wyniki, porównanie z poprzednim kwartałem i rokiem, wykres miesięczny, Top 10, rekomendacje, kategorie, jakość danych. |
 | **Roczny ESRS E1-6** | poprzedni rok | Tabela ujawnienia ESRS E1-6, porównanie rok do roku, źródła, wskaźniki, jakość danych, metodologia, faktury. |
 
-Po wybraniu szablonu możesz zmienić okres i pozostałe filtry — szablon zostaje. Przycisk na górnym pasku pokazuje nazwę szablonu (np. „PDF: Raport kwartalny”), a plik ma nazwę zgodną z szablonem.
+Po wybraniu szablonu możesz zmienić okres i pozostałe filtry — szablon zostaje. Okno **Generuj raport** pokazuje nazwę wybranego szablonu, a plik ma nazwę zgodną z szablonem.
 
 **Roczny ESRS E1-6** — tabela zawiera emisje brutto Zakresu 1, Zakresu 2 metodą lokalizacyjną i emisje całkowite, wraz z porównaniem do tego samego okresu rok wcześniej. Pozycje, których system nie oblicza (Zakres 2 metodą rynkową, Zakres 3), są oznaczone jako „nie obliczono” z wyjaśnieniem w przypisie. Jeśli wpiszesz **Przychody netto** (pole pojawia się przy tym szablonie), raport policzy **intensywność emisji** w t CO₂e na 1 mln PLN przychodu.
 
-Wersję wygenerowaną z szablonu możesz zachować przyciskiem **Zapisz w archiwum** — nazwa podpowie się razem z nazwą szablonu.
+Wersję wygenerowaną z szablonu możesz zachować w archiwum, zaznaczając **Zapisz kopię w archiwum** w oknie **Generuj raport** — nazwa podpowie się razem z nazwą szablonu.
 
 ## Filtry
 
@@ -48,15 +48,18 @@ Jeśli dołączysz szkice, zobaczysz żółte ostrzeżenie, a raport PDF zostani
 
 ## Eksport
 
-Przyciski na górnym pasku:
+Kliknij **Generuj raport** na górnym pasku. W oknie:
 
-| Przycisk | Format | Do czego |
-|---|---|---|
-| **Generuj PDF** | PDF | Gotowy raport do wydruku lub przekazania (np. audytorowi, zarządowi). Zawiera dane firmy w nagłówku. |
-| **XLSX** | Excel | Do dalszej analizy w arkuszu kalkulacyjnym. |
-| **CSV** | tekst | Do importu w innych systemach. |
-| **Zapisz w archiwum** | PDF + XLSX + CSV | Trwała wersja raportu do późniejszego pobrania (patrz niżej). |
+1. Wybierz **format pliku**:
 
+| Format | Do czego |
+|---|---|
+| **PDF** | Gotowy raport do wydruku lub przekazania (np. audytorowi, zarządowi). Zawiera dane firmy w nagłówku. |
+| **XLSX** (Excel) | Do dalszej analizy w arkuszu kalkulacyjnym. |
+| **CSV** | Do importu w innych systemach. |
+
+2. Opcjonalnie zaznacz **Zapisz kopię w archiwum** (tylko Analityk — u Użytkownika pole jest wyszarzone).
+3. Kliknij **Generuj** — plik pobierze się od razu.
 Wskazówka: przed eksportem ustaw filtry, a potem pobierz plik — będzie zawierał dokładnie ten sam zakres danych.
 
 ## Archiwum raportów
@@ -66,9 +69,9 @@ Archiwum przechowuje **niezmienne wersje raportów** — np. tę, która trafił
 **Zapisywanie** — **Tylko Analityk**:
 
 1. Ustaw filtry raportu (okres, zakres, kategorie, źródła, statusy).
-2. Kliknij **Zapisz w archiwum** na górnym pasku.
-3. Podaj **nazwę** (podpowiadana na podstawie okresu) i opcjonalnie **notatkę**, np. „wersja przekazana audytorowi”.
-4. Kliknij **Zapisz w archiwum** — system zapisze naraz pliki **PDF, XLSX i CSV**.
+2. Kliknij **Generuj raport** na górnym pasku i wybierz format pliku do pobrania.
+3. Zaznacz **Zapisz kopię w archiwum**, podaj **nazwę** (podpowiadana na podstawie okresu) i opcjonalnie **notatkę**, np. „wersja przekazana audytorowi”.
+4. Kliknij **Generuj … i zapisz** — system zapisze w archiwum naraz pliki **PDF, XLSX i CSV**, a wybrany plik od razu się pobierze.
 
 Jeśli raport zawiera szkice, w archiwum zostanie oznaczony jako zawierający dane niezweryfikowane.
 
