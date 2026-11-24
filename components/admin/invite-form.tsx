@@ -1,12 +1,13 @@
 "use client";
 
 import { useRef, useState, useTransition, type FormEvent } from "react";
-import { Check, Copy, Loader2, Send } from "lucide-react";
+import { Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { ShareLink } from "./share-link";
 import { inviteUser, type UserActionResult } from "@/lib/users/actions";
 import { ROLE_LABELS, type Role } from "@/lib/auth/permissions";
 
@@ -20,14 +21,12 @@ export function InviteForm({ roles }: { roles: Role[] }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [role, setRole] = useState<Role>("USER");
   const [result, setResult] = useState<UserActionResult | null>(null);
-  const [copied, setCopied] = useState(false);
   const [pending, start] = useTransition();
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     setResult(null);
-    setCopied(false);
     start(async () => {
       const res = await inviteUser(formData);
       setResult(res);
@@ -85,26 +84,11 @@ export function InviteForm({ roles }: { roles: Role[] }) {
         <div
           role="status"
           className={`space-y-2 rounded-sm border px-3 py-2 text-sm ${
-            result.inviteUrl ? "border-amber-500/40 bg-amber-500/5" : "border-emerald-500/30 bg-emerald-500/5"
+            result.emailSent ? "border-emerald-500/30 bg-emerald-500/5" : "border-amber-500/40 bg-amber-500/5"
           }`}
         >
           <p>{result.message}</p>
-          {result.inviteUrl && (
-            <div className="flex items-center gap-2">
-              <Input readOnly value={result.inviteUrl} aria-label="Link aktywacyjny" className="flex-1 font-mono text-xs" />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  navigator.clipboard.writeText(result.inviteUrl!).then(() => setCopied(true));
-                }}
-              >
-                {copied ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
-                {copied ? "Skopiowano" : "Kopiuj link"}
-              </Button>
-            </div>
-          )}
+          {result.inviteUrl && <ShareLink key={result.inviteUrl} url={result.inviteUrl} emailSent={result.emailSent} />}
         </div>
       )}
     </Card>

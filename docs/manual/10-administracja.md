@@ -12,7 +12,7 @@
 
 Osoba otrzyma e-mail z przyciskiem **Aktywuj konto**. Link jest ważny **7 dni** — po jego otwarciu ustawia imię, nazwisko i hasło. Do tego czasu na liście widnieje status **Zaproszenie wysłane**.
 
-Jeśli wysyłka e-maili nie jest skonfigurowana albo się nie powiedzie, system pokaże link aktywacyjny z przyciskiem **Kopiuj link** — przekaż go zapraszanej osobie samodzielnie (np. w wiadomości).
+Po wysłaniu system pokazuje też link aktywacyjny z przyciskiem **Kopiuj link** — możesz przekazać go zapraszanej osobie inną drogą (np. w wiadomości). Jeśli e-mail nie został wysłany, komunikat poda przyczynę — wtedy przekaż link samodzielnie.
 
 ## Lista użytkowników
 
@@ -28,7 +28,7 @@ Dostępne czynności:
 - **Rola** — zmienisz ją, wybierając inną wartość z listy w wierszu użytkownika. Zmiana działa od następnego odświeżenia strony przez tę osobę.
 - **Wyślij ponownie** — wysyła nowe zaproszenie (poprzedni link przestaje działać).
 - **Anuluj zaproszenie (✕)** — usuwa oczekujące zaproszenie.
-- **Link do zmiany hasła (ikona klucza)** — przy aktywnym koncie wysyła e-mail z linkiem do ustawienia nowego hasła (ważny 1 godzinę). Gdy e-mail nie zostanie wysłany, system pokaże link z przyciskiem **Kopiuj link** do przekazania.
+- **Link do zmiany hasła (ikona klucza)** — przy aktywnym koncie wysyła e-mail z linkiem do ustawienia nowego hasła (ważny 1 godzinę). Link jest też widoczny na ekranie z przyciskiem **Kopiuj link** — do przekazania inną drogą lub gdy e-mail nie zostanie wysłany.
 - **Dezaktywuj / Aktywuj** — blokuje lub przywraca logowanie. Kont się nie usuwa: wpisy i faktury dodane przez daną osobę zostają w historii.
 
 Nie możesz zmienić roli ani dezaktywować własnego konta.

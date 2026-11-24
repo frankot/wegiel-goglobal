@@ -2,13 +2,13 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Copy, KeyRound, Loader2, Power, Send, X } from "lucide-react";
+import { KeyRound, Loader2, Power, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { StatusDot, type Tone } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ShareLink } from "./share-link";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   cancelInvite,
@@ -53,13 +53,11 @@ export function UserTable({
   const [pending, start] = useTransition();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [notice, setNotice] = useState<UserActionResult | null>(null);
-  const [copied, setCopied] = useState(false);
   const [confirm, setConfirm] = useState<Confirm | null>(null);
 
   function run(userId: string, action: () => Promise<UserActionResult>, after?: () => void) {
     setBusyId(userId);
     setNotice(null);
-    setCopied(false);
     start(async () => {
       const res = await action();
       setBusyId(null);
@@ -85,20 +83,7 @@ export function UserTable({
       {notice && (
         <div className="mx-5 space-y-2 text-sm" role="status">
           <p className={notice.ok ? "text-foreground" : "text-destructive"}>{notice.error ?? notice.message}</p>
-          {notice.inviteUrl && (
-            <div className="flex items-center gap-2">
-              <Input readOnly value={notice.inviteUrl} aria-label="Link aktywacyjny" className="flex-1 font-mono text-xs" />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => navigator.clipboard.writeText(notice.inviteUrl!).then(() => setCopied(true))}
-              >
-                {copied ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
-                {copied ? "Skopiowano" : "Kopiuj link"}
-              </Button>
-            </div>
-          )}
+          {notice.inviteUrl && <ShareLink key={notice.inviteUrl} url={notice.inviteUrl} emailSent={notice.emailSent} />}
         </div>
       )}
 

@@ -19,6 +19,7 @@ export interface UserActionResult {
   fieldErrors?: { email?: string; role?: string };
   message?: string;
   inviteUrl?: string;
+  emailSent?: boolean;
 }
 
 const INVITE_DAYS = 7;
@@ -58,13 +59,14 @@ async function issueInvite(
   });
 
   revalidatePath("/admin");
-  return mail.sent
-    ? { ok: true, message: `Wysłano zaproszenie na adres ${target.email}.` }
-    : {
-        ok: true,
-        message: `Konto utworzone, ale e-mail nie został wysłany: ${mail.reason} Przekaż link osobie zapraszanej.`,
-        inviteUrl: url,
-      };
+  return {
+    ok: true,
+    message: mail.sent
+      ? `Wysłano zaproszenie na adres ${target.email}. Link jest ważny ${INVITE_DAYS} dni.`
+      : `Konto utworzone, ale e-mail nie został wysłany: ${mail.reason} Przekaż link osobie zapraszanej.`,
+    inviteUrl: url,
+    emailSent: mail.sent,
+  };
 }
 
 async function loadTarget(actor: CurrentUser, userId: string) {
@@ -182,11 +184,12 @@ export async function sendPasswordResetLink(userId: string): Promise<UserActionR
   });
   await audit(actor, "UPDATE", target.id, { email: target.email, passwordResetLink: true, emailSent: mail.sent });
 
-  return mail.sent
-    ? { ok: true, message: `Wysłano link do zmiany hasła na adres ${target.email}.` }
-    : {
-        ok: true,
-        message: `Link utworzony, ale e-mail nie został wysłany: ${mail.reason} Przekaż link użytkownikowi (ważny 1 godzinę).`,
-        inviteUrl: url,
-      };
+  return {
+    ok: true,
+    message: mail.sent
+      ? `Wysłano link do zmiany hasła na adres ${target.email}. Link jest ważny 1 godzinę.`
+      : `Link utworzony, ale e-mail nie został wysłany: ${mail.reason} Przekaż link użytkownikowi (ważny 1 godzinę).`,
+    inviteUrl: url,
+    emailSent: mail.sent,
+  };
 }

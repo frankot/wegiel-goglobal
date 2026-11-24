@@ -50,7 +50,7 @@ curl -H "Authorization: Bearer $CRON_SECRET" "https://ADRES-APLIKACJI/api/cron/r
 
 ## E-mail nie dociera
 
-1. Sprawdź, czy ustawione są `RESEND_API_KEY` i `RESEND_FROM` (Administracja pokaże wtedy link do skopiowania zamiast wysyłki).
+1. Sprawdź, czy ustawione są `RESEND_API_KEY` i `RESEND_FROM` (komunikat w Administracji podaje wtedy przyczynę, a link można skopiować i przekazać ręcznie).
 2. Resend → **Emails** — status wiadomości (dostarczona, odrzucona, spam).
 3. Resend → **Domains** — domena nadawcy musi mieć status Verified.
 4. Zaproszenia i linki z Administracji pokazują powód błędu na ekranie; błąd samodzielnego resetu hasła trafia do logów Vercel („Nie udało się wysłać linku do zmiany hasła”).
