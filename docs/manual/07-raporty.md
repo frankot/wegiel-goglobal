@@ -78,7 +78,7 @@ Jeśli raport zawiera szkice, w archiwum zostanie oznaczony jako zawierający da
 **Przeglądanie** — zakładka **Archiwum** w sekcji Raporty (dostępna dla wszystkich):
 
 - przyciski **PDF / XLSX / CSV** pobierają zapisane pliki,
-- **Otwórz z aktualnymi danymi** pokazuje raport z tymi samymi filtrami, ale na dzisiejszych danych — przydatne do porównania,
+- **Podgląd** otwiera raport z tymi samymi filtrami (okres, szablon, źródła) na bieżących danych — przydatne do porównania z zapisanymi plikami,
 - listę można sortować po nazwie, okresie, emisji i dacie zapisu.
 
 **Usuwanie** — **Tylko Analityk**: ikona kosza usuwa wersję razem z plikami, po potwierdzeniu.

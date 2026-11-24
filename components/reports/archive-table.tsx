@@ -81,9 +81,10 @@ export function ArchiveTable({ reports, canManage }: { reports: ArchivedReportDT
                 )}
                 <Link
                   href={`/reports${r.query ? `?${r.query}` : ""}`}
+                  title="Podgląd raportu z tymi samymi filtrami na bieżących danych"
                   className="mt-0.5 inline-flex items-center gap-0.5 text-xs text-primary underline-offset-4 hover:underline"
                 >
-                  Otwórz z aktualnymi danymi
+                  Podgląd
                   <ArrowUpRight className="size-3" aria-hidden="true" />
                 </Link>
               </TableCell>
