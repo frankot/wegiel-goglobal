@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, ArrowUpRight, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, Eye, Trash2 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -46,7 +46,7 @@ export function ArchiveTable({ reports, canManage }: { reports: ArchivedReportDT
         <p className="text-sm text-muted-foreground">
           Archiwum jest puste.{" "}
           {canManage
-            ? "Ustaw filtry w zakładce „Raport” i kliknij „Zapisz w archiwum”, aby zachować wersję raportu."
+            ? "Ustaw filtry w zakładce „Raport”, kliknij „Generuj raport” i zaznacz „Zapisz kopię w archiwum”."
             : "Zapisane wersje raportów pojawią się tutaj."}
         </p>
       </Card>
@@ -79,14 +79,28 @@ export function ArchiveTable({ reports, canManage }: { reports: ArchivedReportDT
                     zawiera dane niezweryfikowane
                   </span>
                 )}
-                <Link
-                  href={`/reports${r.query ? `?${r.query}` : ""}`}
-                  title="Podgląd raportu z tymi samymi filtrami na bieżących danych"
-                  className="mt-0.5 inline-flex items-center gap-0.5 text-xs text-primary underline-offset-4 hover:underline"
-                >
-                  Podgląd
-                  <ArrowUpRight className="size-3" aria-hidden="true" />
-                </Link>
+                <span className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
+                  {r.files.some((f) => f.format === "pdf") && (
+                    <a
+                      href={`/api/reports/archive/${r.id}/pdf?inline=1`}
+                      target="_blank"
+                      rel="noopener"
+                      title="Zapisany plik PDF w nowej karcie"
+                      className="inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
+                    >
+                      <Eye className="size-3" aria-hidden="true" />
+                      Podgląd
+                    </a>
+                  )}
+                  <Link
+                    href={`/reports${r.query ? `?${r.query}` : ""}`}
+                    title="Raport z tymi samymi filtrami na bieżących danych"
+                    className="inline-flex items-center gap-0.5 text-muted-foreground underline-offset-4 hover:text-primary hover:underline"
+                  >
+                    Otwórz z bieżącymi danymi
+                    <ArrowUpRight className="size-3" aria-hidden="true" />
+                  </Link>
+                </span>
               </TableCell>
               <TableCell className="text-xs">{formatRange(r.periodFrom, r.periodTo)}</TableCell>
               <TableCell className="text-right tabular-nums">
