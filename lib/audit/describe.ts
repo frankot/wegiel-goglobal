@@ -77,6 +77,7 @@ const FIELD_LABELS: Record<string, string> = {
   passwordResetRequested: "Prośba o reset hasła",
   passwordResetLink: "Link do zmiany hasła",
   passwordReset: "Hasło zmienione",
+  inviteAccepted: "Zaproszenie przyjęte",
   recipients: "Odbiorcy",
   failed: "Nieudane",
   missing: "Braki danych",
@@ -149,6 +150,7 @@ function summarize(action: string, entity: string, d: Json): string | null {
     case "User:UPDATE":
       if (ch("role")) return `Zmiana roli ${d.email}: ${roleLabel(String(ch("role")!.from))} → ${roleLabel(String(ch("role")!.to))}`;
       if (ch("active")) return `${ch("active")!.to ? "Aktywacja" : "Dezaktywacja"} konta ${d.email}`;
+      if (d.inviteAccepted) return `Aktywacja konta ${d.email} (rola: ${roleLabel(String(d.role))})`;
       if (d.resendInvite) return `Ponowne wysłanie zaproszenia do ${d.resendInvite}`;
       if (d.passwordResetRequested) return `Prośba o link do zmiany hasła (${d.email})`;
       if (d.passwordResetLink) return `Wysłano link do zmiany hasła do ${d.email}`;

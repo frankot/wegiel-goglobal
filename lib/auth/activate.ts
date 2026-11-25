@@ -5,6 +5,7 @@ import { hashPassword, hashToken } from "@/lib/auth/hash";
 import { createSession } from "@/lib/auth/session";
 import { signupSchema } from "@/schemas/auth";
 import { redirect } from "next/navigation";
+import { clientIp, writeAudit } from "@/lib/db/audit";
 
 interface SignupResult {
   ok: boolean;
@@ -62,6 +63,15 @@ export async function activateAccount(
     userId: user.id,
     role: user.role,
   });
+
+  const ip = await clientIp();
+  const audit = { userId: user.id, userName: name || user.email, entity: "User", entityId: user.id, ipAddress: ip };
+  await writeAudit({
+    ...audit,
+    action: "UPDATE",
+    details: JSON.stringify({ email: user.email, role: user.role, inviteAccepted: true }),
+  });
+  await writeAudit({ ...audit, action: "LOGIN" });
 
   redirect("/dashboard");
 }
