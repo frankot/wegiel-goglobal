@@ -135,6 +135,54 @@
   animation: page-in 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+@keyframes content-in {
+  from { opacity: 0; }
+}
+
+@utility animate-content-in {
+  animation: content-in 220ms ease-out;
+}
+
+/* Expand reveal */
+@utility animate-expand-in {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition-property: grid-template-rows, opacity, margin-block;
+  transition-duration: 320ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+
+  & > * {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  @starting-style {
+    grid-template-rows: 0fr;
+    opacity: 0;
+    margin-block: 0;
+  }
+}
+
+/* Skeleton shimmer */
+@keyframes skeleton-wave {
+  from { background-position: -50vw 0; }
+  to { background-position: 150vw 0; }
+}
+
+@utility skeleton {
+  background-color: color-mix(in srgb, var(--foreground) 8%, transparent);
+  background-image: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.65), transparent);
+  background-size: 45vw 100%;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  animation: skeleton-wave 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    background-image: none;
+    animation: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after, *::backdrop {
     animation-duration: 1ms !important;

@@ -5,6 +5,9 @@ import { formatNip } from "@/lib/company/identifiers";
 import { PageHeader } from "@/components/layout/page-header";
 import { CompanyForm } from "@/components/company/company-form";
 import { Card } from "@/components/ui/card";
+import { PageHeaderSkeleton } from "@/components/ui/skeleton";
+import { Streamed } from "@/components/ui/streamed";
+import { CompanySkeleton } from "@/components/company/skeletons";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -49,31 +52,41 @@ function CompanyView({ company }: { company: CompanyDTO }) {
   );
 }
 
-export default async function CompanyPage() {
-  const [user, company] = await Promise.all([getCurrentUser(), getCompany()]);
-  const manage = canManage(user);
+async function Description() {
+  const manage = canManage(await getCurrentUser());
+  return (
+    <PageHeader
+      description={
+        manage
+          ? "Dane firmy, dla której liczony jest ślad węglowy. NIP służy do sprawdzania, czy importowana faktura jest wystawiona na firmę, a dane trafią do nagłówka raportów."
+          : "Dane firmy, dla której liczony jest ślad węglowy. Zmienić je może Analityk."
+      }
+    />
+  );
+}
 
+async function Company() {
+  const [user, company] = await Promise.all([getCurrentUser(), getCompany()]);
+  if (canManage(user)) return <CompanyForm company={company} />;
+  if (company) return <CompanyView company={company} />;
+  return (
+    <Card className="p-4">
+      <p className="text-sm text-muted-foreground">
+        Dane firmy nie zostały jeszcze uzupełnione — poproś Analityka o ich dodanie.
+      </p>
+    </Card>
+  );
+}
+
+export default function CompanyPage() {
   return (
     <div className="space-y-4">
-      <PageHeader
-        description={
-          manage
-            ? "Dane firmy, dla której liczony jest ślad węglowy. NIP służy do sprawdzania, czy importowana faktura jest wystawiona na firmę, a dane trafią do nagłówka raportów."
-            : "Dane firmy, dla której liczony jest ślad węglowy. Zmienić je może Analityk."
-        }
-      />
-
-      {manage ? (
-        <CompanyForm company={company} />
-      ) : company ? (
-        <CompanyView company={company} />
-      ) : (
-        <Card className="p-4">
-          <p className="text-sm text-muted-foreground">
-            Dane firmy nie zostały jeszcze uzupełnione — poproś Analityka o ich dodanie.
-          </p>
-        </Card>
-      )}
+      <Streamed fallback={<PageHeaderSkeleton lines={2} />}>
+        <Description />
+      </Streamed>
+      <Streamed fallback={<CompanySkeleton />}>
+        <Company />
+      </Streamed>
     </div>
   );
 }

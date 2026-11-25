@@ -3,23 +3,19 @@ import { canManage } from "@/lib/auth/permissions";
 import { listSourceRows } from "@/lib/db/sources";
 import { listFactors } from "@/lib/db/factors";
 import { SourceTable } from "@/components/sources/source-table";
+import { SourcesSkeleton } from "@/components/sources/skeletons";
+import { Streamed } from "@/components/ui/streamed";
 import { PageHeader } from "@/components/layout/page-header";
 
-export default async function SourcesPage() {
-  const user = await getCurrentUser();
-  const [sources, factors] = await Promise.all([listSourceRows(), listFactors()]);
+async function Sources() {
+  const [user, sources, factors] = await Promise.all([getCurrentUser(), listSourceRows(), listFactors()]);
 
   const withoutIdentifiers = sources.filter(
     (s) => s.active && s.scope === "SCOPE_2" && !s.ppeNumber && !s.meterNumber,
   ).length;
 
   return (
-    <div className="space-y-4">
-      <PageHeader
-        description="Liczniki, instalacje i pojazdy, których zużycie rejestrujesz. Każde
-          źródło ma domyślny wskaźnik emisji używany przy imporcie faktur."
-      />
-
+    <>
       {withoutIdentifiers > 0 && (
         <p className="rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-sm">
           {withoutIdentifiers}{" "}
@@ -31,11 +27,21 @@ export default async function SourcesPage() {
         </p>
       )}
 
-      <SourceTable
-        sources={sources}
-        factors={factors}
-        canManage={canManage(user)}
+      <SourceTable sources={sources} factors={factors} canManage={canManage(user)} />
+    </>
+  );
+}
+
+export default function SourcesPage() {
+  return (
+    <div className="space-y-4">
+      <PageHeader
+        description="Liczniki, instalacje i pojazdy, których zużycie rejestrujesz. Każde
+          źródło ma domyślny wskaźnik emisji używany przy imporcie faktur."
       />
+      <Streamed fallback={<SourcesSkeleton />} className="space-y-4">
+        <Sources />
+      </Streamed>
     </div>
   );
 }

@@ -4,28 +4,35 @@ import { getCurrentUser } from "@/lib/db/users";
 import { PageHeader } from "@/components/layout/page-header";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { PageHeaderSkeleton } from "@/components/ui/skeleton";
+import { Streamed } from "@/components/ui/streamed";
 import { CategoryCard, MonthlyCard, ReportKpis } from "@/components/reports/report-view";
-import { parseReportParams } from "@/lib/reports/params";
+import { DashboardReportSkeleton } from "@/components/reports/report-skeletons";
+import { parseReportParams, type ReportParams } from "@/lib/reports/params";
 import { getReport } from "@/lib/reports/query";
 import { getReminders } from "@/lib/reminders/query";
 import { TopSourcesCard } from "@/components/reports/top-sources";
 import { canManage } from "@/lib/auth/permissions";
 import { RemindersCard } from "@/components/reminders/reminder-panel";
 
-export default async function DashboardPage() {
+async function Greeting({ year }: { year: string }) {
   const user = await getCurrentUser();
-  const params = parseReportParams({ preset: "currentYear" });
-  const [data, reminders] = await Promise.all([getReport(params), getReminders()]);
-  const year = params.from.slice(0, 4);
-
   return (
-    <div className="space-y-4">
-      <PageHeader
-        description={`Witaj, ${user.name || user.email}. Emisje CO₂e w ${year} r. (od początku roku, wpisy zweryfikowane) — Zakres 1 i 2.`}
-      />
+    <PageHeader
+      description={`Witaj, ${user.name || user.email}. Emisje CO₂e w ${year} r. (od początku roku, wpisy zweryfikowane) — Zakres 1 i 2.`}
+    />
+  );
+}
 
-      <RemindersCard reminders={reminders} canManage={canManage(user)} />
+async function Reminders() {
+  const [user, reminders] = await Promise.all([getCurrentUser(), getReminders()]);
+  return <RemindersCard reminders={reminders} canManage={canManage(user)} />;
+}
 
+async function YearReport({ params, year }: { params: ReportParams; year: string }) {
+  const data = await getReport(params);
+  return (
+    <>
       <ReportKpis data={data} />
 
       {data.entryCount === 0 ? (
@@ -58,6 +65,27 @@ export default async function DashboardPage() {
           {data.quality.excludedDrafts} wpisów czeka na weryfikację i nie jest ujętych w podsumowaniu.
         </p>
       )}
+    </>
+  );
+}
+
+export default function DashboardPage() {
+  const params = parseReportParams({ preset: "currentYear" });
+  const year = params.from.slice(0, 4);
+
+  return (
+    <div className="space-y-4">
+      <Streamed fallback={<PageHeaderSkeleton />}>
+        <Greeting year={year} />
+      </Streamed>
+
+      <Streamed expand>
+        <Reminders />
+      </Streamed>
+
+      <Streamed fallback={<DashboardReportSkeleton year={year} />} className="space-y-4">
+        <YearReport params={params} year={year} />
+      </Streamed>
 
       <div className="flex justify-end">
         <Link href="/reports" className={buttonVariants({ variant: "outline" })}>

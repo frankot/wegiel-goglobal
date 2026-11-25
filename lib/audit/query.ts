@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import { ACTION_LABELS, ENTITY_LABELS, describeEvent, parseDetails, type AuditDetail } from "./describe";
@@ -63,11 +64,13 @@ export function auditFiltersToSearch(f: AuditFilters, page = f.page): URLSearchP
   return s;
 }
 
-async function adminAccounts(viewer: Viewer) {
-  if (viewer.role === "ADMIN") return { ids: new Set<string>(), emails: [] as string[] };
+const adminAccountsFor = cache(async (role: string) => {
+  if (role === "ADMIN") return { ids: new Set<string>(), emails: [] as string[] };
   const admins = await prisma.user.findMany({ where: { role: "ADMIN" }, select: { id: true, email: true } });
   return { ids: new Set(admins.map((a) => a.id)), emails: admins.map((a) => a.email) };
-}
+});
+
+const adminAccounts = (viewer: Viewer) => adminAccountsFor(viewer.role);
 
 function whereOf(f: AuditFilters, adminIds: Set<string>): Prisma.AuditLogWhereInput {
   const where: Prisma.AuditLogWhereInput = {};
@@ -164,11 +167,11 @@ async function buildRows(events: RawEvent[], admins: { ids: Set<string>; emails:
   });
 }
 
-export async function getAuditPage(filters: AuditFilters, viewer: Viewer) {
+export async function getAuditRows(filters: AuditFilters, viewer: Viewer) {
   const admins = await adminAccounts(viewer);
   const where = whereOf(filters, admins.ids);
 
-  const [total, events, actors, entities, actions] = await Promise.all([
+  const [total, events] = await Promise.all([
     prisma.auditLog.count({ where }),
     prisma.auditLog.findMany({
       where,
@@ -176,6 +179,18 @@ export async function getAuditPage(filters: AuditFilters, viewer: Viewer) {
       skip: (filters.page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
     }),
+  ]);
+
+  return {
+    rows: await buildRows(events, admins),
+    total,
+    pageCount: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+  };
+}
+
+export async function getAuditOptions(viewer: Viewer) {
+  const [admins, actors, entities, actions] = await Promise.all([
+    adminAccounts(viewer),
     prisma.auditLog.findMany({ distinct: ["userId"], select: { userId: true, userName: true }, where: { userId: { not: null } } }),
     prisma.auditLog.findMany({ distinct: ["entity"], select: { entity: true } }),
     prisma.auditLog.findMany({ distinct: ["action"], select: { action: true } }),
@@ -188,18 +203,13 @@ export async function getAuditPage(filters: AuditFilters, viewer: Viewer) {
   }
 
   return {
-    rows: await buildRows(events, admins),
-    total,
-    pageCount: Math.max(1, Math.ceil(total / PAGE_SIZE)),
-    options: {
-      users: [...userOptions].map(([value, label]) => ({ value, label })).sort((a, b) => a.label.localeCompare(b.label, "pl")),
-      entities: entities
-        .map((e) => ({ value: e.entity, label: ENTITY_LABELS[e.entity] ?? e.entity }))
-        .sort((a, b) => a.label.localeCompare(b.label, "pl")),
-      actions: actions
-        .map((a) => ({ value: a.action, label: ACTION_LABELS[a.action] ?? a.action }))
-        .sort((a, b) => a.label.localeCompare(b.label, "pl")),
-    },
+    users: [...userOptions].map(([value, label]) => ({ value, label })).sort((a, b) => a.label.localeCompare(b.label, "pl")),
+    entities: entities
+      .map((e) => ({ value: e.entity, label: ENTITY_LABELS[e.entity] ?? e.entity }))
+      .sort((a, b) => a.label.localeCompare(b.label, "pl")),
+    actions: actions
+      .map((a) => ({ value: a.action, label: ACTION_LABELS[a.action] ?? a.action }))
+      .sort((a, b) => a.label.localeCompare(b.label, "pl")),
   };
 }
 
