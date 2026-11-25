@@ -4,19 +4,13 @@ import { useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TableHead } from "./table";
-import { sortRows, type SortDir, type SortState, type SortValue } from "@/lib/table-sort";
+import { cycleSort, sortRows, type SortDir, type SortState, type SortValue } from "@/lib/table-sort";
 
 export { sortRows, type SortDir, type SortState, type SortValue };
 
 export function useSort<K extends string>(defaults: Partial<Record<K, SortDir>> = {}) {
   const [sort, setSort] = useState<SortState<K> | null>(null);
-  const toggle = (key: K) =>
-    setSort((cur) => {
-      const first = defaults[key] ?? "asc";
-      if (!cur || cur.key !== key) return { key, dir: first };
-      if (cur.dir === first) return { key, dir: first === "asc" ? "desc" : "asc" };
-      return null;
-    });
+  const toggle = (key: K) => setSort((cur) => cycleSort(cur, key, defaults));
   return { sort, toggle };
 }
 

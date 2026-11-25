@@ -17,6 +17,17 @@ export function compareValues(a: SortValue, b: SortValue): number {
   return collator.compare(String(a), String(b));
 }
 
+export function cycleSort<K extends string>(
+  cur: SortState<K> | null,
+  key: K,
+  defaults: Partial<Record<K, SortDir>> = {},
+): SortState<K> | null {
+  const first = defaults[key] ?? "asc";
+  if (!cur || cur.key !== key) return { key, dir: first };
+  if (cur.dir === first) return { key, dir: first === "asc" ? "desc" : "asc" };
+  return null;
+}
+
 export function sortRows<T, K extends string>(
   rows: readonly T[],
   sort: SortState<K> | null,

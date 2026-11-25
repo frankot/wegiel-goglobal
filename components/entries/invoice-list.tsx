@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -24,43 +24,38 @@ import {
   formatFactor,
 } from "@/lib/emissions/format";
 import type { InvoiceListItem, InvoiceEntryItem } from "@/lib/db/invoices";
-import { SortableHead, useSortedRows } from "@/components/ui/sortable";
-
-const STATUS_ORDER: Record<string, number> = { DRAFT: 0, CORRECTED: 1, VERIFIED: 2 };
-
-const SORT = {
-  number: (i: InvoiceListItem) => i.invoiceNumber,
-  date: (i: InvoiceListItem) => i.issueDate,
-  supplier: (i: InvoiceListItem) => i.supplierName ?? i.supplierNip,
-  entries: (i: InvoiceListItem) => i.entryCount,
-  co2e: (i: InvoiceListItem) => Number(i.totalCo2eTon),
-  status: (i: InvoiceListItem) => Math.min(...i.statuses.map((s) => STATUS_ORDER[s] ?? 9)),
-  format: (i: InvoiceListItem) => FORMAT_LABELS[i.sourceFormat] ?? i.sourceFormat,
-};
+import { SortableHead } from "@/components/ui/sortable";
+import { cycleSort } from "@/lib/table-sort";
+import { cn } from "@/lib/utils";
+import {
+  INVOICE_SORT_DEFAULTS,
+  invoiceListHref,
+  type InvoiceSort,
+  type InvoiceSortKey,
+} from "@/lib/entries/invoice-sort";
 
 interface Props {
   invoices: InvoiceListItem[];
+  sort: InvoiceSort | null;
   loadEntries: (invoiceId: string) => Promise<InvoiceEntryItem[]>;
   viewer: Viewer;
   openInvoiceId?: string;
 }
 
-export function InvoiceList({ invoices, loadEntries, viewer, openInvoiceId }: Props) {
+export function InvoiceList({ invoices, sort, loadEntries, viewer, openInvoiceId }: Props) {
   const router = useRouter();
-  const { sorted, sort, toggle: toggleSort } = useSortedRows(invoices, SORT, {
-    date: "desc",
-    entries: "desc",
-    co2e: "desc",
-  });
-  const head = { sort, onSort: toggleSort };
+  const [pending, startTransition] = useTransition();
+  const onSort = (key: InvoiceSortKey) => {
+    const next = cycleSort(sort, key, INVOICE_SORT_DEFAULTS);
+    startTransition(() => router.push(invoiceListHref({ sort: next }), { scroll: false }));
+  };
+  const head = { sort, onSort };
   const [expanded, setExpanded] = useState<string | null>(null);
   const [entries, setEntries] = useState<Record<string, InvoiceEntryItem[]>>(
     {},
   );
   const [loading, setLoading] = useState<string | null>(null);
-  const [detailId, setDetailId] = useState<string | null>(
-    openInvoiceId && invoices.some((i) => i.id === openInvoiceId) ? openInvoiceId : null,
-  );
+  const [detailId, setDetailId] = useState<string | null>(openInvoiceId ?? null);
 
   async function toggle(id: string) {
     if (expanded === id) {
@@ -105,7 +100,7 @@ export function InvoiceList({ invoices, loadEntries, viewer, openInvoiceId }: Pr
 
   return (
     <>
-      <Table>
+      <Table className={cn("transition-opacity", pending && "opacity-60")}>
         <TableHeader>
           <TableRow>
             <TableHead className="w-8" />
@@ -119,7 +114,7 @@ export function InvoiceList({ invoices, loadEntries, viewer, openInvoiceId }: Pr
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sorted.map((inv) => (
+          {invoices.map((inv) => (
             <Fragment key={inv.id}>
               <TableRow>
                 <TableCell>

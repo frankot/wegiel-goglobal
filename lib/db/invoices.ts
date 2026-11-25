@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { cleanText, ksefXmlParser } from "@/lib/import/ksef-xml";
 import { groupWaproRows, type WaproRow } from "@/lib/import/wapro-xlsx";
+import { INVOICE_PAGE_SIZE, type InvoiceSort, type InvoiceSortKey } from "@/lib/entries/invoice-sort";
 
 export interface InvoiceListItem {
   id: string;
@@ -41,73 +42,107 @@ export interface InvoiceEntryItem {
   entryDate: string;
 }
 
-export interface InvoiceFilters {
-  from?: string;
-  to?: string;
-  supplierNip?: string;
-  status?: string;
-  scope?: "SCOPE_1" | "SCOPE_2";
+type InvoiceRow = Prisma.InvoiceGetPayload<{
+  include: {
+    entries: { select: { co2eKg: true; co2eTon: true; status: true } };
+    _count: { select: { attachments: true } };
+  };
+}>;
+
+function toListItem(inv: InvoiceRow): InvoiceListItem {
+  const totalKg = inv.entries.reduce((a, e) => a.add(e.co2eKg), new Prisma.Decimal(0));
+  const totalTon = inv.entries.reduce((a, e) => a.add(e.co2eTon), new Prisma.Decimal(0));
+  return {
+    id: inv.id,
+    invoiceNumber: inv.invoiceNumber,
+    ksefNumber: inv.ksefNumber,
+    issueDate: inv.issueDate?.toISOString() ?? null,
+    periodStart: inv.periodStart?.toISOString() ?? null,
+    periodEnd: inv.periodEnd?.toISOString() ?? null,
+    supplierName: inv.supplierName,
+    supplierNip: inv.supplierNip,
+    sourceFormat: inv.sourceFormat,
+    entryCount: inv.entries.length,
+    totalCo2eKg: totalKg.toString(),
+    totalCo2eTon: totalTon.toString(),
+    statuses: [...new Set(inv.entries.map((e) => e.status))],
+    attachmentCount: inv._count.attachments,
+    createdAt: inv.createdAt.toISOString(),
+  };
 }
 
-export async function listInvoices(
-  filters: InvoiceFilters = {},
-): Promise<InvoiceListItem[]> {
+// Sort columns
+const ORDER: Record<InvoiceSortKey, Prisma.Sql> = {
+  number: Prisma.sql`lower(i."invoiceNumber")`,
+  date: Prisma.sql`i."issueDate"`,
+  supplier: Prisma.sql`lower(coalesce(i."supplierName", i."supplierNip"))`,
+  entries: Prisma.sql`coalesce(e.n, 0)`,
+  co2e: Prisma.sql`coalesce(e.kg, 0)`,
+  status: Prisma.sql`e.st`,
+  format: Prisma.sql`i."sourceFormat"`,
+};
+
+async function pageIds(sort: InvoiceSort | null, page: number) {
+  const order = sort
+    ? Prisma.sql`${ORDER[sort.key]} ${sort.dir === "asc" ? Prisma.sql`ASC` : Prisma.sql`DESC`} NULLS LAST,`
+    : Prisma.empty;
+  return prisma.$queryRaw<{ id: string; total: number }[]>`
+    SELECT i.id, count(*) OVER ()::int AS total
+    FROM "Invoice" i
+    LEFT JOIN (
+      SELECT "invoiceId", count(*)::int AS n, sum("co2eKg") AS kg,
+        min(CASE status WHEN 'DRAFT' THEN 0 WHEN 'CORRECTED' THEN 1 ELSE 2 END) AS st
+      FROM "EmissionEntry"
+      WHERE "invoiceId" IS NOT NULL
+      GROUP BY "invoiceId"
+    ) e ON e."invoiceId" = i.id
+    ORDER BY ${order} i."createdAt" DESC, i.id
+    LIMIT ${INVOICE_PAGE_SIZE} OFFSET ${(page - 1) * INVOICE_PAGE_SIZE}`;
+}
+
+export async function listInvoicePage(
+  requestedPage: number,
+  sort: InvoiceSort | null,
+): Promise<{ items: InvoiceListItem[]; total: number; page: number; pageCount: number }> {
+  let page = requestedPage;
+  let ids = await pageIds(sort, page);
+  let total = ids[0]?.total ?? 0;
+  if (ids.length === 0 && page > 1) {
+    total = await prisma.invoice.count();
+    page = Math.max(1, Math.ceil(total / INVOICE_PAGE_SIZE));
+    ids = await pageIds(sort, page);
+  }
+
   const rows = await prisma.invoice.findMany({
-    where: {
-      issueDate:
-        filters.from || filters.to
-          ? {
-              gte: filters.from ? new Date(filters.from) : undefined,
-              lte: filters.to ? new Date(filters.to) : undefined,
-            }
-          : undefined,
-      supplierNip: filters.supplierNip || undefined,
-      entries: filters.status || filters.scope
-        ? {
-            some: {
-              status: filters.status
-                ? (filters.status as "DRAFT" | "VERIFIED" | "CORRECTED")
-                : undefined,
-              source: filters.scope ? { scope: filters.scope } : undefined,
-            },
-          }
-        : undefined,
-    },
+    where: { id: { in: ids.map((r) => r.id) } },
     include: {
       entries: { select: { co2eKg: true, co2eTon: true, status: true } },
       _count: { select: { attachments: true } },
     },
-    orderBy: { createdAt: "desc" },
   });
+  const byId = new Map(rows.map((r) => [r.id, r]));
 
-  return rows.map((inv) => {
-    const totalKg = inv.entries.reduce(
-      (a, e) => a.add(e.co2eKg),
-      new Prisma.Decimal(0),
-    );
-    const totalTon = inv.entries.reduce(
-      (a, e) => a.add(e.co2eTon),
-      new Prisma.Decimal(0),
-    );
+  return {
+    items: ids.flatMap((r) => {
+      const row = byId.get(r.id);
+      return row ? [toListItem(row)] : [];
+    }),
+    total,
+    page,
+    pageCount: Math.max(1, Math.ceil(total / INVOICE_PAGE_SIZE)),
+  };
+}
 
-    return {
-      id: inv.id,
-      invoiceNumber: inv.invoiceNumber,
-      ksefNumber: inv.ksefNumber,
-      issueDate: inv.issueDate?.toISOString() ?? null,
-      periodStart: inv.periodStart?.toISOString() ?? null,
-      periodEnd: inv.periodEnd?.toISOString() ?? null,
-      supplierName: inv.supplierName,
-      supplierNip: inv.supplierNip,
-      sourceFormat: inv.sourceFormat,
-      entryCount: inv.entries.length,
-      totalCo2eKg: totalKg.toString(),
-      totalCo2eTon: totalTon.toString(),
-      statuses: [...new Set(inv.entries.map((e) => e.status))],
-      attachmentCount: inv._count.attachments,
-      createdAt: inv.createdAt.toISOString(),
-    };
-  });
+export async function getInvoiceSummary(): Promise<{ count: number; totalCo2eKg: string }> {
+  const [count, sum] = await Promise.all([
+    prisma.invoice.count(),
+    prisma.emissionEntry.aggregate({ where: { invoiceId: { not: null } }, _sum: { co2eKg: true } }),
+  ]);
+  return { count, totalCo2eKg: (sum._sum.co2eKg ?? new Prisma.Decimal(0)).toString() };
+}
+
+export async function invoiceExists(id: string): Promise<boolean> {
+  return (await prisma.invoice.count({ where: { id } })) > 0;
 }
 
 export async function getInvoiceEntries(
