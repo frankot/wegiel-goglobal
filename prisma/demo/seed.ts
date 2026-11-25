@@ -1,5 +1,8 @@
 import { DEMO_PREFIX } from "./shim";
 import { randomBytes } from "node:crypto";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { calculateEmission } from "@/lib/emissions/calculate";
@@ -16,6 +19,7 @@ import { REPORT_FORMATS, type ReportFormat } from "@/lib/reports/render";
 import { parseIsoDate, parseReportParams, reportParamsToSearch } from "@/lib/reports/params";
 
 const DRY = process.argv.includes("--dry");
+const MANIFEST = "manifest.json";
 const CUTOFF = new Date(Date.now() - 60 * 60_000);
 const BUYER_NIP = "8133378641";
 
@@ -559,20 +563,44 @@ function checkArchive() {
   }
 }
 
-async function createArchive(ids: { kasia: string; tomek: string }) {
+interface ArchivedFile {
+  format: ReportFormat;
+  fileName: string;
+  blobUrl: string;
+  size: number;
+}
+interface ArchiveItem {
+  title: string;
+  note: string | null;
+  query: string;
+  from: string;
+  to: string;
+  at: string;
+  totalCo2eKg: string;
+  entryCount: number;
+  files: ArchivedFile[];
+}
+
+const BLOB_SUFFIX = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+const blobName = (when: Date, fileName: string) => {
+  const dot = fileName.lastIndexOf(".");
+  const suffix = Array.from(randomBytes(30), (b) => BLOB_SUFFIX[b % BLOB_SUFFIX.length]).join("");
+  return `${when.getTime()}-${fileName.slice(0, dot)}-${suffix}${fileName.slice(dot)}`;
+};
+
+async function renderArchive(
+  store: (name: string, file: { fileName: string; type: string; body: Uint8Array }) => Promise<string>,
+): Promise<ArchiveItem[]> {
   checkArchive();
-  const who = {
-    kasia: { id: ids.kasia, name: PEOPLE.kasia.name },
-    tomek: { id: ids.tomek, name: PEOPLE.tomek.name },
-  };
   const [company, options] = await Promise.all([getCompany(), getReportFilterOptions()]);
   const sourceNames = new Map(options.sources.map((s) => [s.id, s.name]));
+  const items: ArchiveItem[] = [];
   for (const a of ARCHIVE) {
     const params = parseReportParams(new URLSearchParams(a.q));
     const data = await getReport(params);
-    const formats: ReportFormat[] = ["pdf", "xlsx", "csv"];
-    const uploaded = [];
-    for (const format of formats) {
+    const files: ArchivedFile[] = [];
+    let t = a.at.getTime() + int(300, 900);
+    for (const format of ["pdf", "xlsx", "csv"] as const) {
       const body =
         format === "pdf"
           ? renderReportPdf(data, { company, generatedBy: PEOPLE.kasia.name, generatedAt: a.at, sourceNames })
@@ -580,42 +608,95 @@ async function createArchive(ids: { kasia: string; tomek: string }) {
             ? renderReportXlsx(data)
             : renderReportCsv(data);
       const fileName = reportFileName(params, format);
-      const blobUrl = await storeReportFile({ fileName, type: REPORT_FORMATS[format], body });
-      uploaded.push({ format, fileName, blobUrl, size: body.byteLength });
+      const blobUrl = await store(blobName(new Date(t), fileName), { fileName, type: REPORT_FORMATS[format], body });
+      files.push({ format, fileName, blobUrl, size: body.byteLength });
+      t += int(250, 700);
     }
+    items.push({
+      title: a.title,
+      note: a.note ?? null,
+      query: reportParamsToSearch(params).toString(),
+      from: params.from,
+      to: params.to,
+      at: a.at.toISOString(),
+      totalCo2eKg: data.totalKg,
+      entryCount: data.entryCount,
+      files,
+    });
+  }
+  return items;
+}
+
+async function saveArchive(ids: { kasia: string; tomek: string }, items: ArchiveItem[]) {
+  const who = {
+    kasia: { id: ids.kasia, name: PEOPLE.kasia.name },
+    tomek: { id: ids.tomek, name: PEOPLE.tomek.name },
+  };
+  for (const item of items) {
     const id = newId();
-    const query = reportParamsToSearch(params).toString();
+    const created = new Date(item.at);
     await prisma.archivedReport.create({
       data: {
         id,
-        title: a.title,
-        note: a.note ?? null,
-        query,
-        periodFrom: parseIsoDate(params.from),
-        periodTo: parseIsoDate(params.to),
+        title: item.title,
+        note: item.note,
+        query: item.query,
+        periodFrom: parseIsoDate(item.from),
+        periodTo: parseIsoDate(item.to),
         includesDrafts: false,
-        totalCo2eKg: new Prisma.Decimal(data.totalKg),
-        entryCount: data.entryCount,
+        totalCo2eKg: new Prisma.Decimal(item.totalCo2eKg),
+        entryCount: item.entryCount,
         createdById: ids.kasia,
-        createdAt: a.at,
-        files: { create: uploaded },
+        createdAt: created,
+        files: { create: item.files },
       },
     });
     const rows: Prisma.AuditLogCreateManyInput[] = [];
     const push = (k: keyof typeof who, when: Date, action: string, details: object) =>
       rows.push({ id: newId(), userId: who[k].id, userName: who[k].name, action, entity: "ArchivedReport", entityId: id, details: JSON.stringify(details), ipAddress: OFFICE_IP, createdAt: when });
-    push("kasia", a.at, "CREATE", { title: a.title, query, totalCo2eKg: data.totalKg });
-    const pdf = uploaded.find((u) => u.format === "pdf")!;
-    const xlsx = uploaded.find((u) => u.format === "xlsx")!;
-    push("kasia", later(a.at, 2, 6), "DOWNLOAD", { title: a.title, format: "pdf", fileName: pdf.fileName, preview: true });
-    push("tomek", at(workday(iso(a.at), 1), clock(9, 14)), "DOWNLOAD", { title: a.title, format: "xlsx", fileName: xlsx.fileName });
+    push("kasia", created, "CREATE", { title: item.title, query: item.query, totalCo2eKg: item.totalCo2eKg });
+    const pdf = item.files.find((f) => f.format === "pdf")!;
+    const xlsx = item.files.find((f) => f.format === "xlsx")!;
+    push("kasia", later(created, 2, 6), "DOWNLOAD", { title: item.title, format: "pdf", fileName: pdf.fileName, preview: true });
+    push("tomek", at(workday(iso(created), 1), clock(9, 14)), "DOWNLOAD", { title: item.title, format: "xlsx", fileName: xlsx.fileName });
     await prisma.auditLog.createMany({ data: rows });
-    console.log(`  ✓ ${a.title} (${data.entryCount} wpisów, ${uploaded.length} pliki)`);
+    console.log(`  ✓ ${item.title} (${item.entryCount} wpisów, ${item.files.length} pliki)`);
   }
 }
 
+async function createArchive(ids: { kasia: string; tomek: string }) {
+  const items = await renderArchive((_name, file) => storeReportFile(file));
+  await saveArchive(ids, items);
+}
+
+// Manual upload
+async function writeArchiveFiles(dir: string) {
+  const sample = await prisma.archivedReportFile.findFirst({ where: { blobUrl: { contains: ".blob.vercel-storage.com/" } } });
+  if (!sample) throw new Error("Brak istniejącego pliku w Blob — nie znam adresu magazynu");
+  const host = new URL(sample.blobUrl).host;
+  await mkdir(dir, { recursive: true });
+  const items = await renderArchive(async (name, file) => {
+    await writeFile(join(dir, name), file.body);
+    return `https://${host}/raporty/${name}`;
+  });
+  await writeFile(join(dir, MANIFEST), JSON.stringify(items, null, 2));
+  console.log(`Zapisano ${items.reduce((n, i) => n + i.files.length, 0)} plików w ${dir}`);
+}
+
+async function linkArchiveFiles(dir: string, ids: { kasia: string; tomek: string }) {
+  const items = JSON.parse(await readFile(join(dir, MANIFEST), "utf8")) as ArchiveItem[];
+  await saveArchive(ids, items);
+}
+
 async function main() {
-  if (process.argv.includes("--archive-only")) {
+  const archiveMode = ["--archive-only", "--archive-files", "--archive-link"].find((f) => process.argv.includes(f));
+  if (archiveMode) {
+    const dirArg = process.argv[process.argv.indexOf(archiveMode) + 1];
+    const dir = dirArg && !dirArg.startsWith("--") ? dirArg : join(homedir(), "Desktop", "raporty-demo");
+    if (archiveMode === "--archive-files") {
+      await writeArchiveFiles(dir);
+      return;
+    }
     const [kasia, tomek] = await Promise.all(
       [PEOPLE.kasia.email, PEOPLE.tomek.email].map((email) =>
         prisma.user.findFirstOrThrow({ where: { email, id: { startsWith: DEMO_PREFIX } } }),
@@ -624,7 +705,9 @@ async function main() {
     if (await prisma.archivedReport.count({ where: { id: { startsWith: DEMO_PREFIX } } })) {
       throw new Error("Archiwum demo już istnieje");
     }
-    await createArchive({ kasia: kasia!.id, tomek: tomek!.id });
+    const ids = { kasia: kasia!.id, tomek: tomek!.id };
+    if (archiveMode === "--archive-link") await linkArchiveFiles(dir, ids);
+    else await createArchive(ids);
     console.log("Gotowe.");
     return;
   }
