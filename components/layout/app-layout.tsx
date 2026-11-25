@@ -56,7 +56,7 @@ export function AppLayout({
 
   return (
     <TopbarActionsProvider>
-      <div className="flex h-dvh overflow-hidden bg-canvas">
+      <div className="relative flex h-dvh overflow-clip bg-canvas">
         <ViewTransition name="brand-panel" share="brand-panel" default="none">
           <aside
             className={cn(
@@ -85,7 +85,7 @@ export function AppLayout({
               onToggleSidebar={toggleCollapsed}
               onOpenMobile={() => setMobileOpen(true)}
             />
-            <main className="flex-1 overflow-y-auto">
+            <main className="relative flex-1 overflow-y-auto">
               <div
                 key={pathname}
                 className="mx-auto w-full max-w-7xl animate-page-in px-4 pt-6 pb-10 sm:px-6 lg:px-8"

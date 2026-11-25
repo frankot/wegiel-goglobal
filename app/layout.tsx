@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pl" className={sans.variable}>
-      <body className="min-h-screen">
+      <body className="min-h-dvh">
         {children}
       </body>
     </html>
